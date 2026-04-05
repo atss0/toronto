@@ -1,0 +1,116 @@
+{
+  "filters": [
+    { "id": "all",       "label": "All",       "icon": "solar:star-bold"       },
+    { "id": "museums",   "label": "Museums",   "icon": "solar:museum-bold"     },
+    { "id": "dining",    "label": "Dining",    "icon": "solar:chef-hat-bold"   },
+    { "id": "nature",    "label": "Nature",    "icon": "solar:leaf-bold"       },
+    { "id": "shopping",  "label": "Shopping",  "icon": "solar:bag-bold"        },
+    { "id": "nightlife", "label": "Nightlife", "icon": "solar:moon-bold"       }
+  ],
+  "trending": [
+    {
+      "id": "t1",
+      "name": "The Modern Wing",
+      "category": "Museum",
+      "rating": 4.9,
+      "reviewCount": 2340,
+      "badge": "TOP RATED",
+      "imageUrl": "https://images.unsplash.com/photo-1577083552431-6e5fd01988ec?w=400&q=80&fit=crop",
+      "placeholderColor": "#1E293B"
+    },
+    {
+      "id": "t2",
+      "name": "The Glass Pavilion",
+      "category": "Gallery",
+      "rating": 4.7,
+      "reviewCount": 1120,
+      "badge": "POPULAR",
+      "imageUrl": "https://images.unsplash.com/photo-1518998053901-5348d3961a04?w=400&q=80&fit=crop",
+      "placeholderColor": "#312E81"
+    },
+    {
+      "id": "t3",
+      "name": "Harbor View Terrace",
+      "category": "Dining",
+      "rating": 4.8,
+      "reviewCount": 876,
+      "badge": "NEW",
+      "imageUrl": "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&q=80&fit=crop",
+      "placeholderColor": "#0F3460"
+    }
+  ],
+  "allResults": [
+    {
+      "id": "r1",
+      "name": "St. Peter's Cathedral",
+      "category": "Historic",
+      "location": "Old Town · 1.2 km",
+      "rating": 4.8,
+      "reviewCount": 1890,
+      "price": "Free",
+      "isLiked": false,
+      "imageUrl": "https://images.unsplash.com/photo-1548602088-9d12a4f9a15b?w=300&q=80&fit=crop",
+      "placeholderColor": "#44403C"
+    },
+    {
+      "id": "r2",
+      "name": "Green City Gardens",
+      "category": "Nature",
+      "location": "Midtown · 2.5 km",
+      "rating": 4.6,
+      "reviewCount": 3240,
+      "price": "$8",
+      "isLiked": true,
+      "imageUrl": "https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=300&q=80&fit=crop",
+      "placeholderColor": "#14532D"
+    },
+    {
+      "id": "r3",
+      "name": "Eclipse Rooftop Bar",
+      "category": "Nightlife",
+      "location": "Downtown · 0.8 km",
+      "rating": 4.7,
+      "reviewCount": 654,
+      "price": "$$$",
+      "isLiked": false,
+      "imageUrl": "https://images.unsplash.com/photo-1551882547-ff40c63fe0fa?w=300&q=80&fit=crop",
+      "placeholderColor": "#1A1A2E"
+    },
+    {
+      "id": "r4",
+      "name": "The Jazz Lounge",
+      "category": "Nightlife",
+      "location": "Arts District · 3.1 km",
+      "rating": 4.5,
+      "reviewCount": 421,
+      "price": "$$",
+      "isLiked": false,
+      "imageUrl": "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=300&q=80&fit=crop",
+      "placeholderColor": "#3B0764"
+    },
+    {
+      "id": "r5",
+      "name": "Central Market Hall",
+      "category": "Shopping",
+      "location": "City Center · 1.8 km",
+      "rating": 4.4,
+      "reviewCount": 5670,
+      "price": "Free",
+      "isLiked": true,
+      "imageUrl": "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&q=80&fit=crop",
+      "placeholderColor": "#78350F"
+    },
+    {
+      "id": "r6",
+      "name": "Botanical Greenhouse",
+      "category": "Nature",
+      "location": "West End · 4.2 km",
+      "rating": 4.9,
+      "reviewCount": 980,
+      "price": "$12",
+      "isLiked": false,
+      "imageUrl": "https://images.unsplash.com/photo-1585320806297-9794b3e4aaae?w=300&q=80&fit=crop",
+      "placeholderColor": "#166534"
+    }
+  ]
+}

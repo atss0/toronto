@@ -1,0 +1,43 @@
+{
+  "tabs": {
+    "home": "Home",
+    "explore": "Explore",
+    "belen": "Discover",
+    "routes": "Routes",
+    "profile": "Profile"
+  },
+  "header": {
+    "greetingMorning": "Good Morning",
+    "greetingAfternoon": "Good Afternoon",
+    "greetingEvening": "Good Evening",
+    "subtitle": "Ready for your next adventure?"
+  },
+  "auth": {
+    "welcomeBack": "Welcome Back",
+    "loginSubtitle": "Log in to continue your journey",
+    "emailLabel": "Email Address",
+    "emailPlaceholder": "name@example.com",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "••••••••",
+    "forgotPassword": "Forgot Password?",
+    "loginButton": "Log In",
+    "orContinueWith": "OR CONTINUE WITH",
+    "noAccount": "Don't have an account?",
+    "signUp": "Sign Up",
+    "google": "Google",
+    "apple": "Apple",
+    "registerTitle": "Create Account",
+    "registerSubtitle": "Sign up to start your journey",
+    "fullNameLabel": "Full Name",
+    "fullNamePlaceholder": "John Doe",
+    "confirmPasswordLabel": "Confirm Password",
+    "confirmPasswordPlaceholder": "••••••••",
+    "registerButton": "Sign Up",
+    "haveAccount": "Already have an account?",
+    "logIn": "Log In",
+    "forgotPasswordTitle": "Forgot Password?",
+    "forgotPasswordSubtitle": "No worries! Enter your email to receive a secure reset link for your account.",
+    "emailPlaceholderFP": "e.g. wanderlust@travel.com",
+    "sendResetLink": "Send Reset Link"
+  }
+}

@@ -1,45 +1,40 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import React, { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { NavigationContainer } from '@react-navigation/native';
+import TabNavigator from './src/navigators/TabNavigator';
+import AuthStackNavigatior from './src/navigators/AuthStackNavigator';
+import { useSelector } from 'react-redux';
+import { RootState } from './src/redux/store';
+import { setUser } from './src/redux/UserSlice';
+import storage from './src/storage';
 
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
+const App = () => {
+  const screenState = useSelector((state: RootState) => state.User);
+  const dispatch = useDispatch();
 
-function App() {
-  const isDarkMode = useColorScheme() === 'dark';
 
+  useEffect(() => {
+    if (storage.contains('user') && storage.contains('token')) {
+      const user: any = storage.getString('user');
+      dispatch(
+        setUser({ user: JSON.parse(user), token: storage.getString('token') }),
+      );
+    }
+
+    if (storage.contains('lang')) {
+      const lang = storage.getString('lang') as 'en' | 'tr';
+      dispatch({ type: 'language/setLanguage', payload: lang });
+    }
+  }, []);
   return (
-    <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
-    </SafeAreaProvider>
+    <NavigationContainer>
+      {!screenState.token ? (
+        <TabNavigator />
+      ) : (
+        <AuthStackNavigatior />
+      )}
+    </NavigationContainer>
   );
-}
-
-function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
-
-  return (
-    <View style={styles.container}>
-      <NewAppScreen
-        templateFileName="App.tsx"
-        safeAreaInsets={safeAreaInsets}
-      />
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});
+};
 
 export default App;

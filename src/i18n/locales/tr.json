@@ -1,0 +1,43 @@
+{
+  "tabs": {
+    "home": "Ana Sayfa",
+    "explore": "Keşfet",
+    "belen": "Keşfet",
+    "routes": "Rotalar",
+    "profile": "Profil"
+  },
+  "header": {
+    "greetingMorning": "Günaydın",
+    "greetingAfternoon": "İyi Günler",
+    "greetingEvening": "İyi Akşamlar",
+    "subtitle": "Bir sonraki macerana hazır mısın?"
+  },
+  "auth": {
+    "welcomeBack": "Tekrar Hoş Geldiniz",
+    "loginSubtitle": "Yolculuğunuza devam etmek için giriş yapın",
+    "emailLabel": "E-posta Adresi",
+    "emailPlaceholder": "isim@ornek.com",
+    "passwordLabel": "Şifre",
+    "passwordPlaceholder": "••••••••",
+    "forgotPassword": "Şifremi Unuttum?",
+    "loginButton": "Giriş Yap",
+    "orContinueWith": "VEYA ŞUNUNLA DEVAM ET",
+    "noAccount": "Hesabınız yok mu?",
+    "signUp": "Kayıt Ol",
+    "google": "Google",
+    "apple": "Apple",
+    "registerTitle": "Hesap Oluştur",
+    "registerSubtitle": "Yolculuğunuza başlamak için kayıt olun",
+    "fullNameLabel": "Ad Soyad",
+    "fullNamePlaceholder": "Ahmet Yılmaz",
+    "confirmPasswordLabel": "Şifre (Tekrar)",
+    "confirmPasswordPlaceholder": "••••••••",
+    "registerButton": "Kayıt Ol",
+    "haveAccount": "Zaten bir hesabınız var mı?",
+    "logIn": "Giriş Yap",
+    "forgotPasswordTitle": "Şifremi Unuttum?",
+    "forgotPasswordSubtitle": "Endişelenme! E-postanı girerek şifre sıfırlama bağlantısı alabilirsin.",
+    "emailPlaceholderFP": "örn. wanderlust@travel.com",
+    "sendResetLink": "Sıfırlama Bağlantısı Gönder"
+  }
+}
