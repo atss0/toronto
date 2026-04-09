@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -10,11 +10,11 @@ import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useTranslation } from 'react-i18next';
 import { Iconify } from 'react-native-iconify';
 
-import Colors from '../../styles/Colors';
+import { useColors } from '../../context/ThemeContext';
+import { AppColors } from '../../styles/theme';
 import Fonts from '../../styles/Fonts';
 import { wScale, hScale } from '../../styles/Scaler';
 
-// Her tab için ikon ve label konfigürasyonu
 type TabName = 'Home' | 'Explore' | 'Belen' | 'Routes' | 'Profile';
 
 interface TabConfig {
@@ -55,6 +55,8 @@ const TAB_CONFIG: Record<TabName, TabConfig> = {
 
 const TabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation }) => {
   const { t } = useTranslation();
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   return (
     <View style={styles.wrapper}>
@@ -76,7 +78,6 @@ const TabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation })
           }
         };
 
-        // Orta özel Belen butonu
         if (config.special) {
           return (
             <TouchableOpacity
@@ -91,16 +92,14 @@ const TabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation })
                 <Iconify
                   icon={isFocused ? config.activeIcon : config.icon}
                   size={wScale(26)}
-                  color={Colors.white}
+                  color='#FFFFFF'
                 />
               </View>
             </TouchableOpacity>
           );
         }
 
-        // Normal sekmeler
-        const iconColor = isFocused ? Colors.primary : Colors.textSecondary;
-        const iconSize = wScale(24);
+        const iconColor = isFocused ? colors.primary : colors.textSecondary;
 
         return (
           <TouchableOpacity
@@ -115,10 +114,9 @@ const TabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation })
             <View style={styles.iconWrapper}>
               <Iconify
                 icon={isFocused ? config.activeIcon : config.icon}
-                size={iconSize}
+                size={wScale(24)}
                 color={iconColor}
               />
-              {/* Aktif göstergesi: nokta */}
               {isFocused && <View style={styles.activeDot} />}
             </View>
             <Text style={[styles.label, isFocused && styles.labelActive]} numberOfLines={1}>
@@ -133,24 +131,22 @@ const TabBar: React.FC<BottomTabBarProps> = ({ state, descriptors, navigation })
 
 export default TabBar;
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: AppColors) => StyleSheet.create({
   wrapper: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.white,
+    backgroundColor: colors.white,
     paddingTop: hScale(10),
     paddingBottom: hScale(8),
     paddingHorizontal: wScale(8),
-    shadowColor: Colors.black,
+    shadowColor: colors.black,
     shadowOffset: { width: 0, height: -4 },
     shadowOpacity: 0.08,
     shadowRadius: 12,
     elevation: 16,
     borderTopWidth: Platform.OS === 'android' ? 0 : 0.5,
-    borderTopColor: Colors.stroke,
+    borderTopColor: colors.stroke,
   },
-
-  // --- Normal Sekme ---
   tabItem: {
     flex: 1,
     alignItems: 'center',
@@ -169,20 +165,18 @@ const styles = StyleSheet.create({
     width: wScale(4),
     height: wScale(4),
     borderRadius: wScale(2),
-    backgroundColor: Colors.primary,
+    backgroundColor: colors.primary,
   },
   label: {
     fontSize: wScale(10),
     fontFamily: Fonts.plusJakartaSansMedium,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     letterSpacing: 0.2,
   },
   labelActive: {
-    color: Colors.primary,
+    color: colors.primary,
     fontFamily: Fonts.plusJakartaSansSemiBold,
   },
-
-  // --- Özel Orta Sekme (Belen) ---
   specialTabWrapper: {
     flex: 1,
     alignItems: 'center',
@@ -193,17 +187,17 @@ const styles = StyleSheet.create({
     width: wScale(50),
     height: wScale(50),
     borderRadius: wScale(25),
-    backgroundColor: Colors.primary,
+    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: Colors.primary,
+    shadowColor: colors.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.4,
     shadowRadius: 10,
     elevation: 8,
   },
   specialButtonActive: {
-    backgroundColor: Colors.secondary,
-    shadowColor: Colors.secondary,
+    backgroundColor: colors.secondary,
+    shadowColor: colors.secondary,
   },
 });

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,8 @@ import {
   ImageSourcePropType,
 } from 'react-native';
 import { Iconify } from 'react-native-iconify';
-import Colors from '../../styles/Colors';
+import { useColors } from '../../context/ThemeContext';
+import { AppColors } from '../../styles/theme';
 import Fonts from '../../styles/Fonts';
 import { wScale, hScale } from '../../styles/Scaler';
 
@@ -32,22 +33,23 @@ const TrendingCard: React.FC<TrendingCardProps> = ({
   price,
   badge,
   imageSource,
-  placeholderColor = Colors.cardDark,
+  placeholderColor,
   onPress,
 }) => {
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const bgFallback = placeholderColor ?? colors.cardDark;
+
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.88}>
-      {/* Arka plan */}
       {imageSource ? (
         <Image source={imageSource} style={StyleSheet.absoluteFill} resizeMode="cover" />
       ) : (
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: placeholderColor }]} />
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: bgFallback }]} />
       )}
 
-      {/* Overlay */}
       <View style={[StyleSheet.absoluteFill, styles.overlay]} />
 
-      {/* Üst: badge + kategori + fiyat */}
       <View style={styles.topRow}>
         <View style={styles.topLeft}>
           {badge && (
@@ -68,12 +70,11 @@ const TrendingCard: React.FC<TrendingCardProps> = ({
         )}
       </View>
 
-      {/* Alt: isim + rating */}
       <View style={styles.bottomContent}>
         <Text style={styles.name} numberOfLines={2}>{name}</Text>
         {(rating !== undefined || reviewCount !== undefined) && (
           <View style={styles.ratingRow}>
-            <Iconify icon="solar:star-bold" size={wScale(11)} color={Colors.warning} />
+            <Iconify icon="solar:star-bold" size={wScale(11)} color={colors.warning} />
             {rating !== undefined && (
               <Text style={styles.ratingText}>{rating.toFixed(1)}</Text>
             )}
@@ -89,7 +90,7 @@ const TrendingCard: React.FC<TrendingCardProps> = ({
 
 export default TrendingCard;
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: AppColors) => StyleSheet.create({
   card: {
     width: wScale(180),
     height: hScale(150),
@@ -99,7 +100,6 @@ const styles = StyleSheet.create({
   overlay: {
     backgroundColor: 'rgba(10,20,40,0.45)',
   },
-
   topRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
   },
   badgeWrap: {
     alignSelf: 'flex-start',
-    backgroundColor: Colors.warning,
+    backgroundColor: colors.warning,
     paddingHorizontal: wScale(8),
     paddingVertical: hScale(3),
     borderRadius: wScale(8),
@@ -121,10 +121,11 @@ const styles = StyleSheet.create({
   badgeText: {
     fontSize: wScale(8),
     fontFamily: Fonts.plusJakartaSansBold,
-    color: Colors.white,
+    color: '#FFFFFF',
     letterSpacing: 0.8,
   },
   categoryBadge: {
+    alignSelf: 'flex-start',
     backgroundColor: 'rgba(255,255,255,0.18)',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.3)',
@@ -135,11 +136,11 @@ const styles = StyleSheet.create({
   categoryText: {
     fontSize: wScale(8),
     fontFamily: Fonts.plusJakartaSansBold,
-    color: Colors.white,
+    color: '#FFFFFF',
     letterSpacing: 0.6,
   },
   priceBadge: {
-    backgroundColor: Colors.primary,
+    backgroundColor: colors.primary,
     paddingHorizontal: wScale(8),
     paddingVertical: hScale(3),
     borderRadius: wScale(8),
@@ -147,9 +148,8 @@ const styles = StyleSheet.create({
   priceText: {
     fontSize: wScale(10),
     fontFamily: Fonts.plusJakartaSansBold,
-    color: Colors.white,
+    color: '#FFFFFF',
   },
-
   bottomContent: {
     position: 'absolute',
     bottom: 0,
@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
   name: {
     fontSize: wScale(13),
     fontFamily: Fonts.plusJakartaSansBold,
-    color: Colors.white,
+    color: '#FFFFFF',
     lineHeight: hScale(18),
   },
   ratingRow: {
@@ -173,7 +173,7 @@ const styles = StyleSheet.create({
   ratingText: {
     fontSize: wScale(11),
     fontFamily: Fonts.plusJakartaSansSemiBold,
-    color: Colors.white,
+    color: '#FFFFFF',
   },
   reviewText: {
     fontSize: wScale(10),

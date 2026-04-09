@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { Iconify } from 'react-native-iconify';
-import Colors from '../../styles/Colors';
+import { useColors } from '../../context/ThemeContext';
+import { AppColors } from '../../styles/theme';
 import Fonts from '../../styles/Fonts';
 import { wScale, hScale } from '../../styles/Scaler';
 
@@ -28,13 +29,14 @@ const OngoingJourneyCard: React.FC<OngoingJourneyCardProps> = ({
   isActive = true,
   onPress,
 }) => {
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const completed = totalStops - remaining;
 
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.92}>
       {/* Harita alanı */}
       <View style={styles.mapArea}>
-        {/* Grid */}
         {[1, 2, 3].map(i => (
           <View key={`h${i}`} style={[styles.gridH, { top: `${25 * i}%` as any }]} />
         ))}
@@ -42,19 +44,16 @@ const OngoingJourneyCard: React.FC<OngoingJourneyCardProps> = ({
           <View key={`v${i}`} style={[styles.gridV, { left: `${25 * i}%` as any }]} />
         ))}
 
-        {/* Rota */}
         <View style={styles.routeTrack} />
         <View style={[styles.routeFill, { width: `${progress * 70}%` as any }]} />
 
-        {/* Noktalar */}
         <View style={styles.dotStart}>
           <View style={styles.dotStartInner} />
         </View>
         <View style={styles.dotEnd}>
-          <Iconify icon="solar:map-point-bold" size={wScale(20)} color={Colors.primary} />
+          <Iconify icon="solar:map-point-bold" size={wScale(20)} color={colors.primary} />
         </View>
 
-        {/* Etiket */}
         <View style={styles.mapLabel}>
           <Text style={styles.mapLabelText}>Route Map</Text>
         </View>
@@ -62,7 +61,6 @@ const OngoingJourneyCard: React.FC<OngoingJourneyCardProps> = ({
 
       {/* Bilgi */}
       <View style={styles.info}>
-        {/* Başlık satırı */}
         <View style={styles.titleRow}>
           <View style={styles.titleBlock}>
             <Text style={styles.title} numberOfLines={1}>{title}</Text>
@@ -78,7 +76,6 @@ const OngoingJourneyCard: React.FC<OngoingJourneyCardProps> = ({
           )}
         </View>
 
-        {/* Progress bar */}
         <View style={styles.progressTrack}>
           <View style={[styles.progressFill, { width: `${progress * 100}%` as any }]} />
         </View>
@@ -86,22 +83,21 @@ const OngoingJourneyCard: React.FC<OngoingJourneyCardProps> = ({
           {completed} of {totalStops} stops completed
         </Text>
 
-        {/* Stats */}
         <View style={styles.statsRow}>
           <View style={styles.statItem}>
-            <Iconify icon="solar:map-point-wave-linear" size={wScale(14)} color={Colors.primary} />
+            <Iconify icon="solar:map-point-wave-linear" size={wScale(14)} color={colors.primary} />
             <Text style={styles.statText}>{remaining} remaining</Text>
           </View>
           <View style={styles.dot} />
           <View style={styles.statItem}>
-            <Iconify icon="solar:clock-circle-linear" size={wScale(14)} color={Colors.primary} />
+            <Iconify icon="solar:clock-circle-linear" size={wScale(14)} color={colors.primary} />
             <Text style={styles.statText}>{duration}</Text>
           </View>
           {distance && (
             <>
               <View style={styles.dot} />
               <View style={styles.statItem}>
-                <Iconify icon="solar:route-linear" size={wScale(14)} color={Colors.primary} />
+                <Iconify icon="solar:route-linear" size={wScale(14)} color={colors.primary} />
                 <Text style={styles.statText}>{distance}</Text>
               </View>
             </>
@@ -114,12 +110,12 @@ const OngoingJourneyCard: React.FC<OngoingJourneyCardProps> = ({
 
 export default OngoingJourneyCard;
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: AppColors) => StyleSheet.create({
   card: {
-    backgroundColor: Colors.white,
+    backgroundColor: colors.white,
     borderRadius: wScale(20),
     overflow: 'hidden',
-    shadowColor: Colors.black,
+    shadowColor: colors.black,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.07,
     shadowRadius: 14,
@@ -129,7 +125,7 @@ const styles = StyleSheet.create({
   // Harita
   mapArea: {
     height: hScale(120),
-    backgroundColor: '#EFF6FF',
+    backgroundColor: colors.mapBackground,
     overflow: 'hidden',
   },
   gridH: {
@@ -137,14 +133,14 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 1,
-    backgroundColor: '#BFDBFE',
+    backgroundColor: colors.mapGrid,
   },
   gridV: {
     position: 'absolute',
     top: 0,
     bottom: 0,
     width: 1,
-    backgroundColor: '#BFDBFE',
+    backgroundColor: colors.mapGrid,
   },
   routeTrack: {
     position: 'absolute',
@@ -152,7 +148,7 @@ const styles = StyleSheet.create({
     left: '12%',
     right: '12%',
     height: 3,
-    backgroundColor: '#BFDBFE',
+    backgroundColor: colors.mapGrid,
     borderRadius: 2,
   },
   routeFill: {
@@ -160,7 +156,7 @@ const styles = StyleSheet.create({
     top: '38%',
     left: '12%',
     height: 3,
-    backgroundColor: Colors.primary,
+    backgroundColor: colors.primary,
     borderRadius: 2,
   },
   dotStart: {
@@ -170,9 +166,9 @@ const styles = StyleSheet.create({
     width: wScale(14),
     height: wScale(14),
     borderRadius: wScale(7),
-    backgroundColor: Colors.white,
+    backgroundColor: colors.white,
     borderWidth: 2.5,
-    borderColor: Colors.primary,
+    borderColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -180,7 +176,7 @@ const styles = StyleSheet.create({
     width: wScale(5),
     height: wScale(5),
     borderRadius: wScale(3),
-    backgroundColor: Colors.primary,
+    backgroundColor: colors.primary,
   },
   dotEnd: {
     position: 'absolute',
@@ -191,7 +187,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: hScale(8),
     left: wScale(12),
-    backgroundColor: 'rgba(49,130,237,0.12)',
+    backgroundColor: colors.primaryLight,
     paddingHorizontal: wScale(8),
     paddingVertical: hScale(3),
     borderRadius: wScale(8),
@@ -199,13 +195,13 @@ const styles = StyleSheet.create({
   mapLabelText: {
     fontSize: wScale(10),
     fontFamily: Fonts.plusJakartaSansMedium,
-    color: Colors.primary,
+    color: colors.primary,
   },
 
   // Bilgi
   info: {
     padding: wScale(16),
-    gap: hScale(10),
+    gap: hScale(8),
   },
   titleRow: {
     flexDirection: 'row',
@@ -220,20 +216,20 @@ const styles = StyleSheet.create({
   title: {
     fontSize: wScale(15),
     fontFamily: Fonts.plusJakartaSansBold,
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
     lineHeight: hScale(21),
   },
   description: {
     fontSize: wScale(12),
     fontFamily: Fonts.plusJakartaSansRegular,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     lineHeight: hScale(17),
   },
   activeBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: wScale(5),
-    backgroundColor: Colors.successLight,
+    backgroundColor: colors.successLight,
     paddingHorizontal: wScale(10),
     paddingVertical: hScale(4),
     borderRadius: wScale(20),
@@ -242,32 +238,31 @@ const styles = StyleSheet.create({
     width: wScale(6),
     height: wScale(6),
     borderRadius: wScale(3),
-    backgroundColor: Colors.success,
+    backgroundColor: colors.success,
   },
   activeText: {
     fontSize: wScale(10),
     fontFamily: Fonts.plusJakartaSansBold,
-    color: Colors.success,
+    color: colors.success,
     letterSpacing: 0.4,
   },
 
   // Progress
   progressTrack: {
     height: hScale(4),
-    backgroundColor: Colors.inputBackground,
+    backgroundColor: colors.inputBackground,
     borderRadius: hScale(2),
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    backgroundColor: Colors.primary,
+    backgroundColor: colors.primary,
     borderRadius: hScale(2),
   },
   progressLabel: {
     fontSize: wScale(11),
     fontFamily: Fonts.plusJakartaSansRegular,
-    color: Colors.textSecondary,
-    marginTop: -hScale(4),
+    color: colors.textSecondary,
   },
 
   // Stats
@@ -284,12 +279,12 @@ const styles = StyleSheet.create({
   statText: {
     fontSize: wScale(12),
     fontFamily: Fonts.plusJakartaSansMedium,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
   },
   dot: {
     width: wScale(3),
     height: wScale(3),
     borderRadius: wScale(2),
-    backgroundColor: Colors.stroke,
+    backgroundColor: colors.stroke,
   },
 });

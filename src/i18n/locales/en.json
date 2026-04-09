@@ -12,6 +12,18 @@
     "greetingEvening": "Good Evening",
     "subtitle": "Ready for your next adventure?"
   },
+  "profile": {
+    "title": "Profile",
+    "settings": "Settings",
+    "language": "Language",
+    "languageSubtitle": "Choose your preferred language",
+    "theme": "Appearance",
+    "themeSubtitle": "Switch between light and dark mode",
+    "light": "Light",
+    "dark": "Dark",
+    "en": "English",
+    "tr": "Turkish"
+  },
   "auth": {
     "welcomeBack": "Welcome Back",
     "loginSubtitle": "Log in to continue your journey",

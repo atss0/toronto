@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -6,7 +6,8 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { Iconify } from 'react-native-iconify';
-import Colors from '../../styles/Colors';
+import { useColors } from '../../context/ThemeContext';
+import { AppColors } from '../../styles/theme';
 import Fonts from '../../styles/Fonts';
 import { wScale, hScale } from '../../styles/Scaler';
 
@@ -23,41 +24,46 @@ interface QuickActionsProps {
   actions?: QuickActionItem[];
 }
 
-const DEFAULT_ACTIONS: QuickActionItem[] = [
-  {
-    id: '1',
-    label: 'Explore',
-    icon: 'solar:compass-bold',
-    iconColor: Colors.primary,
-    bgColor: Colors.primaryLight,
-  },
-  {
-    id: '2',
-    label: 'Save',
-    icon: 'solar:bookmark-bold',
-    iconColor: Colors.warning,
-    bgColor: Colors.warningLight,
-  },
-  {
-    id: '3',
-    label: 'Events',
-    icon: 'solar:calendar-mark-bold',
-    iconColor: Colors.success,
-    bgColor: Colors.successLight,
-  },
-  {
-    id: '4',
-    label: 'Nearby',
-    icon: 'solar:map-point-wave-bold',
-    iconColor: Colors.danger,
-    bgColor: Colors.dangerLight,
-  },
-];
+const QuickActions: React.FC<QuickActionsProps> = ({ actions }) => {
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
-const QuickActions: React.FC<QuickActionsProps> = ({ actions = DEFAULT_ACTIONS }) => {
+  const defaultActions: QuickActionItem[] = useMemo(() => [
+    {
+      id: '1',
+      label: 'Explore',
+      icon: 'solar:compass-bold',
+      iconColor: colors.primary,
+      bgColor: colors.primaryLight,
+    },
+    {
+      id: '2',
+      label: 'Save',
+      icon: 'solar:bookmark-bold',
+      iconColor: colors.warning,
+      bgColor: colors.warningLight,
+    },
+    {
+      id: '3',
+      label: 'Events',
+      icon: 'solar:calendar-mark-bold',
+      iconColor: colors.success,
+      bgColor: colors.successLight,
+    },
+    {
+      id: '4',
+      label: 'Nearby',
+      icon: 'solar:map-point-wave-bold',
+      iconColor: colors.danger,
+      bgColor: colors.dangerLight,
+    },
+  ], [colors]);
+
+  const items = actions ?? defaultActions;
+
   return (
     <View style={styles.row}>
-      {actions.map(action => (
+      {items.map(action => (
         <TouchableOpacity
           key={action.id}
           style={styles.item}
@@ -76,7 +82,7 @@ const QuickActions: React.FC<QuickActionsProps> = ({ actions = DEFAULT_ACTIONS }
 
 export default QuickActions;
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: AppColors) => StyleSheet.create({
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -97,7 +103,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: wScale(12),
     fontFamily: Fonts.plusJakartaSansSemiBold,
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
     textAlign: 'center',
   },
 });

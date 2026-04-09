@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -8,22 +8,16 @@ import {
   ImageSourcePropType,
 } from 'react-native';
 import { Iconify } from 'react-native-iconify';
-import Colors from '../../styles/Colors';
+import { useColors } from '../../context/ThemeContext';
+import { AppColors } from '../../styles/theme';
 import Fonts from '../../styles/Fonts';
 import { wScale, hScale } from '../../styles/Scaler';
-
-export interface HeroStat {
-  id: string;
-  icon: string;
-  label: string;
-}
 
 interface HeroCardProps {
   title: string;
   subtitle?: string;
   tag?: string;
   imageSource?: ImageSourcePropType;
-  stats?: HeroStat[];
   onViewRoute?: () => void;
   onSave?: () => void;
 }
@@ -33,32 +27,29 @@ const HeroCard: React.FC<HeroCardProps> = ({
   subtitle,
   tag = "Today's Plan",
   imageSource,
-  stats = [],
   onViewRoute,
   onSave,
 }) => {
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   return (
     <View>
-      {/* ── Kart ── */}
       <View style={styles.card}>
-        {/* Fotoğraf */}
         {imageSource ? (
           <Image source={imageSource} style={StyleSheet.absoluteFill} resizeMode="cover" />
         ) : (
           <View style={[StyleSheet.absoluteFill, styles.placeholder]} />
         )}
 
-        {/* Gradient simülasyonu — üst açık, alt koyu */}
         <View style={[StyleSheet.absoluteFill, styles.scrimFull]} />
         <View style={styles.scrimBottom} />
 
-        {/* Üst sol: etiket */}
         <View style={styles.tagBadge}>
-          <Iconify icon="solar:magic-stick-3-bold" size={wScale(12)} color={Colors.warning} />
+          <Iconify icon="solar:magic-stick-3-bold" size={wScale(12)} color={colors.warning} />
           <Text style={styles.tagText}>{tag}</Text>
         </View>
 
-        {/* Alt: metin + butonlar */}
         <View style={styles.bottomContent}>
           <Text style={styles.title}>{title}</Text>
           {subtitle ? (
@@ -67,46 +58,32 @@ const HeroCard: React.FC<HeroCardProps> = ({
 
           <View style={styles.buttonRow}>
             <TouchableOpacity style={styles.primaryBtn} onPress={onViewRoute} activeOpacity={0.85}>
-              <Iconify icon="solar:map-arrow-right-bold" size={wScale(15)} color={Colors.primary} />
+              <Iconify icon="solar:map-arrow-right-bold" size={wScale(15)} color={colors.primary} />
               <Text style={styles.primaryBtnText}>View Route</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.outlineBtn} onPress={onSave} activeOpacity={0.8}>
-              <Iconify icon="solar:bookmark-linear" size={wScale(15)} color={Colors.white} />
+              <Iconify icon="solar:bookmark-linear" size={wScale(15)} color='#FFFFFF' />
               <Text style={styles.outlineBtnText}>Save</Text>
             </TouchableOpacity>
           </View>
         </View>
       </View>
-
-      {/* ── Stat satırı — kartın altında, ayrı ── */}
-      {stats.length > 0 && (
-        <View style={styles.statsRow}>
-          {stats.map(stat => (
-            <View key={stat.id} style={styles.statChip}>
-              <Iconify icon={stat.icon} size={wScale(14)} color={Colors.primary} />
-              <Text style={styles.statLabel}>{stat.label}</Text>
-            </View>
-          ))}
-        </View>
-      )}
     </View>
   );
 };
 
 export default HeroCard;
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: AppColors) => StyleSheet.create({
   card: {
     height: hScale(256),
     borderRadius: wScale(22),
     overflow: 'hidden',
   },
   placeholder: {
-    backgroundColor: Colors.cardDark,
+    backgroundColor: colors.cardDark,
   },
-
-  // Gradient katmanları
   scrimFull: {
     backgroundColor: 'rgba(10,18,35,0.18)',
   },
@@ -117,12 +94,9 @@ const styles = StyleSheet.create({
     right: 0,
     height: '60%',
     backgroundColor: 'rgba(10,18,35,0.72)',
-    // borderTopLeftRadius ve borderTopRightRadius ile yumuşatma
     borderTopLeftRadius: wScale(40),
     borderTopRightRadius: wScale(40),
   },
-
-  // Üst etiket
   tagBadge: {
     position: 'absolute',
     top: hScale(16),
@@ -140,11 +114,9 @@ const styles = StyleSheet.create({
   tagText: {
     fontSize: wScale(11),
     fontFamily: Fonts.plusJakartaSansSemiBold,
-    color: Colors.white,
+    color: '#FFFFFF',
     letterSpacing: 0.2,
   },
-
-  // Alt içerik
   bottomContent: {
     position: 'absolute',
     bottom: 0,
@@ -157,7 +129,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: wScale(20),
     fontFamily: Fonts.plusJakartaSansExtraBold,
-    color: Colors.white,
+    color: '#FFFFFF',
     lineHeight: hScale(28),
     letterSpacing: -0.3,
   },
@@ -176,7 +148,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: wScale(6),
-    backgroundColor: Colors.white,
+    backgroundColor: '#FFFFFF',
     paddingHorizontal: wScale(18),
     paddingVertical: hScale(10),
     borderRadius: wScale(24),
@@ -184,7 +156,7 @@ const styles = StyleSheet.create({
   primaryBtnText: {
     fontSize: wScale(13),
     fontFamily: Fonts.plusJakartaSansSemiBold,
-    color: Colors.primary,
+    color: colors.primary,
   },
   outlineBtn: {
     flexDirection: 'row',
@@ -199,32 +171,6 @@ const styles = StyleSheet.create({
   outlineBtnText: {
     fontSize: wScale(13),
     fontFamily: Fonts.plusJakartaSansSemiBold,
-    color: Colors.white,
-  },
-
-  // ── Stat satırı ──
-  statsRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: hScale(12),
-    gap: wScale(8),
-  },
-  statChip: {
-    flex: 1,
-    alignItems: 'center',
-    gap: hScale(5),
-    backgroundColor: Colors.white,
-    paddingVertical: hScale(10),
-    borderRadius: wScale(14),
-    shadowColor: Colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    elevation: 2,
-  },
-  statLabel: {
-    fontSize: wScale(11),
-    fontFamily: Fonts.plusJakartaSansSemiBold,
-    color: Colors.textPrimary,
-  },
+    color: '#FFFFFF',
+  }
 });

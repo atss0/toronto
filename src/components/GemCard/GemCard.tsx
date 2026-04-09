@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,8 @@ import {
   ImageSourcePropType,
 } from 'react-native';
 import { Iconify } from 'react-native-iconify';
-import Colors from '../../styles/Colors';
+import { useColors } from '../../context/ThemeContext';
+import { AppColors } from '../../styles/theme';
 import Fonts from '../../styles/Fonts';
 import { wScale, hScale } from '../../styles/Scaler';
 
@@ -28,41 +29,40 @@ const GemCard: React.FC<GemCardProps> = ({
   distance,
   rating,
   imageSource,
-  placeholderColor = Colors.cardDark,
+  placeholderColor,
   onPress,
 }) => {
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const bgFallback = placeholderColor ?? colors.cardDark;
+
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.88}>
-      {/* Arka plan */}
       {imageSource ? (
         <Image source={imageSource} style={StyleSheet.absoluteFill} resizeMode="cover" />
       ) : (
-        <View style={[StyleSheet.absoluteFill, { backgroundColor: placeholderColor }]} />
+        <View style={[StyleSheet.absoluteFill, { backgroundColor: bgFallback }]} />
       )}
 
-      {/* Üst alan — mesafe */}
       {distance && (
         <View style={styles.topRow}>
           <View style={styles.distanceBadge}>
-            <Iconify icon="solar:map-point-bold" size={wScale(10)} color={Colors.white} />
+            <Iconify icon="solar:map-point-bold" size={wScale(10)} color='#FFFFFF' />
             <Text style={styles.distanceText}>{distance}</Text>
           </View>
         </View>
       )}
 
-      {/* Alt overlay */}
       <View style={styles.bottomOverlay}>
         {category && (
           <View style={styles.categoryBadge}>
             <Text style={styles.categoryText}>{category.toUpperCase()}</Text>
           </View>
         )}
-
         <Text style={styles.name} numberOfLines={2}>{name}</Text>
-
         {rating !== undefined && (
           <View style={styles.ratingRow}>
-            <Iconify icon="solar:star-bold" size={wScale(11)} color={Colors.warning} />
+            <Iconify icon="solar:star-bold" size={wScale(11)} color={colors.warning} />
             <Text style={styles.ratingText}>{rating.toFixed(1)}</Text>
           </View>
         )}
@@ -73,14 +73,13 @@ const GemCard: React.FC<GemCardProps> = ({
 
 export default GemCard;
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: AppColors) => StyleSheet.create({
   card: {
     width: wScale(148),
     height: hScale(200),
     borderRadius: wScale(18),
     overflow: 'hidden',
   },
-
   topRow: {
     padding: wScale(10),
     alignItems: 'flex-end',
@@ -97,9 +96,8 @@ const styles = StyleSheet.create({
   distanceText: {
     fontSize: wScale(10),
     fontFamily: Fonts.plusJakartaSansMedium,
-    color: Colors.white,
+    color: '#FFFFFF',
   },
-
   bottomOverlay: {
     position: 'absolute',
     bottom: 0,
@@ -120,13 +118,13 @@ const styles = StyleSheet.create({
   categoryText: {
     fontSize: wScale(8),
     fontFamily: Fonts.plusJakartaSansBold,
-    color: Colors.white,
+    color: '#FFFFFF',
     letterSpacing: 0.6,
   },
   name: {
     fontSize: wScale(13),
     fontFamily: Fonts.plusJakartaSansBold,
-    color: Colors.white,
+    color: '#FFFFFF',
     lineHeight: hScale(19),
   },
   ratingRow: {

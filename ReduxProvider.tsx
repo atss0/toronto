@@ -7,18 +7,27 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import i18n from './src/i18n/i18n';
 import store from './src/redux/store';
 import App from './App';
-import Colors from './src/styles/Colors';
+import { ThemeProvider, useColors } from './src/context/ThemeContext';
+
+const ThemedRoot: React.FC = () => {
+  const colors = useColors();
+  return (
+    <SafeAreaProvider>
+      <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top', 'bottom']}>
+        <App />
+      </SafeAreaView>
+    </SafeAreaProvider>
+  );
+};
 
 export default function ReduxProvider() {
   return (
     <I18nextProvider i18n={i18n}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <Provider store={store}>
-          <SafeAreaProvider>
-            <SafeAreaView style={{ flex: 1, backgroundColor: Colors.white }} edges={['top','bottom']}>
-              <App />
-            </SafeAreaView>
-          </SafeAreaProvider>
+          <ThemeProvider>
+            <ThemedRoot />
+          </ThemeProvider>
         </Provider>
       </GestureHandlerRootView>
     </I18nextProvider>

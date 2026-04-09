@@ -1,7 +1,7 @@
 {
   "filters": [
     { "id": "all",       "label": "All",       "icon": "solar:star-bold"       },
-    { "id": "museums",   "label": "Museums",   "icon": "solar:museum-bold"     },
+    { "id": "museums",   "label": "Museums",   "icon": "fa7-solid:museum"     },
     { "id": "dining",    "label": "Dining",    "icon": "solar:chef-hat-bold"   },
     { "id": "nature",    "label": "Nature",    "icon": "solar:leaf-bold"       },
     { "id": "shopping",  "label": "Shopping",  "icon": "solar:bag-bold"        },

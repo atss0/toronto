@@ -8,13 +8,15 @@ import {
   TouchableOpacity,
   Image,
   LayoutChangeEvent,
+  StatusBar,
 } from 'react-native';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Iconify } from 'react-native-iconify';
 
 import { RootState } from '../redux/store';
-import Colors from '../styles/Colors';
+import { useColors } from '../context/ThemeContext';
+import { AppColors } from '../styles/theme';
 import Fonts from '../styles/Fonts';
 import { wScale, hScale } from '../styles/Scaler';
 import Layout from '../styles/Layout';
@@ -37,12 +39,20 @@ const getGreetingKey = (): 'greetingMorning' | 'greetingAfternoon' | 'greetingEv
   return 'greetingEvening';
 };
 
+const WEATHER = {
+  temp: 21,
+  icon: 'solar:sun-bold-duotone',
+};
+
 // ─── Ekran ─────────────────────────────────────────────────────────────────────
 
 const HomeScreen = () => {
   const { t } = useTranslation();
   const user = useSelector((s: RootState) => s.User.user);
   const locationName = useSelector((s: RootState) => s.User.locationName);
+  const currentTheme = useSelector((s: RootState) => s.Theme.theme);
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const firstName = user?.name ?? 'Traveler';
   const city = locationName || 'İstanbul';
@@ -59,23 +69,48 @@ const HomeScreen = () => {
     setFullHeaderH(e.nativeEvent.layout.height);
   }, []);
 
+  // Header scroll-off noktasından 70px önce başlar, 10px önce tamamlanır
+  const triggerStart = fullHeaderH - 70;
+  const triggerEnd   = fullHeaderH - 10;
+
   const compactOpacity = useMemo(() =>
     scrollY.interpolate({
-      inputRange: [fullHeaderH - 24, fullHeaderH + 8],
+      inputRange: [triggerStart, triggerEnd],
       outputRange: [0, 1],
       extrapolate: 'clamp',
-    }), [fullHeaderH]);
+    }), [triggerStart, triggerEnd]);
 
+  // Header yukarıdan kayarak iner
   const compactTranslateY = useMemo(() =>
     scrollY.interpolate({
-      inputRange: [fullHeaderH - 24, fullHeaderH + 8],
-      outputRange: [-hScale(52), 0],
+      inputRange: [triggerStart, triggerEnd],
+      outputRange: [-hScale(66), 0],
       extrapolate: 'clamp',
-    }), [fullHeaderH]);
+    }), [triggerStart, triggerEnd]);
+
+  // Sol içerik (lokasyon + selamlama) soldan kayar
+  const leftSlideX = useMemo(() =>
+    scrollY.interpolate({
+      inputRange: [triggerStart, triggerEnd],
+      outputRange: [-wScale(18), 0],
+      extrapolate: 'clamp',
+    }), [triggerStart, triggerEnd]);
+
+  // Sağ içerik (hava + zil + avatar) sağdan kayar
+  const rightSlideX = useMemo(() =>
+    scrollY.interpolate({
+      inputRange: [triggerStart, triggerEnd],
+      outputRange: [wScale(18), 0],
+      extrapolate: 'clamp',
+    }), [triggerStart, triggerEnd]);
 
   // ───────────────────────────────────────────────────────────────────────────
   return (
     <View style={styles.root}>
+      <StatusBar
+        barStyle={currentTheme === 'dark' ? 'light-content' : 'dark-content'}
+        backgroundColor={colors.inputBackground}
+      />
 
       {/* ── Compact Sticky Header ─────────────────────────────────────────── */}
       <Animated.View
@@ -86,32 +121,31 @@ const HomeScreen = () => {
         pointerEvents="box-none"
       >
         <View style={styles.compactInner}>
-          <View style={styles.compactLocation}>
-            <Iconify icon="solar:map-point-bold" size={wScale(12)} color={Colors.primary} />
-            <Text style={styles.compactCity} numberOfLines={1}>{city}</Text>
-          </View>
 
-          <Text style={styles.compactGreeting} numberOfLines={1}>
-            {t(`header.${greetingKey}`)},{' '}
-            <Text style={styles.compactName}>{firstName}</Text>
-          </Text>
+          {/* Sol: lokasyon + selamlama (soldan kayar) */}
+          <Animated.View style={[styles.compactLeft, { transform: [{ translateX: leftSlideX }] }]}>
+            <View style={styles.compactLocationRow}>
+              <Iconify icon="solar:map-point-bold" size={wScale(11)} color={colors.primary} />
+              <Text style={styles.compactCity} numberOfLines={1}>{city}</Text>
+            </View>
+            <Text style={styles.compactGreeting} numberOfLines={1}>
+              {t(`header.${greetingKey}`)},{' '}
+              <Text style={styles.compactName}>{firstName}</Text>
+            </Text>
+          </Animated.View>
 
-          <View style={styles.compactActions}>
+          {/* Sağ: hava durumu + zil + avatar (sağdan kayar) */}
+          <Animated.View style={[styles.compactRight, { transform: [{ translateX: rightSlideX }] }]}>
+            <View style={[styles.compactWeatherPill, { backgroundColor: colors.warningLight }]}>
+              <Iconify icon={WEATHER.icon} size={wScale(13)} color={colors.warning} />
+              <Text style={styles.compactWeatherText}>{WEATHER.temp}°</Text>
+            </View>
             <TouchableOpacity style={styles.compactIconBtn} hitSlop={8}>
-              <Iconify icon="solar:bell-linear" size={wScale(18)} color={Colors.textPrimary} />
+              <Iconify icon="solar:bell-linear" size={wScale(17)} color={colors.textPrimary} />
               <View style={styles.compactBadge} />
             </TouchableOpacity>
-            <View style={styles.compactAvatar}>
-              {user?.photo
-                ? <Image source={{ uri: user.photo }} style={styles.fill} />
-                : (
-                  <View style={styles.compactAvatarFallback}>
-                    <Text style={styles.compactAvatarInitials}>{initials}</Text>
-                  </View>
-                )
-              }
-            </View>
-          </View>
+          </Animated.View>
+
         </View>
       </Animated.View>
 
@@ -128,25 +162,19 @@ const HomeScreen = () => {
         <View style={styles.fullHeader} onLayout={onFullHeaderLayout}>
           <View style={styles.headerTopRow}>
             <TouchableOpacity style={styles.locationChip} activeOpacity={0.75}>
-              <Iconify icon="solar:map-point-bold" size={wScale(13)} color={Colors.primary} />
+              <Iconify icon="solar:map-point-bold" size={wScale(13)} color={colors.primary} />
               <Text style={styles.locationText} numberOfLines={1}>{city}</Text>
-              <Iconify icon="solar:alt-arrow-down-bold" size={wScale(11)} color={Colors.textSecondary} />
+              <Iconify icon="solar:alt-arrow-down-bold" size={wScale(11)} color={colors.textSecondary} />
             </TouchableOpacity>
 
             <View style={styles.headerActions}>
+              <View style={[styles.weatherChip, { backgroundColor: colors.warningLight }]}>
+                <Iconify icon={WEATHER.icon} size={wScale(16)} color={colors.warning} />
+                <Text style={styles.weatherTemp}>{WEATHER.temp}°C</Text>
+              </View>
               <TouchableOpacity style={styles.iconBtn} hitSlop={8}>
-                <Iconify icon="solar:bell-linear" size={wScale(20)} color={Colors.textPrimary} />
+                <Iconify icon="solar:bell-linear" size={wScale(20)} color={colors.textPrimary} />
                 <View style={styles.badge} />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.avatar} hitSlop={8}>
-                {user?.photo
-                  ? <Image source={{ uri: user.photo }} style={styles.fill} />
-                  : (
-                    <View style={styles.avatarFallback}>
-                      <Text style={styles.avatarInitials}>{initials}</Text>
-                    </View>
-                  )
-                }
               </TouchableOpacity>
             </View>
           </View>
@@ -166,7 +194,6 @@ const HomeScreen = () => {
             title={homeData.hero.title}
             subtitle={homeData.hero.subtitle}
             imageSource={{ uri: homeData.hero.imageUrl }}
-            stats={homeData.hero.stats}
             onViewRoute={() => {}}
             onSave={() => {}}
           />
@@ -240,8 +267,6 @@ const HomeScreen = () => {
             ))}
           </ScrollView>
         </View>
-
-        <View style={styles.bottomSpacer} />
       </Animated.ScrollView>
     </View>
   );
@@ -251,10 +276,10 @@ export default HomeScreen;
 
 // ─── Stiller ──────────────────────────────────────────────────────────────────
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: AppColors) => StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: Colors.inputBackground,
+    backgroundColor: colors.background,
   },
   fill: {
     width: '100%',
@@ -268,88 +293,90 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     zIndex: 100,
-    backgroundColor: Colors.white,
+    backgroundColor: colors.white,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.stroke,
-    shadowColor: Colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.07,
-    shadowRadius: 8,
-    elevation: 8,
+    borderBottomColor: colors.stroke,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.10,
+    shadowRadius: 12,
+    elevation: 10,
   },
   compactInner: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: Layout.screenPaddingH,
-    paddingVertical: hScale(11),
-    gap: wScale(8),
+    paddingVertical: hScale(10),
   },
-  compactLocation: {
+
+  // Sol kolon: lokasyon satırı + selamlama satırı
+  compactLeft: {
+    flex: 1,
+    gap: hScale(3),
+    marginRight: wScale(10),
+  },
+  compactLocationRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: wScale(3),
   },
   compactCity: {
-    fontSize: wScale(12),
+    fontSize: wScale(11),
     fontFamily: Fonts.plusJakartaSansSemiBold,
-    color: Colors.textPrimary,
+    color: colors.textSecondary,
+    letterSpacing: 0.1,
   },
   compactGreeting: {
-    flex: 1,
-    fontSize: wScale(13),
+    fontSize: wScale(14),
     fontFamily: Fonts.plusJakartaSansRegular,
-    color: Colors.textSecondary,
-    textAlign: 'center',
+    color: colors.textPrimary,
   },
   compactName: {
-    fontFamily: Fonts.plusJakartaSansBold,
-    color: Colors.textPrimary,
+    fontFamily: Fonts.plusJakartaSansExtraBold,
+    color: colors.primary,
   },
-  compactActions: {
+
+  // Sağ kolon: hava + zil + avatar
+  compactRight: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: wScale(8),
   },
+  compactWeatherPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: wScale(4),
+    paddingHorizontal: wScale(9),
+    paddingVertical: hScale(5),
+    borderRadius: wScale(20),
+  },
+  compactWeatherText: {
+    fontSize: wScale(12),
+    fontFamily: Fonts.plusJakartaSansBold,
+    color: colors.warning,
+  },
   compactIconBtn: {
-    width: wScale(32),
-    height: wScale(32),
+    width: wScale(30),
+    height: wScale(30),
     alignItems: 'center',
     justifyContent: 'center',
   },
   compactBadge: {
     position: 'absolute',
-    top: hScale(5),
-    right: wScale(5),
+    top: hScale(4),
+    right: wScale(4),
     width: wScale(6),
     height: wScale(6),
     borderRadius: wScale(3),
-    backgroundColor: Colors.danger,
+    backgroundColor: colors.danger,
     borderWidth: 1,
-    borderColor: Colors.white,
-  },
-  compactAvatar: {
-    width: wScale(28),
-    height: wScale(28),
-    borderRadius: wScale(8),
-    overflow: 'hidden',
-    borderWidth: 1.5,
-    borderColor: Colors.primary,
-  },
-  compactAvatarFallback: {
-    flex: 1,
-    backgroundColor: Colors.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  compactAvatarInitials: {
-    fontSize: wScale(10),
-    fontFamily: Fonts.plusJakartaSansBold,
-    color: Colors.primary,
+    borderColor: colors.white,
   },
 
   // ── Full Header ─────────────────────────────────────────────────────────────
   fullHeader: {
-    backgroundColor: Colors.inputBackground,
+    backgroundColor: colors.inputBackground,
     paddingHorizontal: Layout.screenPaddingH,
     paddingTop: hScale(16),
     paddingBottom: hScale(24),
@@ -364,13 +391,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: wScale(5),
-    backgroundColor: Colors.white,
+    backgroundColor: colors.white,
     paddingHorizontal: wScale(12),
     paddingVertical: hScale(7),
     borderRadius: wScale(20),
     borderWidth: 1,
-    borderColor: Colors.stroke,
-    shadowColor: Colors.black,
+    borderColor: colors.stroke,
+    shadowColor: colors.black,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 3,
@@ -380,7 +407,7 @@ const styles = StyleSheet.create({
   locationText: {
     fontSize: wScale(13),
     fontFamily: Fonts.plusJakartaSansSemiBold,
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
     flexShrink: 1,
   },
   headerActions: {
@@ -391,13 +418,13 @@ const styles = StyleSheet.create({
   iconBtn: {
     width: wScale(42),
     height: wScale(42),
-    backgroundColor: Colors.white,
+    backgroundColor: colors.white,
     borderRadius: wScale(13),
     borderWidth: 1,
-    borderColor: Colors.stroke,
+    borderColor: colors.stroke,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: Colors.black,
+    shadowColor: colors.black,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 3,
@@ -410,40 +437,34 @@ const styles = StyleSheet.create({
     width: wScale(7),
     height: wScale(7),
     borderRadius: wScale(4),
-    backgroundColor: Colors.danger,
+    backgroundColor: colors.danger,
     borderWidth: 1.5,
-    borderColor: Colors.inputBackground,
+    borderColor: colors.white,
   },
-  avatar: {
-    width: wScale(42),
-    height: wScale(42),
-    borderRadius: wScale(13),
-    overflow: 'hidden',
-    borderWidth: 2,
-    borderColor: Colors.primary,
-  },
-  avatarFallback: {
-    flex: 1,
-    backgroundColor: Colors.primaryLight,
+  weatherChip: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: wScale(4),
+    paddingHorizontal: wScale(10),
+    paddingVertical: hScale(7),
+    borderRadius: wScale(20),
   },
-  avatarInitials: {
-    fontSize: wScale(14),
-    fontFamily: Fonts.plusJakartaSansBold,
-    color: Colors.primary,
+  weatherTemp: {
+    fontSize: wScale(13),
+    fontFamily: Fonts.plusJakartaSansSemiBold,
+    color: colors.textPrimary,
   },
   greetingLine: {
     fontSize: wScale(28),
     fontFamily: Fonts.plusJakartaSansRegular,
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
     lineHeight: hScale(36),
     letterSpacing: -0.3,
   },
   greetingName: {
     fontSize: wScale(28),
     fontFamily: Fonts.plusJakartaSansExtraBold,
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
     lineHeight: hScale(36),
     letterSpacing: -0.3,
     marginBottom: hScale(6),
@@ -451,18 +472,19 @@ const styles = StyleSheet.create({
   greetingSubtitle: {
     fontSize: wScale(14),
     fontFamily: Fonts.plusJakartaSansRegular,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     lineHeight: hScale(20),
   },
 
   // ── İçerik Bölümleri ────────────────────────────────────────────────────────
   heroSection: {
     paddingHorizontal: Layout.screenPaddingH,
-    marginBottom: hScale(16),
+    marginTop: hScale(20),
+    marginBottom: hScale(20),
   },
   quickActionsSection: {
     paddingHorizontal: Layout.screenPaddingH,
-    marginBottom: hScale(36),
+    marginBottom: hScale(28),
   },
   section: {
     marginBottom: hScale(32),
@@ -474,8 +496,5 @@ const styles = StyleSheet.create({
     paddingLeft: Layout.screenPaddingH,
     paddingRight: Layout.screenPaddingH,
     gap: wScale(12),
-  },
-  bottomSpacer: {
-    height: hScale(32),
   },
 });

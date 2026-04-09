@@ -2,7 +2,7 @@
   "tabs": {
     "home": "Ana Sayfa",
     "explore": "Keşfet",
-    "belen": "Keşfet",
+    "belen": "Keşif",
     "routes": "Rotalar",
     "profile": "Profil"
   },
@@ -11,6 +11,18 @@
     "greetingAfternoon": "İyi Günler",
     "greetingEvening": "İyi Akşamlar",
     "subtitle": "Bir sonraki macerana hazır mısın?"
+  },
+  "profile": {
+    "title": "Profil",
+    "settings": "Ayarlar",
+    "language": "Dil",
+    "languageSubtitle": "Tercih ettiğiniz dili seçin",
+    "theme": "Görünüm",
+    "themeSubtitle": "Açık ve koyu mod arasında geçiş yapın",
+    "light": "Açık",
+    "dark": "Koyu",
+    "en": "İngilizce",
+    "tr": "Türkçe"
   },
   "auth": {
     "welcomeBack": "Tekrar Hoş Geldiniz",
