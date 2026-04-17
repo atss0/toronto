@@ -1,22 +1,24 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import Colors from '../../styles/Colors';
+import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import Fonts from '../../styles/Fonts';
 import Input from '../../components/Input';
 import Button from '../../components/Button';
-import { useNavigation } from '@react-navigation/native';
-import { useTranslation } from 'react-i18next';
 import { wScale, hScale } from '../../styles/Scaler';
 import ScreenWrapper from '../../components/ScreenWrapper';
 import AuthHeader from '../../components/AuthHeader';
 import AuthDivider from '../../components/AuthDivider';
 import SocialLogins from '../../components/SocialLogins';
+import { useColors } from '../../context/ThemeContext';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const navigation = useNavigation();
   const { t } = useTranslation();
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors.primary, colors.textSecondary), [colors]);
 
   const handleLogin = () => {
     console.log('Giriş yapılıyor...', { email, password });
@@ -39,7 +41,6 @@ export default function LoginScreen() {
           onChangeText={setEmail}
         />
 
-        {/* Şifre + Şifremi Unuttum satırı */}
         <View>
           <Input
             label={t('auth.passwordLabel')}
@@ -79,7 +80,7 @@ export default function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (primary: string, textSecondary: string) => StyleSheet.create({
   formContainer: {
     gap: hScale(4),
   },
@@ -91,7 +92,7 @@ const styles = StyleSheet.create({
     marginBottom: hScale(20),
   },
   forgotPasswordText: {
-    color: Colors.primary,
+    color: primary,
     fontSize: wScale(13),
     fontFamily: Fonts.plusJakartaSansSemiBold,
   },
@@ -107,12 +108,12 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: wScale(14),
-    color: Colors.textSecondary,
+    color: textSecondary,
     fontFamily: Fonts.plusJakartaSansRegular,
   },
   signUpText: {
     fontSize: wScale(14),
-    color: Colors.primary,
+    color: primary,
     fontFamily: Fonts.plusJakartaSansBold,
   },
 });

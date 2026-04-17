@@ -2,7 +2,7 @@
   "tabs": {
     "home": "Home",
     "explore": "Explore",
-    "belen": "Discover",
+    "belen": "Assistant",
     "routes": "Routes",
     "profile": "Profile"
   },
@@ -12,10 +12,62 @@
     "greetingEvening": "Good Evening",
     "subtitle": "Ready for your next adventure?"
   },
+  "home": {
+    "nearbyGems": "Nearby Gems",
+    "ongoingJourney": "Ongoing Journey",
+    "trendingToday": "Trending Today"
+  },
+  "explore": {
+    "eyebrow": "DISCOVER",
+    "title": "New Adventures",
+    "searchPlaceholder": "Search places, restaurants...",
+    "trendingNearYou": "Trending Near You",
+    "allResults": "All Results",
+    "placesFound": "{{count}} places found",
+    "placesOnMap": "{{count}} places on map",
+    "listView": "List View",
+    "mapView": "Map View",
+    "noResults": "No results found",
+    "noResultsSub": "Try a different filter or search term"
+  },
+  "routes": {
+    "title": "My Routes",
+    "subtitle": "Plan and manage your trips",
+    "todaysPlan": "Today's Plan",
+    "savedRoutes": "Saved Routes",
+    "seeAll": "SEE ALL",
+    "continue": "Continue",
+    "details": "Details",
+    "createNew": "Create New Route",
+    "stopsLeft": "stops left",
+    "stops": "STOPS"
+  },
+  "assistant": {
+    "title": "Travel Assistant",
+    "placeholder": "Ask me anything..."
+  },
   "profile": {
     "title": "Profile",
-    "settings": "Settings",
+    "traveler": "Traveler",
+    "editProfile": "Edit Profile",
+    "accountSettings": "Account Settings",
+    "travelPreferences": "Travel Preferences",
+    "support": "Support",
     "language": "Language",
+    "currency": "Currency",
+    "notifications": "Notifications",
+    "locationAccess": "Location Access",
+    "interests": "Interests",
+    "budgetLevel": "Budget Level",
+    "travelStyle": "Travel Style",
+    "helpCenter": "Help Center",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
+    "logout": "Logout",
+    "version": "Toronto 1.0.0 (2025)",
+    "premiumTitle": "Premium Member",
+    "upgradeBtn": "Upgrade to Premium",
+    "settings": "Settings",
     "languageSubtitle": "Choose your preferred language",
     "theme": "Appearance",
     "themeSubtitle": "Switch between light and dark mode",

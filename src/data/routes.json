@@ -1,0 +1,43 @@
+{
+  "todaysPlan": {
+    "id": "tp1",
+    "name": "Old City Explorer",
+    "stopsLeft": 3,
+    "totalStops": 7,
+    "duration": "2h 30m",
+    "isActive": true,
+    "mapImageUrl": "https://images.unsplash.com/photo-1524661135-423995f22d0b?w=600&q=80&fit=crop"
+  },
+  "savedRoutes": [
+    {
+      "id": "s1",
+      "name": "Bosphorus Highlights",
+      "date": "15 OCT",
+      "stops": 8,
+      "duration": "3H 45M",
+      "isCompleted": false,
+      "imageUrl": "https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=300&q=80&fit=crop",
+      "placeholderColor": "#0F3460"
+    },
+    {
+      "id": "s2",
+      "name": "Modern Art Trail",
+      "date": "12 OCT",
+      "stops": 6,
+      "duration": "3H 20M",
+      "isCompleted": true,
+      "imageUrl": "https://images.unsplash.com/photo-1518998053901-5348d3961a04?w=300&q=80&fit=crop",
+      "placeholderColor": "#312E81"
+    },
+    {
+      "id": "s3",
+      "name": "Street Food Journey",
+      "date": "08 OCT",
+      "stops": 5,
+      "duration": "2H 10M",
+      "isCompleted": true,
+      "imageUrl": "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=300&q=80&fit=crop",
+      "placeholderColor": "#78350F"
+    }
+  ]
+}

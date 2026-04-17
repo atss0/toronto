@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
-import Colors from '../../styles/Colors';
 import Fonts from '../../styles/Fonts';
 import Input from '../../components/Input';
 import Button from '../../components/Button';
@@ -11,6 +10,7 @@ import AuthDivider from '../../components/AuthDivider';
 import SocialLogins from '../../components/SocialLogins';
 import { hScale, wScale } from '../../styles/Scaler';
 import ScreenWrapper from '../../components/ScreenWrapper';
+import { useColors } from '../../context/ThemeContext';
 
 export default function RegisterScreen() {
   const [fullName, setFullName] = useState('');
@@ -19,6 +19,8 @@ export default function RegisterScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const navigation = useNavigation();
   const { t } = useTranslation();
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors.primary, colors.textSecondary), [colors]);
 
   const handleRegister = () => {
     if (password !== confirmPassword) {
@@ -88,7 +90,7 @@ export default function RegisterScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (primary: string, textSecondary: string) => StyleSheet.create({
   formContainer: {
     gap: hScale(4),
   },
@@ -107,12 +109,12 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: wScale(14),
-    color: Colors.textSecondary,
+    color: textSecondary,
     fontFamily: Fonts.plusJakartaSansRegular,
   },
   loginText: {
     fontSize: wScale(14),
-    color: Colors.primary,
+    color: primary,
     fontFamily: Fonts.plusJakartaSansBold,
   },
 });

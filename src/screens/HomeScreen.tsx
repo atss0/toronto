@@ -6,7 +6,6 @@ import {
   StyleSheet,
   Animated,
   TouchableOpacity,
-  Image,
   LayoutChangeEvent,
   StatusBar,
 } from 'react-native';
@@ -142,7 +141,6 @@ const HomeScreen = () => {
             </View>
             <TouchableOpacity style={styles.compactIconBtn} hitSlop={8}>
               <Iconify icon="solar:bell-linear" size={wScale(17)} color={colors.textPrimary} />
-              <View style={styles.compactBadge} />
             </TouchableOpacity>
           </Animated.View>
 
@@ -174,7 +172,6 @@ const HomeScreen = () => {
               </View>
               <TouchableOpacity style={styles.iconBtn} hitSlop={8}>
                 <Iconify icon="solar:bell-linear" size={wScale(20)} color={colors.textPrimary} />
-                <View style={styles.badge} />
               </TouchableOpacity>
             </View>
           </View>
@@ -205,7 +202,7 @@ const HomeScreen = () => {
 
         {/* Nearby Gems */}
         <View style={styles.section}>
-          <SectionHeader title="Nearby Gems" onPressSeeAll={() => {}} />
+          <SectionHeader title={t('home.nearbyGems')} onPressSeeAll={() => {}} />
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -228,7 +225,7 @@ const HomeScreen = () => {
 
         {/* Ongoing Journey */}
         <View style={styles.section}>
-          <SectionHeader title="Ongoing Journey" showSeeAll={false} />
+          <SectionHeader title={t('home.ongoingJourney')} showSeeAll={false} />
           <View style={styles.padH}>
             <OngoingJourneyCard
               title={homeData.ongoingJourney.title}
@@ -246,7 +243,7 @@ const HomeScreen = () => {
 
         {/* Trending Today */}
         <View style={styles.section}>
-          <SectionHeader title="Trending Today" onPressSeeAll={() => {}} />
+          <SectionHeader title={t('home.trendingToday')} onPressSeeAll={() => {}} />
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -281,11 +278,6 @@ const makeStyles = (colors: AppColors) => StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  fill: {
-    width: '100%',
-    height: '100%',
-  },
-
   // ── Compact Header ──────────────────────────────────────────────────────────
   compactHeader: {
     position: 'absolute',
@@ -362,18 +354,6 @@ const makeStyles = (colors: AppColors) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  compactBadge: {
-    position: 'absolute',
-    top: hScale(4),
-    right: wScale(4),
-    width: wScale(6),
-    height: wScale(6),
-    borderRadius: wScale(3),
-    backgroundColor: colors.danger,
-    borderWidth: 1,
-    borderColor: colors.white,
-  },
-
   // ── Full Header ─────────────────────────────────────────────────────────────
   fullHeader: {
     backgroundColor: colors.inputBackground,
@@ -429,17 +409,6 @@ const makeStyles = (colors: AppColors) => StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 3,
     elevation: 1,
-  },
-  badge: {
-    position: 'absolute',
-    top: hScale(9),
-    right: wScale(10),
-    width: wScale(7),
-    height: wScale(7),
-    borderRadius: wScale(4),
-    backgroundColor: colors.danger,
-    borderWidth: 1.5,
-    borderColor: colors.white,
   },
   weatherChip: {
     flexDirection: 'row',

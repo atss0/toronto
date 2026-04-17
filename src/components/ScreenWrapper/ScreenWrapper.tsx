@@ -9,17 +9,14 @@ import {
   ViewStyle,
   StyleProp,
 } from 'react-native';
-import Colors from '../../styles/Colors';
+import { useColors } from '../../context/ThemeContext';
 import Layout from '../../styles/Layout';
 
 interface ScreenWrapperProps {
   children: React.ReactNode;
-  /** true geçilirse ScrollView içine alır, varsayılan false */
   scrollable?: boolean;
-  /** Klavye açıldığında içeriği yukarı kaydırır, varsayılan true */
   keyboardAvoiding?: boolean;
   backgroundColor?: string;
-  /** Ek stil — paddingHorizontal override edilebilir */
   style?: StyleProp<ViewStyle>;
   contentContainerStyle?: StyleProp<ViewStyle>;
   statusBarStyle?: 'dark-content' | 'light-content';
@@ -29,11 +26,15 @@ const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
   children,
   scrollable = false,
   keyboardAvoiding = true,
-  backgroundColor = Colors.inputBackground,
+  backgroundColor,
   style,
   contentContainerStyle,
-  statusBarStyle = 'dark-content',
+  statusBarStyle,
 }) => {
+  const colors = useColors();
+  const bg = backgroundColor ?? colors.inputBackground;
+  const barStyle = statusBarStyle ?? (colors.background === '#0F172A' ? 'light-content' : 'dark-content');
+
   const inner = scrollable ? (
     <ScrollView
       style={styles.scroll}
@@ -50,10 +51,10 @@ const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
   );
 
   return (
-    <View style={[styles.root, { backgroundColor }]}>
+    <View style={[styles.root, { backgroundColor: bg }]}>
       <StatusBar
-        barStyle={statusBarStyle}
-        backgroundColor={backgroundColor}
+        barStyle={barStyle}
+        backgroundColor={bg}
         translucent={false}
       />
       {keyboardAvoiding ? (

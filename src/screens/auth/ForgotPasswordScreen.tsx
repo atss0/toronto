@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -9,17 +9,19 @@ import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { Iconify } from 'react-native-iconify';
 
-import Colors from '../../styles/Colors';
 import Fonts from '../../styles/Fonts';
 import { wScale, hScale } from '../../styles/Scaler';
 import ScreenWrapper from '../../components/ScreenWrapper';
 import Input from '../../components/Input';
 import Button from '../../components/Button';
+import { useColors } from '../../context/ThemeContext';
 
 export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState('');
   const navigation = useNavigation();
   const { t } = useTranslation();
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const handleSendReset = () => {
     console.log('Reset link gönderiliyor...', { email });
@@ -36,18 +38,18 @@ export default function ForgotPasswordScreen() {
         <Iconify
           icon="solar:arrow-left-linear"
           size={wScale(20)}
-          color={Colors.textPrimary}
+          color={colors.textPrimary}
         />
       </TouchableOpacity>
 
       {/* İkon Alanı */}
       <View style={styles.iconArea}>
-        <View style={styles.iconOuterCircle}>
-          <View style={styles.iconInnerCircle}>
+        <View style={[styles.iconOuterCircle, { backgroundColor: `${colors.primary}1A` }]}>
+          <View style={[styles.iconInnerCircle, { backgroundColor: `${colors.primary}33` }]}>
             <Iconify
               icon="mdi:lock-reset"
               size={wScale(36)}
-              color={Colors.primary}
+              color={colors.primary}
             />
           </View>
         </View>
@@ -70,7 +72,7 @@ export default function ForgotPasswordScreen() {
             <Iconify
               icon="solar:letter-linear"
               size={wScale(18)}
-              color={Colors.textSecondary}
+              color={colors.textSecondary}
             />
           }
         />
@@ -85,7 +87,7 @@ export default function ForgotPasswordScreen() {
             <Iconify
               icon="solar:arrow-right-linear"
               size={wScale(18)}
-              color={Colors.white}
+              color={colors.white}
             />
           }
         />
@@ -94,20 +96,20 @@ export default function ForgotPasswordScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: ReturnType<typeof useColors>) => StyleSheet.create({
   backButton: {
     width: wScale(44),
     height: wScale(44),
     borderRadius: wScale(12),
     borderWidth: 1.5,
-    borderColor: Colors.stroke,
+    borderColor: colors.stroke,
     borderStyle: 'dashed',
-    backgroundColor: Colors.white,
+    backgroundColor: colors.white,
     alignItems: 'center',
     justifyContent: 'center',
     alignSelf: 'flex-start',
     marginBottom: hScale(48),
-    shadowColor: Colors.black,
+    shadowColor: colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 4,
@@ -121,7 +123,6 @@ const styles = StyleSheet.create({
     width: wScale(110),
     height: wScale(110),
     borderRadius: wScale(55),
-    backgroundColor: `${Colors.primary}1A`,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -129,21 +130,20 @@ const styles = StyleSheet.create({
     width: wScale(72),
     height: wScale(72),
     borderRadius: wScale(36),
-    backgroundColor: `${Colors.primary}33`,
     alignItems: 'center',
     justifyContent: 'center',
   },
   title: {
     fontSize: wScale(26),
     fontFamily: Fonts.plusJakartaSansExtraBold,
-    color: Colors.textPrimary,
+    color: colors.textPrimary,
     textAlign: 'center',
     marginBottom: hScale(12),
   },
   subtitle: {
     fontSize: wScale(14),
     fontFamily: Fonts.plusJakartaSansRegular,
-    color: Colors.textSecondary,
+    color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: hScale(22),
     paddingHorizontal: wScale(8),

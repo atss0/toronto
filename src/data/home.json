@@ -13,45 +13,45 @@
   "nearbyGems": [
     {
       "id": "1",
-      "name": "Senso-ji Temple",
-      "category": "Temple",
-      "distance": "1.2 km",
-      "rating": 4.7,
-      "imageUrl": "https://images.unsplash.com/photo-1545569341-9eb8b30979d9?w=400&q=80&fit=crop",
-      "placeholderColor": "#78350F"
+      "name": "Hagia Sophia",
+      "category": "Museum",
+      "distance": "0.8 km",
+      "rating": 4.9,
+      "imageUrl": "https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=400&q=80&fit=crop",
+      "placeholderColor": "#1C1917"
     },
     {
       "id": "2",
-      "name": "Shibuya Crossing",
-      "category": "Landmark",
-      "distance": "2.4 km",
+      "name": "Grand Bazaar",
+      "category": "Shopping",
+      "distance": "1.2 km",
       "rating": 4.5,
-      "imageUrl": "https://images.unsplash.com/photo-1542051841857-5f90071e7989?w=400&q=80&fit=crop",
-      "placeholderColor": "#1E3A5F"
+      "imageUrl": "https://images.unsplash.com/photo-1519822472072-ec86d5ab6f5c?w=400&q=80&fit=crop",
+      "placeholderColor": "#312E81"
     },
     {
       "id": "3",
-      "name": "Tokyo Tower",
-      "category": "Attraction",
-      "distance": "3.1 km",
-      "rating": 4.8,
-      "imageUrl": "https://images.unsplash.com/photo-1536098561742-ca998e48cbcc?w=400&q=80&fit=crop",
-      "placeholderColor": "#7F1D1D"
+      "name": "Galata Tower",
+      "category": "Landmark",
+      "distance": "2.1 km",
+      "rating": 4.7,
+      "imageUrl": "https://images.unsplash.com/photo-1527838832700-5059252407fa?w=400&q=80&fit=crop",
+      "placeholderColor": "#451A03"
     },
     {
       "id": "4",
-      "name": "Meiji Shrine",
-      "category": "Shrine",
-      "distance": "4.0 km",
-      "rating": 4.6,
-      "imageUrl": "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400&q=80&fit=crop",
+      "name": "Topkapi Palace",
+      "category": "Historic",
+      "distance": "1.5 km",
+      "rating": 4.8,
+      "imageUrl": "https://images.unsplash.com/photo-1564507592333-c60657eea523?w=400&q=80&fit=crop",
       "placeholderColor": "#14532D"
     }
   ],
   "ongoingJourney": {
     "id": "oj1",
-    "title": "Asakusa Discovery",
-    "description": "Historic neighborhood walking tour",
+    "title": "Sultanahmet Discovery",
+    "description": "Historic peninsula walking tour",
     "totalStops": 5,
     "remaining": 3,
     "duration": "45 mins",

@@ -2,7 +2,7 @@
   "tabs": {
     "home": "Ana Sayfa",
     "explore": "Keşfet",
-    "belen": "Keşif",
+    "belen": "Asistan",
     "routes": "Rotalar",
     "profile": "Profil"
   },
@@ -12,10 +12,62 @@
     "greetingEvening": "İyi Akşamlar",
     "subtitle": "Bir sonraki macerana hazır mısın?"
   },
+  "home": {
+    "nearbyGems": "Yakındaki Yerler",
+    "ongoingJourney": "Devam Eden Yolculuk",
+    "trendingToday": "Bugün Trend"
+  },
+  "explore": {
+    "eyebrow": "KEŞFET",
+    "title": "Yeni Maceralar",
+    "searchPlaceholder": "Yer, restoran ara...",
+    "trendingNearYou": "Yakınında Trend",
+    "allResults": "Tüm Sonuçlar",
+    "placesFound": "{{count}} yer bulundu",
+    "placesOnMap": "Haritada {{count}} yer",
+    "listView": "Liste Görünümü",
+    "mapView": "Harita Görünümü",
+    "noResults": "Sonuç bulunamadı",
+    "noResultsSub": "Farklı bir filtre veya arama terimi deneyin"
+  },
+  "routes": {
+    "title": "Rotalarım",
+    "subtitle": "Seyahatlerini planla ve yönet",
+    "todaysPlan": "Bugünün Planı",
+    "savedRoutes": "Kayıtlı Rotalar",
+    "seeAll": "TÜMÜ",
+    "continue": "Devam Et",
+    "details": "Detaylar",
+    "createNew": "Yeni Rota Oluştur",
+    "stopsLeft": "durak kaldı",
+    "stops": "DURAK"
+  },
+  "assistant": {
+    "title": "Seyahat Asistanı",
+    "placeholder": "Her şeyi sorabilirsin..."
+  },
   "profile": {
     "title": "Profil",
-    "settings": "Ayarlar",
+    "traveler": "Gezgin",
+    "editProfile": "Profili Düzenle",
+    "accountSettings": "Hesap Ayarları",
+    "travelPreferences": "Seyahat Tercihleri",
+    "support": "Destek",
     "language": "Dil",
+    "currency": "Para Birimi",
+    "notifications": "Bildirimler",
+    "locationAccess": "Konum Erişimi",
+    "interests": "İlgi Alanları",
+    "budgetLevel": "Bütçe Seviyesi",
+    "travelStyle": "Seyahat Tarzı",
+    "helpCenter": "Yardım Merkezi",
+    "privacyPolicy": "Gizlilik Politikası",
+    "termsOfService": "Kullanım Koşulları",
+    "logout": "Çıkış Yap",
+    "version": "Toronto 1.0.0 (2025)",
+    "premiumTitle": "Premium Üye",
+    "upgradeBtn": "Premium'a Geç",
+    "settings": "Ayarlar",
     "languageSubtitle": "Tercih ettiğiniz dili seçin",
     "theme": "Görünüm",
     "themeSubtitle": "Açık ve koyu mod arasında geçiş yapın",
