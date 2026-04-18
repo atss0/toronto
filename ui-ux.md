@@ -1,175 +1,156 @@
 # 🎨 Toronto — UI/UX Hata ve İyileştirme Raporu
 
-> Proje genelinde tüm ekranlar ve componentler detaylı incelenerek UI/UX açısından sorunlu ve düzgün olmayan noktalar listelenmiştir.
+> Son güncelleme: 2026-04-18 — 41 ekran ve tüm componentler detaylı incelendi.
+
+---
+
+## 🔴 KRİTİK — Auth Navigasyonu Hâlâ Ters
+
+### 1. `App.tsx:43-47` — Token Mantığı Ters
+```tsx
+{!screenState.token ? (
+  <RootStackNavigator ... />  // token YOK → Ana sayfa gösteriliyor
+) : (
+  <AuthStackNavigator />      // token VAR → Login gösteriliyor
+)}
+```
+Token **varsa** ana ekranlar, **yoksa** auth gösterilmeli. Şu an tam tersine çalışıyor — giriş yapmış kullanıcı login sayfasına, giriş yapmamış kullanıcı ana sayfaya düşer.
 
 ---
 
 ## 🔴 KRİTİK — Dark Mode Sorunları
 
-### 1. Auth Ekranları Dark Mode'u Desteklemiyor
-**Dosyalar:** `LoginScreen.tsx`, `RegisterScreen.tsx`, `ForgotPasswordScreen.tsx`
-
-Bu 3 ekran `Colors.ts` (sadece light renkler) kullanıyor, `useColors()` hook'unu kullanmıyor. Dark modda:
-- Arka plan beyaz kalır → göz yakar
-- Metin renkleri değişmez → okunmaz olur
-- Input alanları dark arka plan üzerinde beyaz kalır
-
-### 2. 6 Component Dark Mode Desteklemiyor
-Aşağıdaki componentler `Colors.ts` import edip sabit renkler kullanıyor:
-
-| Component | Sorun |
-|-----------|-------|
-| `Header/Header.tsx` | Tüm renkler sabit — dark modda beyaz üstüne beyaz |
-| `SearchBar/SearchBar.tsx` | Input ve container renkleri değişmiyor |
-| `FilterChips/FilterChips.tsx` | Chip renkleri sabit `Colors.white` |
-| `PlaceListItem/PlaceListItem.tsx` | Kart arka planı, metin renkleri sabit |
-| `Input/Input.tsx` | `placeholderTextColor` sabit |
-| `Button/Button.tsx` | `indicatorColor` sabit `Colors.white` |
-
-### 3. `ScreenWrapper.tsx` Dark Mode Bozmaz Ama Zorlayıcı
+### 2. `SplashScreen.tsx` — Dark Mode Desteği Yok
 ```tsx
-backgroundColor = Colors.inputBackground  // Varsayılan hardcoded light renk
-statusBarStyle = 'dark-content'           // Her zaman dark-content
+const styles = StyleSheet.create({
+  root: { backgroundColor: '#3182ED', ... },
+  appName: { color: '#FFFFFF', ... },
+});
 ```
-Auth ekranları bu wrapper'ı kullanıyor. Dark modda StatusBar `dark-content` kalır → koyu arka plan üzerinde koyu status bar ikonları görünmez.
+`useColors()` hook'u kullanılmıyor. Sabit `StyleSheet.create` — dark modda arka plan değişmiyor. `makeStyles(colors)` pattern'i kullanılmalı.
+
+### 3. `OnboardingScreen.tsx:79` — StatusBar Dark Modda Yanlış
+```tsx
+<StatusBar barStyle="dark-content" backgroundColor={colors.background} />
+```
+Dark modda `dark-content` → koyu arka plan üzerinde koyu status bar ikonları görünmez. `currentTheme` kontrol edilerek `'light-content'` kullanılmalı ancak `currentTheme` import bile edilmemiş.
+
+### 4. 18 Ekranda Hardcoded `'#FFFFFF'` Kullanımı
+Aşağıdaki ekranlarda `'#FFFFFF'` sabit renk kullanılıyor. Dark modda `colors.white` aslında `'#1E293B'`'dir — hardcoded `'#FFFFFF'` dark modda beklenmeyen beyaz noktalar oluşturur:
+
+| Ekran | Kullanım Yeri |
+|-------|--------------|
+| `OnboardingScreen` | Next buton text, ikon rengi |
+| `SplashScreen` | Tüm renkler sabit |
+| `PlaceDetailScreen` | Hero overlay metinleri, back/save buton ikonları |
+| `RouteDetailScreen` | Active badge, stop tag, nav buton text |
+| `NavigationScreen` | Instruction text, user dot border, step ikonları |
+| `MapFullScreen` | Road line renkleri |
+| `WeatherDetailScreen` | Hero metinleri, hourly card active renkleri |
+| `ReviewsScreen` | Submit buton text |
+| `FilterScreen` | Active chip text |
+| `BookmarksSavedScreen` | Active tab text |
+| `ChangePasswordScreen` | Save buton text |
+| `PremiumUpgradeScreen` | Tüm hero/CTA buton metinleri |
+| `ExploreScreen` | Overlay metinleri, active chip |
+| `RoutesScreen` | Badge, CTA buton metinleri |
+| `ProfileScreen` | Premium card, logout |
+| `BelenScreen` | AI mesaj bubble, send buton |
+| `CreateRouteScreen` | Create buton text |
+| `EditProfileScreen` | Save buton text |
+
+> **Not:** Bazı kullanımlar doğrudur (örn. primary renkli buton üzerindeki beyaz text). Ama kart arka planlarındaki `'#FFFFFF'` dark modda `colors.white` olmalıdır.
+
+### 5. 11 Ekranda Hardcoded `'#F59E0B'` Star Rengi
+Yıldız rengi `'#F59E0B'` dark modda sorun oluşturmaz (sarı her zaman görünür), ama theme'de `colors.warning` olarak tanımlı — tutarlılık için `colors.warning` kullanılmalı:
+
+`WeatherDetailScreen`, `SearchResultsScreen`, `ReviewsScreen`, `ProfileScreen`, `PremiumUpgradeScreen`, `PlaceDetailScreen`, `MapFullScreen`, `ExploreScreen`, `BookmarksSavedScreen`, `SeeAllScreen`, `TripHistoryScreen`
 
 ---
 
 ## 🟡 Erişilebilirlik (Accessibility) Sorunları
 
-### 4. Dokunma Alanlarının Çoğu Çok Küçük
-Apple yönergeleri minimum **44×44 pt**, Android ise **48×48 dp** tıklama alanı öneriyor.
+### 6. Hiçbir Ekranda Accessibility Label Yok
+41 ekranın **hiçbirinde** `accessibilityLabel`, `accessibilityRole` veya `accessibilityHint` kullanılmıyor. `TabBar.tsx`'de doğru yapılmış (`accessibilityRole="button"`) ama ekranlar bu pattern'i takip etmiyor.
 
-| Dosya | Element | Mevcut Boyut | Gerekli |
-|-------|---------|-------------|---------|
-| `HomeScreen.tsx:143` | Compact header bell butonu | 30×30 | 44×44 |
-| `ExploreScreen.tsx:253-283` | Harita zoom butonları | 32×32 | 44×44 |
-| `BelenScreen.tsx:508` | Header back/settings butonları | 36×36 | 44×44 |
-| `ProfileScreen.tsx:270` | Camera butonu | 26×26 | 44×44 |
+Özellikle kritik alanlar:
+- Geri butonları (tüm stack ekranlar)
+- Form input'ları (ChangePassword, EditProfile, CreateRoute, SearchResults, CityPicker)
+- İşlem butonları (Submit Review, Apply Filters, Update Password, Start Navigation)
+- Bookmark/Like/Share butonları
 
-`hitSlop={8}` bazı yerlerde kullanılmış ama tutarsız — bazı butonlarda var, bazılarında yok.
+### 7. Dokunma Alanları Tutarsız
+Apple 44×44, Android 48×48 minimum önerirken:
 
-### 5. Accessibility Label Eksiklikleri
-- `HomeScreen` — Hiçbir buton/kart `accessibilityLabel` veya `accessibilityRole` içermiyor.
-- `ExploreScreen` — Harita pin'lerinde, zoom butonlarında, filtre butonlarında accessibility yok.
-- `BelenScreen` — Chat mesajları, suggestion chip'leri, send butonu — accessibility yok.
-- `RoutesScreen` — Date strip, plan card, action butonları — accessibility yok.
-- `ProfileScreen` — Setting satırlarında accessibility yok.
+| Element | Boyut | Ekran |
+|---------|-------|-------|
+| Back butonları (çoğu ekran) | `36×36` | ❌ Küçük |
+| HomeScreen compact header bell | `30×30` | ❌ Çok küçük |
+| ExploreScreen zoom butonları | `32×32` | ❌ Küçük |
+| BookmarksSavedScreen remove butonu | hitSlop=8 sadece | ⚠️ Yetersiz |
+| OfflineRoutesScreen delete butonu | hitSlop=8 sadece | ⚠️ Yetersiz |
 
-`TabBar.tsx` doğru yapıyor (`accessibilityRole="button"`, `accessibilityState`) — diğer componentler de böyle olmalı.
+`hitSlop` bazı yerlerde kullanılmış ama tutarsız.
 
-### 6. Renk Kontrastı Yetersiz Olan Metinler
-- `GemCard.tsx:138` — `rgba(255,255,255,0.85)` rating text: Resim üzerinde okunabilirlik güvensiz.
-- `TrendingCard.tsx:181` — `rgba(255,255,255,0.65)` review text: Çok soluk, kontrast oranı düşük.
-- `HeroCard.tsx:139` — `rgba(255,255,255,0.65)` subtitle: Aynı sorun.
-- `OngoingJourneyCard.tsx:58` — "Route Map" mini label: Çok küçük (`10px`), mapBackground üstünde zor okunur.
-
-### 7. Resim İçerikli Kartlarda Scrim Tutarsızlığı
-- `GemCard` — `rgba(10,20,40,0.72)` bottomOverlay, karanlık ama sabit.
-- `TrendingCard` — `rgba(10,20,40,0.45)` overlay, daha açık.
-- `HeroCard` — `rgba(10,18,35,0.18)` + `rgba(10,18,35,0.72)` iki katman.
-
-Her kartta farklı scrim opacity'si var — tutarlı bir gradient overlay yaklaşımı kullanılmalı.
+### 8. Renk Kontrastı Düşük Metinler
+- `WeatherDetailScreen:120` — `rgba(255,255,255,0.65)` hi/low metin: Primary arka plan üzerinde soluk
+- `WeatherDetailScreen:119` — `rgba(255,255,255,0.8)` condition: Sınırda kontrast
+- `NavigationScreen:172` — `rgba(255,255,255,0.75)` distance text: Primary kart içinde soluk
+- `HeroCard` — `rgba(255,255,255,0.65)` subtitle: Resim üzerinde okunabilirlik güvensiz
+- `TrendingCard` — `rgba(255,255,255,0.65)` review text: Çok düşük kontrast
 
 ---
 
 ## 🟠 Görsel Tutarsızlıklar
 
-### 8. Kart Boyutları ve Yükseklikleri Tutarsız
+### 9. Border Radius Sistemi Yok
+Projede 10+ farklı radius değeri var, design token sistemi kullanılmamış:
+
+| Değer | Kullanan | Önerilen Token |
+|-------|----------|---------------|
+| `12` | Input, bazı butonlar, SearchBox | `borderRadius.sm` |
+| `14` | StopCard, HourCard, InputRow, FilterChip | `borderRadius.md` |
+| `16` | Card, metaPill, ReviewCard, navBtn | `borderRadius.lg` |
+| `18` | SummaryCard, GemCard, OnboardingBtn, StatsRow | `borderRadius.xl` |
+| `20` | Tag pill, PlanCard, RouteCard | `borderRadius.pill` |
+| `24` | Button component, panel topRadius | `borderRadius.2xl` |
+
+### 10. Gölge (Shadow/Elevation) Sistemi Yok
+12+ farklı `shadowOpacity` ve 8+ farklı `elevation` kombinasyonu:
+- `OnboardingScreen` → `shadowOpacity: 0.3, elevation: 4`
+- `MapFullScreen topBtn` → `shadowOpacity: 0.12, elevation: 4`
+- `NavigationScreen panel` → `shadowOpacity: 0.08, elevation: 8`
+- `WeatherDetailScreen hourCard` → Shadow yok
+- `PlaceDetailScreen backBtn` → Shadow yok (sadece backgroundColor)
+
+### 11. Header Padding Tutarsızlığı
+Tüm yeni stack ekranlar aynı header pattern'i kullanıyor ama padding değerleri farklı:
+- Stack ekranlar header: `paddingTop: hScale(16)` — ✅ Tutarlı
+- `HomeScreen` full header: `paddingTop: hScale(16)` — ✅ Tutarlı
+- `PlaceDetailScreen` hero back buton: `top: hScale(52)` — Farklı (StatusBar alanı dahil)
+- `MapFullScreen` topBar: `top: hScale(48)` — Farklı
+- `NavigationScreen` closeBtn: `top: hScale(50)` — Farklı
+
+Bu 3 ekran translucent StatusBar kullandığından farklı olması istenen bir durum olabilir ama 48/50/52 yerine tek bir sabit olmalı.
+
+### 12. Kart Boyutları ve Yükseklikleri Tutarsız
 | Component | Genişlik | Yükseklik |
 |-----------|----------|-----------|
 | `GemCard` | `148` | `200` |
-| `TrendingCard` (HomeScreen) | `180` | `150` |
-| `TrendingNearCard` (ExploreScreen) | `160` | `170` |
+| `TrendingCard` (Home) | `180` | `150` |
+| `TrendingNearCard` (Explore) | `160` | `170` |
 
-Aynı horizontal scroll'da farklı boyutlarda kartlar var. Tutarlı bir boyut sistemi olmalı.
-
-### 9. Border Radius Tutarsızlığı
-| Element | Radius |
-|---------|--------|
-| `GemCard` | `18` |
-| `TrendingCard` | `18` |
-| `HeroCard` | `22` |
-| `OngoingJourneyCard` | `20` |
-| `PlanCard` (RoutesScreen) | `20` |
-| `BelenScreen` route card | `16` |
-| `Button` | `24` (pill) |
-| `LocationChip` | `20` (pill) |
-| `Tab Bar special button` | `25` (circle) |
-| `ProfileScreen statsCard` | `18` |
-
-5 farklı radius kullanılmış. Bir design token sistemi (`borderRadius.sm/md/lg/xl`) olmalı.
-
-### 10. Gölge (Shadow) Tutarsızlığı
-Her componette farklı shadow değerleri var:
-- `shadowOpacity`: 0.05, 0.06, 0.07, 0.08, 0.10, 0.12, 0.18, 0.25, 0.30, 0.35, 0.40
-- `shadowRadius`: 3, 4, 6, 8, 10, 12, 14
-- `elevation`: 1, 2, 3, 4, 6, 8, 10, 16
-
-Standart bir elevation sistemi (`shadow.xs/sm/md/lg/xl`) tanımlanmalı.
-
-### 11. Padding/Margin Tutarsızlığı
-Section aralarında farklı spacing değerleri:
-- `HomeScreen.heroSection`: `marginTop: hScale(20)`, `marginBottom: hScale(20)`
-- `HomeScreen.section`: `marginBottom: hScale(32)`
-- `ExploreScreen.section`: `marginBottom: hScale(28)`
-- `RoutesScreen.section`: `marginTop: hScale(24)`
-- `ProfileScreen.statsCard`: `marginTop: hScale(20)`, `marginBottom: hScale(16)`
-
-Bir spacing sistemi (`spacing.xs/sm/md/lg/xl`) tanımlanmalı.
-
-### 12. Hardcoded `'#FFFFFF'` ve `'#F59E0B'` Renk Değerleri
-Theme sistemi var ama birçok yerde renkler hardcoded:
-- `TabBar.tsx:95` — `color='#FFFFFF'` special tab ikonu
-- `GemCard.tsx:50,51,99,121,127` — `'#FFFFFF'` birçok yerde
-- `TrendingCard.tsx:124,139,149,164,176` — `'#FFFFFF'`
-- `HeroCard.tsx:117,132,151,166,174` — `'#FFFFFF'`
-- `ExploreScreen.tsx:204,337` — `'#F59E0B'` star rengi
-- `ProfileScreen.tsx:338,339` — `'#D1FAE5'`, `'#10B981'` sabit renkler
-
-Dark modda `#FFFFFF` her zaman beyaz kalır — `colors.white` kullanılmalı (dark modda `#1E293B`'dir).
+Aynı horizontal scroll'da farklı boyutlarda kartlar var.
 
 ---
 
 ## 🔵 Kullanıcı Deneyimi (UX) Sorunları
 
-### 13. İşlevsiz Butonlar — Tıklanabilir Görünüp Hiçbir Şey Yapmayan Elemanlar
-Kullanıcı bir butona bastığında bir sonuç bekler. Aşağıdakiler hayal kırıklığına neden olur:
-
-**HomeScreen:**
-- Bildirim bell butonu × 2 (full header + compact)
-- Lokasyon chip'i (dropdown oku var ama açılmıyor)
-- "View Route" butonu (HeroCard)
-- "Save" butonu (HeroCard)
-- Tüm GemCard ve TrendingCard tıklamaları
-- "See all" butonları × 2
-
-**ExploreScreen:**
-- Bell butonu
-- Filtre butonu (sarı, göze çarpan ama işlevsiz)
-- "See all" butonu
-- Harita zoom butonları (+/−)
-- Harita üzerindeki pin'ler (sadece tooltip açar ama navigasyon yok)
-
-**RoutesScreen:**
-- Continue butonu
-- Details butonu
-- Tüm SavedRouteRow tıklamaları
-- Create New Route butonu
-- SEE ALL butonu
-
-**ProfileScreen:**
-- Edit Profile butonu
-- Camera butonu (profil foto değiştirme)
-- Currency, Notifications, Location Access, Interests, Budget, Travel Style
-- Help Center, Privacy Policy, Terms of Service
-- Upgrade to Premium butonu
-
-**BelenScreen:**
-- Back butonu (←)
-- Settings butonu
-- Start Navigation butonu
-- Share ve Download butonları (RouteCard)
+### 13. Hiçbir Ekranda Pull-to-Refresh Yok
+`refreshControl` hiçbir ScrollView/FlatList'te kullanılmıyor. Etkilenen ekranlar:
+- `HomeScreen`, `ExploreScreen`, `RoutesScreen`, `ProfileScreen` (tab ekranları)
+- `BookmarksSavedScreen`, `TripHistoryScreen`, `OfflineRoutesScreen` (liste ekranları)
+- `ReviewsScreen`, `SearchResultsScreen` (sonuç listeleri)
 
 ### 14. İmaj Yükleme/Hata Durumu Yok
 Hiçbir `<Image>` componentinde:
@@ -177,150 +158,240 @@ Hiçbir `<Image>` componentinde:
 - Error fallback yok — resim yüklenemezse boş/kırık görünür
 - `onError` handler yok
 
-`GemCard`, `TrendingCard`, `HeroCard`, `OngoingJourneyCard`, `PlaceListItem` — hepsi remote URL kullanıyor.
+Etkilenen: `GemCard`, `TrendingCard`, `HeroCard`, `OngoingJourneyCard`, `PlaceDetailScreen` hero, `BookmarksSavedScreen` thumb, `SearchResultsScreen` thumb
 
-### 15. ScrollView'larda Pull-to-Refresh Yok
-Ana ekranlar (`HomeScreen`, `ExploreScreen`, `RoutesScreen`, `ProfileScreen`) `ScrollView` kullanıyor ama `refreshControl` yok — kullanıcı aşağı çekerek yenileyemiyor.
+### 15. Loading State Eksik
+- `ChangePasswordScreen:125` — "Update Password" basılınca sadece `navigation.goBack()` — loading/success feedback yok
+- `ReviewsScreen:66-80` — Review submit anında eklenir, loading indicator yok
+- `EditProfileScreen` — Save basılınca ne olur? Loading state yok
+- `EmailVerificationScreen:39-42` — Verify anında navigasyon, API call bekleme yok
+- `ResetPasswordScreen:28-31` — Aynı sorun
 
-### 16. Loading State Gösterimi Yok
-Hiçbir ekranda:
-- Veri yükleme sırasında skeleton/loading indicator yok
-- JSON dosyalarından veri çekilse bile ekran ilk açıldığında bir anlık boş görünebilir
-- Login/Register submit edildiğinde loading state yok (Button'da `isLoading` prop'u var ama kullanılmıyor)
+### 16. FilterScreen Seçimler Kaybolma Sorunu
+```tsx
+// FilterScreen.tsx:122
+<TouchableOpacity style={styles.applyBtn} onPress={() => navigation.goBack()}>
+```
+"Apply Filters" sadece `goBack()` çağırıyor — seçilen filtreler hiçbir yere gönderilmiyor. Kullanıcı filtreleri seçer, Apply'a basar ve hiçbir şey olmaz.
 
-### 17. Empty State Gösterimi Yok
-- ExploreScreen filtre sonuç bulamazsa empty state gösterilmiyor (tüm sonuçlar gösteriliyor)
-- RoutesScreen saved routes boşsa ne gösterilir? Tanımsız.
-- BelenScreen mesaj yoksa empty state yok.
+### 17. CityPickerScreen Seçim Kaydedilmiyor
+```tsx
+// CityPickerScreen.tsx:42-45
+const selectCity = (name: string) => {
+  setSelectedCity(name);  // Sadece local state
+  navigation.goBack();    // Geri dön — seçim kaybolur
+};
+```
+Seçilen şehir Redux/storage'a yazılmıyor. Ekranı kapatıp tekrar açınca varsayılan "Istanbul" olarak kalır.
 
-### 18. Hata Gösterimi Yok
-- Login/Register'da validation feedback yok (Input'ta `error` prop'u var ama kullanılmıyor)
-- Email format doğrulaması yok (`checkEmail` fonksiyonu utils'de var ama import edilmiyor)
-- Şifre güçlülük göstergesi yok
-- Password mismatch RegisterScreen'de sadece `console.log` ile bildirilir — UI feedback yok
+### 18. BookmarksSavedScreen — Veriler Statik
+```tsx
+const BOOKMARKS = [
+  { id: '1', name: 'Hagia Sophia', ... },
+];
+```
+Bookmark'lar hardcoded. Kullanıcı ExploreScreen'de bir yeri like'ladığında bu listeye eklenmez. Redux/storage entegrasyonu yok.
 
-### 19. Keyboard Handling Eksiklikleri
-- `ExploreScreen` — Arama input'u var ama `KeyboardAvoidingView` yok.
-- `BelenScreen:498-499` — `keyboardVerticalOffset={hScale(0)}` → Tab bar yüksekliği hesaba katılmıyor, klavye input'u kapatabilir.
-- `ScrollView` içindeki input'larda `keyboardShouldPersistTaps="handled"` eksik (sadece `ScreenWrapper`'da var).
+### 19. OfflineRoutesScreen — Gerçek Download Yok
+Download fonksiyonalitesi simüle — "Remove" butonu sadece local state'den siler, gerçek dosya yönetimi yok. "Download" butonu hiçbir yerde yok.
 
-### 20. Tab Bar'da "Belen" İsmi Anlaşılmaz
+### 20. ShareRouteScreen — İşlevsiz Butonlar
+```tsx
+// ShareRouteScreen.tsx:76
+onPress={opt.label === 'Share via...' ? handleShare : undefined}
+```
+"Copy Link" ve "Show QR Code" butonlarının `onPress`'i `undefined` — tıklanabilir görünüp hiçbir şey yapmıyor.
+
+### 21. TripHistoryScreen — Statik Veriler
+İstatistikler hardcoded:
+- "Avg Rating" sabit `4.3` yazılmış, hesaplanmıyor
+- Trip verileri `TRIPS` dizisinden geliyor, Redux/storage ile senkronize değil
+
+### 22. WeatherDetailScreen — Tümü Mock Veri
+Tüm saatlik/haftalık hava durumu hardcoded. API entegrasyonu yok. `city` parametresi alıyor ama gösterilen veri her zaman aynı.
+
+### 23. ReviewsScreen — Kayıt Kalıcı Değil
+Yazılan review local state'e ekleniyor ama:
+- Sayfa kapatılıp açılınca kaybolur (storage/API yok)
+- "Helpful" butonu tıklanabilir ama hiçbir şey yapmıyor (`onPress` yok)
+
+### 24. NavigationScreen — Sahte Navigasyon
+- ETA, kalan mesafe tamamen hardcoded
+- Kullanıcı konumu statik (animasyonlu pulse var ama konum değişmiyor)
+- Rota çizgisi sadece iki düz çizgi — gerçek rota gösterimi yok
+- "End Navigation" sadece `goBack()` — onay dialog'u yok
+
+### 25. MapFullScreen — Hâlâ Placeholder
+Gerçek harita yerine grid bloklardan oluşan sahte harita. Pin'ler tıklanabiliyor ama:
+- "Layers" butonu (üst sağ) `onPress` yok — işlevsiz
+- Zoom butonları `onPress` yok — işlevsiz
+- Pin'e tıklayınca navigasyon yok (sadece tooltip açılır)
+- Gerçek bir harita kütüphanesi (react-native-maps ya da WebView+Leaflet) gerekli
+
+### 26. Keyboard Handling Eksiklikleri
+- `SearchResultsScreen` — `KeyboardAvoidingView` yok (ama arama input'u header'da olduğu için büyük sorun değil)
+- `ReviewsScreen` Modal — `KeyboardAvoidingView` yok, klavye açıldığında TextInput kapatabilir
+- `ChangePasswordScreen` — ScrollView var ama `keyboardShouldPersistTaps="handled"` yok
+- `CityPickerScreen` — Arama input'u `autoFocus` ama FlatList'te `keyboardShouldPersistTaps` yok
+
+### 27. Tab Bar "Belen" İsmi Hâlâ Kafa Karıştırıcı
 ```json
 "belen": "Discover"  // en.json
-"belen": "Keşif"     // tr.json
 ```
-Tab ismi "Discover" ama ekran içindeki başlık "Travel Assistant" — birbiriyle tutarsız. Kullanıcı "Discover" sekmesine tıklayınca AI chat görmesi kafa karıştırıcı. `ExploreScreen`'in başlığı da "DISCOVER / New Adventures" — iki farklı sekme "Discover" adını kullanıyor.
+Tab ismi "Discover" ama ekran AI chat gösteriyor. `ExploreScreen` başlığı da "DISCOVER" — iki sekme aynı isimle karışıyor.
 
-### 21. Horizontal Scroll Göstergesi Yok
-`HomeScreen` ve `ExploreScreen`'deki yatay kart listeleri (`showsHorizontalScrollIndicator={false}`):
+### 28. PlaceDetailScreen — Statik İçerik
+- Tag'lar her mekan için aynı: `['Museum', 'Historic', 'Art', 'Culture']`
+- About açıklaması genel jenerik metin, mekanla ilgisi yok
+- Açılış saatleri her mekan için aynı
+- Adres sabit `"123 Example Street, Istanbul"`
+- "Add to Route" butonu `onPress` yok — işlevsiz
+- "Save" (bookmark) butonu `onPress` yok — işlevsiz
+
+### 29. Horizontal Scroll Göstergesi Eksik
+`HomeScreen` ve `ExploreScreen`'deki yatay kart listelerinde (`showsHorizontalScrollIndicator={false}`):
 - Kullanıcı sağa kaydırılabilir olduğunu anlamayabilir
-- Listenin sonunda olduğunu anlayamaz
-- En azından ilk el hareketi ipucu (peek animation) veya dot indicator olmalı
+- Liste sonunda olduğunu bilmez
+- İlk el hareketi ipucu veya dot indicator olmalı
 
-### 22. Arama Çubuğu Eksik Özellikler
-`ExploreScreen` arama çubuğu:
-- Clear butonu yok (x ikonu)
-- Arama geçmişi yok
-- Son aramalar yok
-- Zaten arama fonksiyonalitesi yok (sadece state, filtreleme bağlantısı yok)
-
-### 23. `PlaceListItem` Prop Senkronizasyon Sorunu
-```tsx
-isLiked: initialLiked = false,
-// ...
-const [liked, setLiked] = useState(initialLiked);
-```
-`isLiked` prop'u değiştiğinde state güncellenmez çünkü `useState` sadece ilk render'da initial değeri alır. Parent yeniden veri çekerse like durumu eski kalır.
-
-### 24. BelenScreen Chat UX Sorunları
-- Mesaj gönderildiğinde typing indicator/loading animasyonu yok — cevap anında geliyor, yapay hissettiriyor
-- Mesaj gönderildikten sonra scroll otomatik oluyor ama `setTimeout(100ms)` ile — güvenilir değil, `onContentSizeChange` zaten ayrıca tanımlı → çift scroll çağrısı olabilir
-- Kullanıcı mesajlarını silme/düzenleme yolu yok
-- Mesaj timestamp'i gösterilmiyor
-
-### 25. RoutesScreen Takvim UX Sorunu
-- Seçili güne göre farklı plan gösterilmiyor — hangi günü seçersen seç aynı "Today's Plan" görünüyor
-- Hafta değiştirme (önceki/sonraki hafta) butonu yok
-- Bugünün hangi gün olduğu grafiksel olarak belirtilmiyor (sadece seçili gün = bugün varsayımı)
+### 30. BelenScreen Chat UX Sorunları
+- Mesaj gönderildiğinde typing indicator yok — cevap anında geliyor
+- Mesajlarda timestamp gösterilmiyor
+- Mesaj silme/düzenleme yoku
+- Çift scroll çağrısı riski (`setTimeout(100ms)` + `onContentSizeChange`)
 
 ---
 
 ## 🟣 Gereksiz / Kullanılmayan Componentler
 
-### 26. `Header/Header.tsx` — Hiçbir Yerde Kullanılmıyor
-200 satırlık Header component'i var ama hiçbir ekranda import edilmiyor. `HomeScreen` kendi header'ını inline olarak oluşturmuş.
+### 31. `Header/Header.tsx` — Hiçbir Yerde Kullanılmıyor
+200 satırlık Header component'i import edilmiyor. Tüm ekranlar kendi header'larını inline oluşturmuş.
 
-### 27. `SearchBar/SearchBar.tsx` — Hiçbir Yerde Kullanılmıyor
-85 satırlık component var ama `ExploreScreen` kendi search bar'ını inline oluşturmuş.
+### 32. `SearchBar/SearchBar.tsx` — Hiçbir Yerde Kullanılmıyor
+85 satırlık component — `ExploreScreen` ve `SearchResultsScreen` kendi search bar'larını inline oluşturmuş.
 
-### 28. `FilterChips/FilterChips.tsx` — Hiçbir Yerde Kullanılmıyor
-90 satırlık component var ama `ExploreScreen` chips'leri inline oluşturmuş.
+### 33. `FilterChips/FilterChips.tsx` — Hiçbir Yerde Kullanılmıyor
+90 satırlık component — `ExploreScreen`, `BookmarksSavedScreen`, `FilterScreen` chips'leri inline oluşturmuş.
 
-### 29. `PlaceListItem/PlaceListItem.tsx` — Hiçbir Yerde Kullanılmıyor
-223 satırlık component var ama `ExploreScreen` kendi `ResultItem`'ını inline oluşturmuş.
+### 34. `PlaceListItem/PlaceListItem.tsx` — Hiçbir Yerde Kullanılmıyor
+223 satırlık component — `ExploreScreen`, `SearchResultsScreen`, `BookmarksSavedScreen` kendi list item'larını inline oluşturmuş.
 
-### 30. Boş Style Dosyaları
-- `TabBar/TabBar.style.ts` — İçeriği sadece `export {};` — birkaç component'te stiller ayrı dosyada, birkaçında inline.
+### 35. Çoğu Stack Ekranda Tekrarlayan Header Pattern
+22 stack ekranın 20'si tamamen aynı header yapısını kullanıyor:
+```tsx
+<View style={styles.header}>
+  <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+    <Iconify icon="solar:alt-arrow-left-linear" ... />
+  </TouchableOpacity>
+  <Text style={styles.headerTitle}>...</Text>
+  <View style={{ width: wScale(36) }} /> {/* Placeholder */}
+</View>
+```
+Bu bir `StackHeader` component'ine dönüştürülmeli — her ekranda ~15 satır tekrar ediyor.
 
 ---
 
-## ⚡ Performans Bazlı UI Sorunları
+## 📝 Lokalizasyon (i18n) Sorunları
 
-### 31. `StyleSheet.create` Her Render'da Yeniden Oluşturuluyor
-`makeStyles(colors)` pattern'i `useMemo` ile kullanılıyor — bu doğru. Ama `ExploreScreen` içindeki `TrendingNearCard` ve `ResultItem` sub-component'leri ayrı `useMemo` ile kendi style'larını oluşturuyor — bu gereksiz re-creation.
+### 36. Yeni 19 Ekranın Hiçbiri i18n Kullanmıyor
+`useTranslation` sadece 8 eski ekranda var:
+- ✅ Auth ekranları: `LoginScreen`, `RegisterScreen`, `ForgotPasswordScreen`, `ResetPasswordScreen`
+- ✅ Tab ekranları: `HomeScreen`, `ExploreScreen`, `RoutesScreen`, `ProfileScreen`, `BelenScreen`
+- ❌ **Yeni 19 ekranın tümü**: Hardcoded İngilizce metin
 
-### 32. Büyük Inline Component'ler Re-Render Sorunu
-- `ExploreScreen.tsx:60-287` — `ExploreMapView` (227 satır) tüm state değişikliklerinde yeniden render olur çünkü parent'ın içinde tanımlı ve `React.memo` kullanılmıyor.
-- `ExploreScreen.tsx:291-378` — `TrendingNearCard` aynı sorun.
-- `ExploreScreen.tsx:382-476` — `ResultItem` aynı sorun.
+| Ekran | Hardcoded Örnekler |
+|-------|-------------------|
+| `PlaceDetailScreen` | "About", "Location", "Opening Hours", "Add to Route", "Reviews" |
+| `RouteDetailScreen` | "Progress", "Stops", "Start Navigation", "ACTIVE ROUTE" |
+| `NavigationScreen` | "End Navigation", "ETA", "Remaining", "Next stop", "Prev", "Next" |
+| `MapFullScreen` | "places on map", "List View" |
+| `BookmarksSavedScreen` | "Saved Places", "No saved places", "Bookmark places to find them here" |
+| `ReviewsScreen` | "Reviews", "Write a Review", "Submit Review", "Helpful" |
+| `FilterScreen` | "Filters", "Category", "Distance", "Minimum Rating", "Price Range", "Apply Filters", "Reset" |
+| `SearchResultsScreen` | "Search places...", "No results found", "Try different keywords" |
+| `ChangePasswordScreen` | "Change Password", "Current Password", "New Password", "Update Password" |
+| `EditProfileScreen` | Tüm form label'ları |
+| `OnboardingScreen` | "Discover Hidden Gems", "AI-Powered Routes", "Save & Share Trips", "Skip", "Next", "Get Started" |
+| `WeatherDetailScreen` | "Hourly Forecast", "7-Day Forecast", "Wind", "Humidity" |
+| `ShareRouteScreen` | "Share Route", "Copy Link", "Share via...", "Show QR Code" |
+| `CityPickerScreen` | "Select City", "Search cities...", "Popular Cities", "All Cities" |
+| `OfflineRoutesScreen` | "Offline Routes", "Storage Used", "No offline routes" |
+| `TripHistoryScreen` | "Trip History", "Trips", "Distance", "No trips yet" |
+| `PremiumUpgradeScreen` | Tüm plan metinleri ve feature listesi |
+| `ChatSettingsScreen` | Tüm ayar label'ları |
+| `TermsOfServiceScreen`, `PrivacyPolicyScreen`, `HelpCenterScreen` | Tüm metin |
 
-### 33. `Animated.ScrollView` + `useNativeDriver: true` Sınırlaması
-`HomeScreen.tsx:156-159` — `useNativeDriver: true` kullanılmış bu iyi. Ama layout-dependent animasyonlarda (opacity ve transform) native driver sınırlıdır. Eğer gelecekte color veya layout animasyonu eklenecekse warning verecektir.
+### 37. ExploreScreen ve RoutesScreen'de i18n Import Var Ama Kullanılmıyor
+```tsx
+import { useTranslation } from 'react-i18next';
+// ...
+const { t } = useTranslation();
+// ... ama hiçbir yerde t() çağrılmıyor (section title'lar hardcoded)
+```
 
-### 34. Resimlerde Cache Stratejisi Yok
-Tüm resimler `<Image source={{ uri: ... }}>` kullanıyor — React Native varsayılan cache'ini kullanır. Büyük çaplı uygulamada `react-native-fast-image` gibi kütüphanelerle disk cache sağlanmalı.
+---
+
+## ⚡ Performans Sorunları
+
+### 38. ExploreScreen İnline Sub-Component'ler
+`ExploreScreen.tsx` içinde 3 büyük inline component tanımlı — her render'da yeniden oluşturulur:
+- `ExploreMapView` (~230 satır)
+- `TrendingNearCard` (~90 satır)
+- `ResultItem` (~95 satır)
+
+Bunlar ayrı dosyalara çıkarılıp `React.memo` ile sarılmalı.
+
+### 39. Resimlerde Cache Stratejisi Yok
+Tüm resimler `<Image source={{ uri: ... }}>` kullanıyor. `react-native-fast-image` gibi disk cache sağlayan bir kütüphane kullanılmalı.
+
+### 40. MapFullScreen — Her Render'da 30 Grid Bloğu Oluşturuluyor
+```tsx
+{Array.from({ length: 30 }, (_, i) => ({ ... })).map((b, i) => (
+  <View key={i} ... />
+))}
+```
+Bu hesaplama `useMemo` ile memoize edilmeli.
 
 ---
 
 ## 📐 Responsive Design Sorunları
 
-### 35. Tablet Desteği Yok
-- `Scaler.ts` — Sadece `Dimensions.get('window')` tabanlı ölçekleme. Tablet'te tüm UI orantısız büyür.
-- Kart genişlikleri sabit (`wScale(148)`, `wScale(180)`) — tablet'te çok küçük kalır.
-- Grid layout yok — tablet'te 2 sütun kart görünümü olmalı.
+### 41. Tablet Desteği Yok
+- `Scaler.ts` sadece phone boyutları için optimize
+- Kart genişlikleri sabit (tablet'te çok küçük kalır)
+- Grid layout yok — tablet'te çift sütun görünüm olmalı
 
-### 36. Landscape Mode Desteği Yok
-- `Dimensions.get('window')` uygulama açılış anında bir kez çağrılır.
-- Ekran döndürüldüğünde boyutlar güncellenmez.
-- Tüm layout portrait varsayımıyla tasarlanmış.
+### 42. Landscape Mode Desteği Yok
+- `Dimensions.get('window')` uygulama açılışında bir kez çağrılır
+- Ekran döndürüldüğünde boyutlar güncellenmez
 
-### 37. Safe Area Tutarsızlığı
-- `ReduxProvider.tsx` — `SafeAreaView edges={['top', 'bottom']}` kullanıyor.
-- Ama her ekran kendi `StatusBar` bileşenini ayrıca tanımlıyor.
-- `ScreenWrapper` de ayrı `StatusBar` tanımlıyor.
-- Çoklu `StatusBar` çakışması olabilir.
+### 43. Safe Area Tutarsızlığı
+- Translucent StatusBar kullanan ekranlar (`PlaceDetailScreen`, `MapFullScreen`, `NavigationScreen`) Top safe area'yı kendileri yönetiyor
+- Diğer ekranlar `StatusBar` component'i ile height ekliyor
+- `ScreenWrapper` ayrıca `StatusBar` tanımlıyor — çoklu StatusBar çakışması riski
 
 ---
 
-## 📝 Lokalizasyon (i18n) UI Sorunları
+## 🔧 Kod Kalitesi / Mimari Sorunları
 
-### 38. Ekranların %70'i Hardcoded İngilizce
-i18n sistemi kurulu ama sadece auth ekranları ve HomeScreen selamlama kısmında kullanılıyor.
+### 44. Navigation Types Eksik
+`RootStackParamList` type'ını kontrol etmek lazım ama birçok ekranda `as never` veya `as any` type casting kullanılıyor:
+- `EmailVerificationScreen:41` → `navigation.navigate('Main' as never)`
+- `ResetPasswordScreen:30` → `navigation.navigate('Login' as never)`
 
-| Ekran | i18n Durumu |
-|-------|------------|
-| HomeScreen | ⚠️ Kısmi (sadece selamlama) — section başlıkları İngilizce |
-| ExploreScreen | ❌ Tamamen İngilizce |
-| RoutesScreen | ❌ Tamamen İngilizce |
-| BelenScreen | ❌ Tamamen İngilizce |
-| ProfileScreen | ❌ Neredeyse tamamen İngilizce (sadece dil modal'ı) |
-| Auth Ekranları | ✅ Tam i18n |
+Bu, navigation type'larının tam tanımlanmadığını gösteriyor.
 
-### 39. Uzun Türkçe Çeviriler Layout Bozabilir
-Türkçe metinler genellikle İngilizce'den %15-30 daha uzundur. `numberOfLines={1}` kullanılan yerlerde kesilme yaşanabilir. Özellikle:
-- `HomeScreen` compact header selamlama
-- Kart isimleri
-- Buton metinleri
+### 45. Mock Data Pattern Tutarsız
+Bazı ekranlar JSON dosyalarından veri çekiyor (`homeData`, `discoverData`, `routesData`), bazıları component içinde hardcoded array kullanıyor:
+- `BookmarksSavedScreen` → İçinde `BOOKMARKS` array
+- `OfflineRoutesScreen` → İçinde `OFFLINE_ROUTES` array
+- `TripHistoryScreen` → İçinde `TRIPS` array
+- `NavigationScreen` → İçinde `MOCK_STEPS` array
+- `ReviewsScreen` → İçinde `MOCK_REVIEWS` array
+- `MapFullScreen` → İçinde `MAP_PINS` array
+- `WeatherDetailScreen` → İçinde `HOURLY` ve `WEEKLY` arrays
+
+Tek bir pattern (JSON + Redux veya Context) ile tutarlı hale getirilmeli.
 
 ---
 
@@ -328,12 +399,14 @@ Türkçe metinler genellikle İngilizce'den %15-30 daha uzundur. `numberOfLines=
 
 | Kategori | Sayı |
 |----------|------|
-| 🔴 Dark Mode | 3 |
-| 🟡 Erişilebilirlik | 4 |
-| 🟠 Görsel Tutarsızlık | 5 |
-| 🔵 Kullanıcı Deneyimi | 13 |
-| 🟣 Gereksiz Component | 5 |
-| ⚡ Performans | 4 |
-| 📐 Responsive | 3 |
+| 🔴 Auth Navigasyonu | 1 |
+| 🔴 Dark Mode | 4 |
+| 🟡 Erişilebilirlik | 3 |
+| 🟠 Görsel Tutarsızlık | 4 |
+| 🔵 Kullanıcı Deneyimi | 18 |
+| 🟣 Gereksiz / Tekrarlayan Kod | 5 |
 | 📝 Lokalizasyon | 2 |
-| **Toplam** | **39** |
+| ⚡ Performans | 3 |
+| 📐 Responsive | 3 |
+| 🔧 Kod Kalitesi | 2 |
+| **Toplam** | **45** |

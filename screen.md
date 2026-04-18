@@ -1,10 +1,12 @@
-# 📱 Eksik Ekranlar Listesi — Toronto
+# 📱 Ekran Durumu Raporu — Toronto
 
-> Mevcut kod, navigasyon referansları, boş `onPress` handler'lar ve bir seyahat uygulaması için gerekli olan akışlar analiz edilerek hazırlanmıştır.
+> Son güncelleme: 2026-04-18 — Tüm ekranlar ve navigator registrasyonları kontrol edildi.
 
 ---
 
-## ✅ Mevcut Ekranlar (8 adet)
+## ✅ Mevcut Ekranlar (41 adet)
+
+### Tab Ekranları (5) — `TabNavigator.tsx`
 
 | Ekran | Dosya | Durum |
 |-------|-------|-------|
@@ -13,133 +15,123 @@
 | Belen (AI Chat) | `screens/BelenScreen.tsx` | ✅ Var |
 | Routes | `screens/RoutesScreen.tsx` | ✅ Var |
 | Profile | `screens/ProfileScreen.tsx` | ✅ Var |
+
+### Auth Ekranları (5) — `AuthStackNavigator.tsx`
+
+| Ekran | Dosya | Durum |
+|-------|-------|-------|
 | Login | `screens/auth/LoginScreen.tsx` | ✅ Var |
 | Register | `screens/auth/RegisterScreen.tsx` | ✅ Var |
 | Forgot Password | `screens/auth/ForgotPasswordScreen.tsx` | ✅ Var |
+| 🆕 Reset Password | `screens/auth/ResetPasswordScreen.tsx` | ✅ Yeni eklendi |
+| 🆕 Email Verification | `screens/auth/EmailVerificationScreen.tsx` | ✅ Yeni eklendi |
+
+### Stack Ekranları — `RootStackNavigator.tsx`
+
+#### Uygulama Akış Ekranları (2)
+
+| Ekran | Dosya | Navigator | Durum |
+|-------|-------|-----------|-------|
+| 🆕 Onboarding | `screens/OnboardingScreen.tsx` | ✅ `RootStack` | ✅ Yeni eklendi |
+| 🆕 Splash | `screens/SplashScreen.tsx` | — (direkt App.tsx'de) | ✅ Yeni eklendi |
+
+#### Detay & İçerik Ekranları (7)
+
+| Ekran | Dosya | Navigator | Durum |
+|-------|-------|-----------|-------|
+| Place Detail | `screens/PlaceDetailScreen.tsx` | ✅ `RootStack` | ✅ Var |
+| Route Detail | `screens/RouteDetailScreen.tsx` | ✅ `RootStack` | ✅ Var |
+| Notifications | `screens/NotificationsScreen.tsx` | ✅ `RootStack` | ✅ Var |
+| 🆕 Reviews | `screens/ReviewsScreen.tsx` | ✅ `RootStack` | ✅ Yeni eklendi |
+| 🆕 Search Results | `screens/SearchResultsScreen.tsx` | ✅ `RootStack` | ✅ Yeni eklendi |
+| See All | `screens/SeeAllScreen.tsx` | ✅ `RootStack` | ✅ Var |
+| 🆕 Bookmarks / Saved | `screens/BookmarksSavedScreen.tsx` | ✅ `RootStack` | ✅ Yeni eklendi |
+
+#### Harita & Navigasyon Ekranları (3)
+
+| Ekran | Dosya | Navigator | Durum |
+|-------|-------|-----------|-------|
+| 🆕 Map Full Screen | `screens/MapFullScreen.tsx` | ✅ `RootStack` | ✅ Yeni eklendi |
+| 🆕 Navigation | `screens/NavigationScreen.tsx` | ✅ `RootStack` | ✅ Yeni eklendi |
+| 🆕 City Picker | `screens/CityPickerScreen.tsx` | ✅ `RootStack` | ✅ Yeni eklendi |
+
+#### Rota Yönetimi Ekranları (4)
+
+| Ekran | Dosya | Navigator | Durum |
+|-------|-------|-----------|-------|
+| Create Route | `screens/CreateRouteScreen.tsx` | ✅ `RootStack` | ✅ Var |
+| 🆕 Share Route | `screens/ShareRouteScreen.tsx` | ✅ `RootStack` | ✅ Yeni eklendi |
+| 🆕 Trip History | `screens/TripHistoryScreen.tsx` | ✅ `RootStack` | ✅ Yeni eklendi |
+| 🆕 Offline Routes | `screens/OfflineRoutesScreen.tsx` | ✅ `RootStack` | ✅ Yeni eklendi |
+
+#### Profil & Ayar Ekranları (11)
+
+| Ekran | Dosya | Navigator | Durum |
+|-------|-------|-----------|-------|
+| Edit Profile | `screens/EditProfileScreen.tsx` | ✅ `RootStack` | ✅ Var |
+| 🆕 Change Password | `screens/ChangePasswordScreen.tsx` | ✅ `RootStack` | ✅ Yeni eklendi |
+| Notification Settings | `screens/NotificationSettingsScreen.tsx` | ✅ `RootStack` | ✅ Var |
+| Location Settings | `screens/LocationSettingsScreen.tsx` | ✅ `RootStack` | ✅ Var |
+| Interests | `screens/InterestsScreen.tsx` | ✅ `RootStack` | ✅ Var |
+| Budget Settings | `screens/BudgetSettingsScreen.tsx` | ✅ `RootStack` | ✅ Var |
+| Travel Style | `screens/TravelStyleScreen.tsx` | ✅ `RootStack` | ✅ Var |
+| Currency Settings | `screens/CurrencySettingsScreen.tsx` | ✅ `RootStack` | ✅ Var |
+| Help Center | `screens/HelpCenterScreen.tsx` | ✅ `RootStack` | ✅ Var |
+| Privacy Policy | `screens/PrivacyPolicyScreen.tsx` | ✅ `RootStack` | ✅ Var |
+| Terms of Service | `screens/TermsOfServiceScreen.tsx` | ✅ `RootStack` | ✅ Var |
+
+#### Diğer Ekranlar (4)
+
+| Ekran | Dosya | Navigator | Durum |
+|-------|-------|-----------|-------|
+| Premium Upgrade | `screens/PremiumUpgradeScreen.tsx` | ✅ `RootStack` | ✅ Var |
+| Chat Settings | `screens/ChatSettingsScreen.tsx` | ✅ `RootStack` | ✅ Var |
+| 🆕 Filter | `screens/FilterScreen.tsx` | ✅ `RootStack` | ✅ Yeni eklendi |
+| 🆕 Weather Detail | `screens/WeatherDetailScreen.tsx` | ✅ `RootStack` | ✅ Yeni eklendi |
 
 ---
 
-## ❌ Eksik Ekranlar
+## ❌ Hâlâ Eksik — Tüm Kritik ve Önemli Ekranlar Tamamlandı
 
-### 🔴 Kritik — Mevcut Butonlardan Referans Edilen Ama Olmayan Sayfalar
+Önceki rapordaki **tüm kritik (15) ve önemli (10) eksik ekranlar** artık oluşturulmuş ve navigator'lara kaydedilmiştir.
 
-#### 1. `PlaceDetailScreen`
-- **Neden gerekli:** HomeScreen'deki GemCard, TrendingCard ve ExploreScreen'deki ResultItem tıklamaları hep `onPress={() => {}}`. Bir mekan detay sayfası şart.
-- **İçermesi gerekenler:** Mekan görselleri, açıklama, rating, yorumlar, konum (harita), çalışma saatleri, fiyat bilgisi, "Rotaya Ekle" butonu.
+Önceki **isteğe bağlı** listesindeki ekranlar da eklenmiştir:
+- ✅ `ResetPasswordScreen` → `AuthStackNavigator`
+- ✅ `EmailVerificationScreen` → `AuthStackNavigator`
+- ✅ `ChangePasswordScreen` → `RootStackNavigator`
+- ✅ `OfflineRoutesScreen` → `RootStackNavigator`
+- ✅ `TripHistoryScreen` → `RootStackNavigator`
+- ✅ `ShareRouteScreen` → `RootStackNavigator`
+- ✅ `WeatherDetailScreen` → `RootStackNavigator`
+- ✅ `CityPickerScreen` → `RootStackNavigator`
 
-#### 2. `RouteDetailScreen`
-- **Neden gerekli:** RoutesScreen'deki "Details" butonu, SavedRouteRow tıklamaları ve OngoingJourneyCard hep boş `onPress`. Ayrıca BelenScreen'deki "Start Navigation" butonu da bir rota detay/navigasyon sayfasına yönlenmeli.
-- **İçermesi gerekenler:** Rotanın harita üzerindeki görünümü, tüm duraklar listesi, süre/mesafe bilgileri, ilerleme durumu, navigasyon başlatma.
-
-#### 3. `NotificationsScreen`
-- **Neden gerekli:** HomeScreen'de bildirim bell ikonu var (hem full header hem compact header'da), badge her zaman görünüyor ama tıklama `onPress` yok.
-- **İçermesi gerekenler:** Bildirim listesi, okundu/okunmadı durumu, bildirim tipleri (rota hatırlatma, yeni öneriler vb.).
-
-#### 4. `EditProfileScreen`
-- **Neden gerekli:** ProfileScreen'de "Edit Profile" butonu var ama `onPress` handler yok.
-- **İçermesi gerekenler:** İsim, soyisim, email, fotoğraf değiştirme, şifre güncelleme.
-
-#### 5. `NotificationSettingsScreen`
-- **Neden gerekli:** ProfileScreen → Account Settings → "Notifications" satırı `onPress={() => {}}`.
-- **İçermesi gerekenler:** Push bildirim açma/kapama, bildirim tipleri (rota, öneri, promosyon vb.).
-
-#### 6. `LocationSettingsScreen`
-- **Neden gerekli:** ProfileScreen → "Location Access" satırı `onPress={() => {}}`.
-- **İçermesi gerekenler:** Konum izni durumu, konum servisi açma/kapama, varsayılan şehir seçimi.
-
-#### 7. `InterestsScreen`
-- **Neden gerekli:** ProfileScreen → Travel Preferences → "Interests" satırı `onPress={() => {}}`, value="Nature, Food" hardcoded.
-- **İçermesi gerekenler:** İlgi alanları listesi (Nature, Food, History, Art, Shopping vb.), çoklu seçim.
-
-#### 8. `BudgetSettingsScreen`
-- **Neden gerekli:** ProfileScreen → "Budget Level" satırı `onPress={() => {}}`, value="Mid-range" hardcoded.
-- **İçermesi gerekenler:** Bütçe seviyesi seçimi (Budget, Mid-range, Luxury).
-
-#### 9. `TravelStyleScreen`
-- **Neden gerekli:** ProfileScreen → "Travel Style" satırı `onPress={() => {}}`, value="Solo" hardcoded.
-- **İçermesi gerekenler:** Seyahat tarzı seçimi (Solo, Couple, Family, Group).
-
-#### 10. `CurrencySettingsScreen`
-- **Neden gerekli:** ProfileScreen → "Currency" satırı `onPress={() => {}}`, value="USD" hardcoded.
-- **İçermesi gerekenler:** Para birimi seçimi (USD, EUR, TRY vb.).
-
-#### 11. `HelpCenterScreen`
-- **Neden gerekli:** ProfileScreen → Support → "Help Center" satırı `onPress={() => {}}`.
-- **İçermesi gerekenler:** SSS, destek talebi oluşturma, iletişim bilgileri.
-
-#### 12. `PrivacyPolicyScreen`
-- **Neden gerekli:** ProfileScreen → "Privacy Policy" satırı `onPress={() => {}}`.
-- **İçermesi gerekenler:** Gizlilik politikası metni (WebView veya statik metin).
-
-#### 13. `TermsOfServiceScreen`
-- **Neden gerekli:** ProfileScreen → "Terms of Service" satırı `onPress={() => {}}`.
-- **İçermesi gerekenler:** Kullanım koşulları metni (WebView veya statik metin).
-
-#### 14. `CreateRouteScreen`
-- **Neden gerekli:** RoutesScreen'de "Create New Route" butonu var ama `onPress` handler yok.
-- **İçermesi gerekenler:** Başlangıç/bitiş noktası, durak ekleme, harita üzerinde rota çizimi, süre/mesafe hesaplama.
-
-#### 15. `SeeAllScreen` (Genel Liste Sayfası)
-- **Neden gerekli:** HomeScreen'deki "See All" butonları → Nearby Gems, Trending Today; ExploreScreen'deki "See all" butonu; RoutesScreen'deki "SEE ALL" butonu — hepsi `onPress={() => {}}`.
-- **İçermesi gerekenler:** Filtreleme, sıralama, tam liste görünümü. Parametre olarak hangi listenin gösterildiği.
+**Eksik ekran kalmamıştır.** 🎉
 
 ---
 
-### 🟡 Önemli — Uygulama Akışı İçin Gerekli Ama Henüz Referans Edilmeyen Sayfalar
+## ⚠️ Dikkat Edilmesi Gereken Noktalar
 
-#### 16. `OnboardingScreen`
-- **Neden gerekli:** Yeni kullanıcılar için ilk açılış deneyimi. Uygulamanın ne yaptığını anlatan 3-4 slide. Şu an uygulama açıldığında direkt ana ekrana düşüyor.
+### 1. `App.tsx:43-47` — Auth Navigasyonu Hâlâ Ters
+```tsx
+{!screenState.token ? (
+  <RootStackNavigator ... />  // token YOK = Ana sayfa
+) : (
+  <AuthStackNavigator />      // token VAR = Login
+)}
+```
+Bu mantık hâlâ ters. Token **varsa** ana ekranlar, **yoksa** auth gösterilmeli.
 
-#### 17. `SplashScreen`
-- **Neden gerekli:** Uygulama açılırken storage'dan kullanıcı verisi okunuyor (`App.tsx:15-27`). Bu sürede bir splash screen gösterilmeli — şu an beyaz ekran görünür.
-
-#### 18. `SearchResultsScreen`
-- **Neden gerekli:** ExploreScreen'de arama çubuğu var ama arama sonuçları için ayrı sayfa yok. `searchText` state'i var ama hiçbir yerde kullanılmıyor.
-
-#### 19. `MapFullScreen`
-- **Neden gerekli:** ExploreScreen'de sahte harita placeholder'ı var, RoutesScreen'de mini harita var. Tam ekran gerçek harita görünümü (OpenStreetMap/WebView) gerekli.
-
-#### 20. `NavigationScreen`
-- **Neden gerekli:** BelenScreen'deki "Start Navigation" butonu ve RoutesScreen'deki "Continue" butonu aktif navigasyon (turn-by-turn) sayfasına yönlenmeli.
-
-#### 21. `BookmarksSavedScreen`
-- **Neden gerekli:** ExploreScreen'de bookmark (like) butonu var ama kaydedilen mekanları görüntüleyecek bir sayfa yok.
-
-#### 22. `ReviewsScreen`
-- **Neden gerekli:** Mekanların rating ve reviewCount bilgileri gösteriliyor ama yorumları görüntüleyecek/yazacak bir sayfa yok.
-
-#### 23. `FilterScreen` (veya BottomSheet)
-- **Neden gerekli:** ExploreScreen'de filtre ikonu butonu var ama `onPress` handler yok. Detaylı filtreleme (fiyat aralığı, mesafe, rating, kategori) için bir sayfa/sheet gerekli.
-
-#### 24. `PremiumUpgradeScreen`
-- **Neden gerekli:** ProfileScreen'de "Upgrade to Premium" butonu var ama `onPress` handler yok. Ödeme planları, özellik karşılaştırma.
-
-#### 25. `ChatSettingsScreen`
-- **Neden gerekli:** BelenScreen header'ında settings ikonu var ama `onPress` handler yok. AI asistan tercihleri, geçmiş konuşmalar.
-
----
-
-### 🔵 İsteğe Bağlı — Gelecek İçin Düşünülebilir
-
-| # | Ekran | Açıklama |
-|---|-------|----------|
-| 26 | `ResetPasswordScreen` | ForgotPassword sonrası yeni şifre belirleme (deep link ile) |
-| 27 | `EmailVerificationScreen` | Kayıt sonrası email doğrulama |
-| 28 | `ChangePasswordScreen` | Profil içinden şifre değiştirme |
-| 29 | `OfflineRoutesScreen` | Premium özellik — çevrimdışı rotalar |
-| 30 | `TripHistoryScreen` | Geçmiş seyahatler |
-| 31 | `ShareRouteScreen` | Rota paylaşma |
-| 32 | `WeatherDetailScreen` | Hava durumu detay (HomeScreen'de hardcoded 21°C var) |
-| 33 | `CityPickerScreen` | Şehir seçimi (HomeScreen'de lokasyon chip'i var ama tıklama yok) |
+### 2. `SplashScreen` Navigator'da Değil
+`SplashScreen` doğrudan `App.tsx:39`'da `if (isLoading) return <SplashScreen />` olarak kullanılıyor — navigator'a kayıtlı değil. Bu doğru bir yaklaşım.
 
 ---
 
 ## 📊 Özet
 
-| Kategori | Sayı |
-|----------|------|
-| ✅ Mevcut Ekranlar | 8 |
-| ❌ Kritik Eksik (butondan referanslı) | 15 |
-| 🟡 Önemli Eksik (akış için gerekli) | 10 |
-| 🔵 İsteğe Bağlı | 8 |
-| **Toplam Gereken (kritik + önemli)** | **25** |
+| Kategori | İlk Rapor | 2. Rapor | Şimdi |
+|----------|-----------|----------|-------|
+| ✅ Toplam Ekran | 8 | 22 | **41** |
+| 🆕 Yeni Eklenen (bu turda) | — | 14 | **19** |
+| ❌ Kritik Eksik | 15 | 0 | **0** |
+| 🟡 Önemli Eksik | 10 | 8 | **0** |
+| 🔵 İsteğe Bağlı Eksik | 8 | 8 | **0** |

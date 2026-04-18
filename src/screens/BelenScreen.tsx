@@ -517,7 +517,7 @@ const BelenScreen = () => {
           <Iconify icon="solar:alt-arrow-left-linear" size={wScale(22)} color={colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{t('assistant.title')}</Text>
-        <TouchableOpacity style={styles.headerIconBtn} hitSlop={8}>
+        <TouchableOpacity style={styles.headerIconBtn} hitSlop={8} onPress={() => (navigation as any).navigate('ChatSettings')}>
           <Iconify icon="solar:settings-linear" size={wScale(20)} color={colors.textPrimary} />
         </TouchableOpacity>
       </View>

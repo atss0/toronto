@@ -11,6 +11,9 @@ import {
 } from 'react-native';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../types/navigation';
 import { Iconify } from 'react-native-iconify';
 
 import { RootState } from '../redux/store';
@@ -45,8 +48,11 @@ const WEATHER = {
 
 // ─── Ekran ─────────────────────────────────────────────────────────────────────
 
+type Nav = NativeStackNavigationProp<RootStackParamList>;
+
 const HomeScreen = () => {
   const { t } = useTranslation();
+  const navigation = useNavigation<Nav>();
   const user = useSelector((s: RootState) => s.User.user);
   const locationName = useSelector((s: RootState) => s.User.locationName);
   const currentTheme = useSelector((s: RootState) => s.Theme.theme);
@@ -139,7 +145,7 @@ const HomeScreen = () => {
               <Iconify icon={WEATHER.icon} size={wScale(13)} color={colors.warning} />
               <Text style={styles.compactWeatherText}>{WEATHER.temp}°</Text>
             </View>
-            <TouchableOpacity style={styles.compactIconBtn} hitSlop={8}>
+            <TouchableOpacity style={styles.compactIconBtn} hitSlop={8} onPress={() => navigation.navigate('Notifications')}>
               <Iconify icon="solar:bell-linear" size={wScale(17)} color={colors.textPrimary} />
             </TouchableOpacity>
           </Animated.View>
@@ -159,18 +165,18 @@ const HomeScreen = () => {
         {/* ── Full Header ──────────────────────────────────────────────────── */}
         <View style={styles.fullHeader} onLayout={onFullHeaderLayout}>
           <View style={styles.headerTopRow}>
-            <TouchableOpacity style={styles.locationChip} activeOpacity={0.75}>
+            <TouchableOpacity style={styles.locationChip} activeOpacity={0.75} onPress={() => navigation.navigate('CityPicker')}>
               <Iconify icon="solar:map-point-bold" size={wScale(13)} color={colors.primary} />
               <Text style={styles.locationText} numberOfLines={1}>{city}</Text>
               <Iconify icon="solar:alt-arrow-down-bold" size={wScale(11)} color={colors.textSecondary} />
             </TouchableOpacity>
 
             <View style={styles.headerActions}>
-              <View style={[styles.weatherChip, { backgroundColor: colors.warningLight }]}>
+              <TouchableOpacity style={[styles.weatherChip, { backgroundColor: colors.warningLight }]} onPress={() => navigation.navigate('WeatherDetail', { city })}>
                 <Iconify icon={WEATHER.icon} size={wScale(16)} color={colors.warning} />
                 <Text style={styles.weatherTemp}>{WEATHER.temp}°C</Text>
-              </View>
-              <TouchableOpacity style={styles.iconBtn} hitSlop={8}>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.iconBtn} hitSlop={8} onPress={() => navigation.navigate('Notifications')}>
                 <Iconify icon="solar:bell-linear" size={wScale(20)} color={colors.textPrimary} />
               </TouchableOpacity>
             </View>
@@ -202,7 +208,7 @@ const HomeScreen = () => {
 
         {/* Nearby Gems */}
         <View style={styles.section}>
-          <SectionHeader title={t('home.nearbyGems')} onPressSeeAll={() => {}} />
+          <SectionHeader title={t('home.nearbyGems')} onPressSeeAll={() => navigation.navigate('SeeAll', { type: 'nearbyGems', title: t('home.nearbyGems') })} />
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -217,7 +223,14 @@ const HomeScreen = () => {
                 rating={gem.rating}
                 imageSource={{ uri: gem.imageUrl }}
                 placeholderColor={gem.placeholderColor}
-                onPress={() => {}}
+                onPress={() => navigation.navigate('PlaceDetail', {
+                  placeId: gem.id,
+                  name: gem.name,
+                  category: gem.category,
+                  rating: gem.rating,
+                  imageUrl: gem.imageUrl,
+                  distance: gem.distance,
+                })}
               />
             ))}
           </ScrollView>
@@ -236,14 +249,14 @@ const HomeScreen = () => {
               distance={homeData.ongoingJourney.distance}
               progress={homeData.ongoingJourney.progress}
               isActive={homeData.ongoingJourney.isActive}
-              onPress={() => {}}
+              onPress={() => navigation.navigate('RouteDetail', { name: homeData.ongoingJourney.title })}
             />
           </View>
         </View>
 
         {/* Trending Today */}
         <View style={styles.section}>
-          <SectionHeader title={t('home.trendingToday')} onPressSeeAll={() => {}} />
+          <SectionHeader title={t('home.trendingToday')} onPressSeeAll={() => navigation.navigate('SeeAll', { type: 'trending', title: t('home.trendingToday') })} />
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -259,7 +272,15 @@ const HomeScreen = () => {
                 price={item.price}
                 imageSource={{ uri: item.imageUrl }}
                 placeholderColor={item.placeholderColor}
-                onPress={() => {}}
+                onPress={() => navigation.navigate('PlaceDetail', {
+                  placeId: item.id,
+                  name: item.name,
+                  category: item.category,
+                  rating: item.rating,
+                  imageUrl: item.imageUrl,
+                  price: item.price,
+                  reviewCount: item.reviewCount,
+                })}
               />
             ))}
           </ScrollView>

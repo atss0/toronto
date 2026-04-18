@@ -12,6 +12,9 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { Iconify } from 'react-native-iconify';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../types/navigation';
 
 import { RootState } from '../redux/store';
 import { clearUser } from '../redux/UserSlice';
@@ -114,7 +117,7 @@ const PickerModal: React.FC<PickerModalProps> = ({
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <Pressable style={s.backdrop} onPress={onClose}>
-        <Pressable style={s.sheet} onPress={() => {}}>
+        <Pressable style={s.sheet} onPress={() => { }}>
           <Text style={s.sheetTitle}>{title}</Text>
           {options.map((opt, i) => (
             <TouchableOpacity
@@ -226,8 +229,11 @@ const makeSectionStyles = (colors: AppColors) =>
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 
+type Nav = NativeStackNavigationProp<RootStackParamList>;
+
 const ProfileScreen = () => {
   const { t } = useTranslation();
+  const navigation = useNavigation<Nav>();
   const dispatch = useDispatch();
   const colors = useColors();
   const styles = useMemo(() => makeStyles(colors), [colors]);
@@ -246,6 +252,8 @@ const ProfileScreen = () => {
 
   const langLabel = currentLang === 'tr' ? 'Turkish' : 'English';
   const themeLabel = currentTheme === 'dark' ? 'Dark' : 'Light';
+
+  const currentYear = new Date().getFullYear();
 
   return (
     <View style={styles.root}>
@@ -275,7 +283,7 @@ const ProfileScreen = () => {
           <Text style={styles.displayName}>{displayName}</Text>
           <Text style={styles.displayRole}>{t('profile.traveler')}</Text>
 
-          <TouchableOpacity style={styles.editProfileBtn}>
+          <TouchableOpacity style={styles.editProfileBtn} onPress={() => navigation.navigate('EditProfile')}>
             <Text style={styles.editProfileText}>{t('profile.editProfile')}</Text>
           </TouchableOpacity>
         </View>
@@ -285,7 +293,7 @@ const ProfileScreen = () => {
           {[
             { value: '12', label: 'ROUTES' },
             { value: '45', label: 'PLACES' },
-            { value: '8',  label: 'CITIES' },
+            { value: '8', label: 'CITIES' },
           ].map((stat, i, arr) => (
             <React.Fragment key={stat.label}>
               <View style={styles.statItem}>
@@ -317,7 +325,7 @@ const ProfileScreen = () => {
             </View>
           ))}
 
-          <TouchableOpacity style={styles.upgradeBtn} activeOpacity={0.85}>
+          <TouchableOpacity style={styles.upgradeBtn} activeOpacity={0.85} onPress={() => navigation.navigate('PremiumUpgrade')}>
             <Text style={styles.upgradeBtnText}>Upgrade to Premium</Text>
           </TouchableOpacity>
         </View>
@@ -339,7 +347,7 @@ const ProfileScreen = () => {
             iconColor="#10B981"
             label={t('profile.currency')}
             value="USD"
-            onPress={() => {}}
+            onPress={() => navigation.navigate('CurrencySettings')}
             colors={colors}
           />
           <SettingRow
@@ -347,7 +355,7 @@ const ProfileScreen = () => {
             iconBg={colors.warningLight}
             iconColor={colors.warning}
             label={t('profile.notifications')}
-            onPress={() => {}}
+            onPress={() => navigation.navigate('NotificationSettings')}
             colors={colors}
           />
           <SettingRow
@@ -355,7 +363,7 @@ const ProfileScreen = () => {
             iconBg="#FFE4E6"
             iconColor="#EF4444"
             label={t('profile.locationAccess')}
-            onPress={() => {}}
+            onPress={() => navigation.navigate('LocationSettings')}
             colors={colors}
             isLast
           />
@@ -369,7 +377,7 @@ const ProfileScreen = () => {
             iconColor="#EF4444"
             label={t('profile.interests')}
             value="Nature, Food"
-            onPress={() => {}}
+            onPress={() => navigation.navigate('Interests')}
             colors={colors}
           />
           <SettingRow
@@ -378,7 +386,7 @@ const ProfileScreen = () => {
             iconColor="#10B981"
             label={t('profile.budgetLevel')}
             value="Mid-range"
-            onPress={() => {}}
+            onPress={() => navigation.navigate('BudgetSettings')}
             colors={colors}
           />
           <SettingRow
@@ -387,7 +395,20 @@ const ProfileScreen = () => {
             iconColor={colors.primary}
             label={t('profile.travelStyle')}
             value="Solo"
-            onPress={() => {}}
+            onPress={() => navigation.navigate('TravelStyle')}
+            colors={colors}
+            isLast
+          />
+        </SectionCard>
+
+        {/* ── Security ──────────────────────────────────────────────────────── */}
+        <SectionCard title="Security" colors={colors}>
+          <SettingRow
+            icon="solar:lock-password-bold"
+            iconBg={colors.primaryLight}
+            iconColor={colors.primary}
+            label="Change Password"
+            onPress={() => navigation.navigate('ChangePassword')}
             colors={colors}
             isLast
           />
@@ -414,7 +435,7 @@ const ProfileScreen = () => {
             iconBg={colors.primaryLight}
             iconColor={colors.primary}
             label={t('profile.helpCenter')}
-            onPress={() => {}}
+            onPress={() => navigation.navigate('HelpCenter')}
             colors={colors}
           />
           <SettingRow
@@ -422,7 +443,7 @@ const ProfileScreen = () => {
             iconBg="#D1FAE5"
             iconColor="#10B981"
             label={t('profile.privacyPolicy')}
-            onPress={() => {}}
+            onPress={() => navigation.navigate('PrivacyPolicy')}
             colors={colors}
           />
           <SettingRow
@@ -430,7 +451,7 @@ const ProfileScreen = () => {
             iconBg={colors.warningLight}
             iconColor={colors.warning}
             label={t('profile.termsOfService')}
-            onPress={() => {}}
+            onPress={() => navigation.navigate('TermsOfService')}
             colors={colors}
             isLast
           />
@@ -447,7 +468,7 @@ const ProfileScreen = () => {
         </TouchableOpacity>
 
         {/* ── Version ───────────────────────────────────────────────────────── */}
-        <Text style={styles.version}>{t('profile.version')}</Text>
+        <Text style={styles.version}>{t('profile.version')} ({currentYear})</Text>
 
       </ScrollView>
 
@@ -471,7 +492,7 @@ const ProfileScreen = () => {
         title="Select Theme"
         options={[
           { label: 'Light', value: 'light' },
-          { label: 'Dark',  value: 'dark'  },
+          { label: 'Dark', value: 'dark' },
         ]}
         selected={currentTheme}
         onSelect={v => dispatch(setTheme(v as 'light' | 'dark'))}

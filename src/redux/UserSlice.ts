@@ -38,8 +38,11 @@ const UserSlice = createSlice({
             storage.remove('user');
             storage.remove('token');
         },
+        setLocationName: (state, action: { payload: string }) => {
+            state.locationName = action.payload;
+        },
     },
 })
 
-export const { setUser, clearUser } = UserSlice.actions;
+export const { setUser, clearUser, setLocationName } = UserSlice.actions;
 export default UserSlice.reducer

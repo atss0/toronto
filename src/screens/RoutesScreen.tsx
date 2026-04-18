@@ -12,6 +12,9 @@ import { Iconify } from 'react-native-iconify';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../types/navigation';
 import { useColors } from '../context/ThemeContext';
 import { AppColors } from '../styles/theme';
 import Fonts from '../styles/Fonts';
@@ -159,11 +162,11 @@ interface SavedRoute {
   placeholderColor: string;
 }
 
-const SavedRouteRow: React.FC<{ item: SavedRoute; colors: AppColors }> = ({ item, colors }) => {
+const SavedRouteRow: React.FC<{ item: SavedRoute; colors: AppColors; onPress: () => void }> = ({ item, colors, onPress }) => {
   const { t } = useTranslation();
   const styles = useMemo(() => makeSavedRowStyles(colors), [colors]);
   return (
-    <TouchableOpacity style={styles.row} activeOpacity={0.85}>
+    <TouchableOpacity style={styles.row} activeOpacity={0.85} onPress={onPress}>
       <Image
         source={{ uri: item.imageUrl }}
         style={styles.thumb}
@@ -247,8 +250,11 @@ const makeSavedRowStyles = (colors: AppColors) =>
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 
+type Nav = NativeStackNavigationProp<RootStackParamList>;
+
 const RoutesScreen = () => {
   const { t } = useTranslation();
+  const navigation = useNavigation<Nav>();
   const colors = useColors();
   const currentTheme = useSelector((s: RootState) => s.Theme.theme);
   const styles = useMemo(() => makeStyles(colors), [colors]);
@@ -274,6 +280,14 @@ const RoutesScreen = () => {
           <View>
             <Text style={styles.title}>{t('routes.title')}</Text>
             <Text style={styles.subtitle}>{t('routes.subtitle')}</Text>
+          </View>
+          <View style={{ flexDirection: 'row', gap: wScale(8) }}>
+            <TouchableOpacity style={styles.headerIconBtn} onPress={() => navigation.navigate('TripHistory')}>
+              <Iconify icon="solar:history-bold" size={wScale(18)} color={colors.primary} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.headerIconBtn} onPress={() => navigation.navigate('OfflineRoutes')}>
+              <Iconify icon="solar:cloud-download-bold" size={wScale(18)} color={colors.primary} />
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -336,10 +350,10 @@ const RoutesScreen = () => {
 
             {/* Action Buttons */}
             <View style={styles.actionRow}>
-              <TouchableOpacity style={styles.continueBtn} activeOpacity={0.85}>
+              <TouchableOpacity style={styles.continueBtn} activeOpacity={0.85} onPress={() => navigation.navigate('RouteDetail', { name: plan.name })}>
                 <Text style={styles.continueBtnText}>{t('routes.continue')}</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.detailsBtn} activeOpacity={0.85}>
+              <TouchableOpacity style={styles.detailsBtn} activeOpacity={0.85} onPress={() => navigation.navigate('RouteDetail', { name: plan.name })}>
                 <Text style={styles.detailsBtnText}>{t('routes.details')}</Text>
               </TouchableOpacity>
             </View>
@@ -350,21 +364,26 @@ const RoutesScreen = () => {
         <View style={styles.section}>
           <View style={styles.sectionHeaderRow}>
             <Text style={styles.sectionTitle}>{t('routes.savedRoutes')}</Text>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate('SeeAll', { type: 'savedRoutes', title: t('routes.savedRoutes') })}>
               <Text style={styles.seeAll}>{t('routes.seeAll')}</Text>
             </TouchableOpacity>
           </View>
 
           <View style={styles.savedList}>
             {saved.map(item => (
-              <SavedRouteRow key={item.id} item={item} colors={colors} />
+              <SavedRouteRow
+                key={item.id}
+                item={item}
+                colors={colors}
+                onPress={() => navigation.navigate('RouteDetail', { routeId: item.id, name: item.name })}
+              />
             ))}
           </View>
         </View>
 
         {/* ── Create New Route ─────────────────────────────────────────────── */}
         <View style={styles.createSection}>
-          <TouchableOpacity style={styles.createBtn} activeOpacity={0.8}>
+          <TouchableOpacity style={styles.createBtn} activeOpacity={0.8} onPress={() => navigation.navigate('CreateRoute')}>
             <View style={[styles.createIcon, { backgroundColor: colors.primaryLight }]}>
               <Iconify icon="solar:add-circle-linear" size={wScale(20)} color={colors.primary} />
             </View>
@@ -402,6 +421,10 @@ const makeStyles = (colors: AppColors) =>
       backgroundColor: colors.inputBackground,
       borderBottomWidth: 1,
       borderBottomColor: colors.stroke,
+    },
+    headerIconBtn: {
+      width: wScale(36), height: wScale(36), borderRadius: wScale(10),
+      backgroundColor: colors.primaryLight, alignItems: 'center', justifyContent: 'center',
     },
     title: {
       fontSize: wScale(26),

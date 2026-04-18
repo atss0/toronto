@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { NavigationContainer } from '@react-navigation/native';
-import TabNavigator from './src/navigators/TabNavigator';
+import RootStackNavigator from './src/navigators/RootStackNavigator';
 import AuthStackNavigator from './src/navigators/AuthStackNavigator';
+import SplashScreen from './src/screens/SplashScreen';
 import { RootState } from './src/redux/store';
 import { setUser } from './src/redux/UserSlice';
 import { setTheme } from './src/redux/ThemeSlice';
@@ -12,6 +13,8 @@ import storage from './src/storage';
 const App = () => {
   const screenState = useSelector((state: RootState) => state.User);
   const dispatch = useDispatch();
+  const [isLoading, setIsLoading] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
     if (storage.contains('user') && storage.contains('token')) {
@@ -28,14 +31,19 @@ const App = () => {
       const theme = storage.getString('theme') as 'light' | 'dark';
       dispatch(setTheme(theme));
     }
+    const hasSeenOnboarding = storage.contains('onboardingComplete');
+    setShowOnboarding(!hasSeenOnboarding);
+    setIsLoading(false);
   }, [dispatch]);
+
+  if (isLoading) return <SplashScreen />;
 
   return (
     <NavigationContainer>
-      {!screenState.token ? (
-        <TabNavigator />
+      {screenState.token ? (
+        <RootStackNavigator />
       ) : (
-        <AuthStackNavigator />
+        <AuthStackNavigator initialRoute={showOnboarding ? 'Onboarding' : 'Login'} />
       )}
     </NavigationContainer>
   );

@@ -1,19 +1,64 @@
 export type RootStackParamList = {
+    // Auth
     Login: undefined;
     Register: undefined;
     ForgotPassword: undefined;
-    Home: undefined;
-    Explore: undefined;
-    Belen: undefined;
-    Routes: undefined;
-    Profile: undefined;
+    ResetPassword: { email: string };
+    EmailVerification: { email: string };
 
-    // Örnek: Eğer bir sayfa parametre alacaksa böyle tanımlanır:
-    // Detail: { itemId: string };
+    // Onboarding
+    Onboarding: undefined;
+
+    // Main tabs wrapper
+    Main: undefined;
+
+    // Detail / sub screens
+    PlaceDetail: {
+        placeId: string;
+        name: string;
+        category: string;
+        rating: number;
+        imageUrl: string;
+        distance?: string;
+        price?: string;
+        reviewCount?: number;
+    };
+    RouteDetail: { routeId?: string; name: string };
+    Notifications: undefined;
+    EditProfile: undefined;
+    NotificationSettings: undefined;
+    LocationSettings: undefined;
+    Interests: undefined;
+    BudgetSettings: undefined;
+    TravelStyle: undefined;
+    CurrencySettings: undefined;
+    HelpCenter: undefined;
+    PrivacyPolicy: undefined;
+    TermsOfService: undefined;
+    CreateRoute: undefined;
+    SeeAll: { type: 'nearbyGems' | 'trending' | 'savedRoutes' | 'explore'; title: string };
+    PremiumUpgrade: undefined;
+    ChatSettings: undefined;
+    ChangePassword: undefined;
+
+    // Important screens
+    SearchResults: { query: string };
+    MapFull: { title?: string };
+    Navigation: { routeName: string; stops?: string[] };
+    BookmarksSaved: undefined;
+    Reviews: { placeId: string; placeName: string; rating: number };
+    Filter: undefined;
+
+    // Optional screens
+    OfflineRoutes: undefined;
+    TripHistory: undefined;
+    ShareRoute: { routeName: string };
+    WeatherDetail: { city: string };
+    CityPicker: undefined;
 };
 
 declare global {
     namespace ReactNavigation {
-        interface RootParamList extends RootStackParamList { }
+        interface RootParamList extends RootStackParamList {}
     }
 }

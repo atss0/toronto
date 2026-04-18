@@ -13,6 +13,9 @@ import { Iconify } from 'react-native-iconify';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../types/navigation';
 import { useColors } from '../context/ThemeContext';
 import { AppColors } from '../styles/theme';
 import Fonts from '../styles/Fonts';
@@ -384,10 +387,11 @@ const PlaceRow: React.FC<{
   item: PlaceResult;
   colors: AppColors;
   onToggleLike: (id: string) => void;
-}> = ({ item, colors, onToggleLike }) => {
+  onPress: () => void;
+}> = ({ item, colors, onToggleLike, onPress }) => {
   const styles = useMemo(() => makeResultItemStyles(colors), [colors]);
   return (
-    <TouchableOpacity style={styles.row} activeOpacity={0.85}>
+    <TouchableOpacity style={styles.row} activeOpacity={0.85} onPress={onPress}>
       <Image
         source={{ uri: item.imageUrl }}
         style={styles.thumb}
@@ -478,8 +482,11 @@ const makeResultItemStyles = (colors: AppColors) =>
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 
+type Nav = NativeStackNavigationProp<RootStackParamList>;
+
 const ExploreScreen = () => {
   const { t } = useTranslation();
+  const navigation = useNavigation<Nav>();
   const colors = useColors();
   const currentTheme = useSelector((s: RootState) => s.Theme.theme);
   const styles = useMemo(() => makeStyles(colors), [colors]);
@@ -526,9 +533,14 @@ const ExploreScreen = () => {
             <Text style={styles.eyebrow}>{t('explore.eyebrow')}</Text>
             <Text style={styles.title}>{t('explore.title')}</Text>
           </View>
-          <TouchableOpacity style={styles.bellBtn} hitSlop={8}>
-            <Iconify icon="solar:bell-linear" size={wScale(20)} color={colors.textPrimary} />
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', gap: wScale(8) }}>
+            <TouchableOpacity style={styles.bellBtn} hitSlop={8} onPress={() => navigation.navigate('BookmarksSaved')}>
+              <Iconify icon="solar:bookmark-linear" size={wScale(20)} color={colors.textPrimary} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.bellBtn} hitSlop={8} onPress={() => navigation.navigate('Notifications')}>
+              <Iconify icon="solar:bell-linear" size={wScale(20)} color={colors.textPrimary} />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* ── Search Bar ────────────────────────────────────────────────────── */}
@@ -541,6 +553,8 @@ const ExploreScreen = () => {
               placeholderTextColor={colors.textSecondary}
               value={searchText}
               onChangeText={setSearchText}
+              returnKeyType="search"
+              onSubmitEditing={() => searchText.trim() && navigation.navigate('SearchResults', { query: searchText.trim() })}
             />
             {searchText.length > 0 && (
               <TouchableOpacity onPress={() => setSearchText('')} hitSlop={8}>
@@ -550,7 +564,7 @@ const ExploreScreen = () => {
           </View>
           <TouchableOpacity
             style={[styles.filterBtn, activeFilter !== 'all' && styles.filterBtnActive]}
-            onPress={() => setActiveFilter('all')}
+            onPress={() => navigation.navigate('Filter')}
           >
             <Iconify icon="solar:filter-bold-duotone" size={wScale(18)} color="#FFFFFF" />
           </TouchableOpacity>
@@ -621,7 +635,7 @@ const ExploreScreen = () => {
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>{t('explore.trendingNearYou')}</Text>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => navigation.navigate('SeeAll', { type: 'explore', title: t('explore.trendingNearYou') })}>
                   <Text style={styles.seeAll}>{t('routes.seeAll')}</Text>
                 </TouchableOpacity>
               </View>
@@ -663,6 +677,15 @@ const ExploreScreen = () => {
                       item={item}
                       colors={colors}
                       onToggleLike={handleToggleLike}
+                      onPress={() => navigation.navigate('PlaceDetail', {
+                        placeId: item.id,
+                        name: item.name,
+                        category: item.category,
+                        rating: item.rating,
+                        imageUrl: item.imageUrl,
+                        reviewCount: item.reviewCount,
+                        price: item.price,
+                      })}
                     />
                   ))}
                 </View>
