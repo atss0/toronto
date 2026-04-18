@@ -39,7 +39,7 @@ interface SettingRowProps {
   isLast?: boolean;
 }
 
-const SettingRow: React.FC<SettingRowProps> = ({
+const SettingRow: React.FC<SettingRowProps> = React.memo(({
   icon, iconBg, iconColor, label, value, onPress, colors, isLast,
 }) => {
   const s = useMemo(() => makeRowStyles(colors), [colors]);
@@ -59,7 +59,7 @@ const SettingRow: React.FC<SettingRowProps> = ({
       </View>
     </TouchableOpacity>
   );
-};
+});
 
 const makeRowStyles = (colors: AppColors) =>
   StyleSheet.create({

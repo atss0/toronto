@@ -23,11 +23,8 @@ export default function RegisterScreen() {
   const styles = useMemo(() => makeStyles(colors.primary, colors.textSecondary), [colors]);
 
   const handleRegister = () => {
-    if (password !== confirmPassword) {
-      console.log('Şifreler eşleşmiyor!');
-      return;
-    }
-    console.log('Kayıt yapılıyor...', { fullName, email, password });
+    if (password !== confirmPassword) return;
+    // TODO: call authService.register({ name: fullName, email, password }) when backend is ready
   };
 
   return (

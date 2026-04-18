@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
   TextInput, StatusBar, Image,
@@ -48,6 +48,40 @@ const SeeAllScreen = () => {
     );
   }, [rawItems, search]);
 
+  const renderItem = useCallback(({ item }: { item: any }) => (
+    <TouchableOpacity
+      style={styles.card}
+      activeOpacity={0.85}
+      onPress={() => (navigation as any).navigate('PlaceDetail', {
+        placeId: item.id,
+        name: item.name,
+        category: item.category,
+        rating: item.rating,
+        imageUrl: item.imageUrl,
+        distance: item.distance,
+        price: item.price,
+        reviewCount: item.reviewCount,
+      })}
+    >
+      <Image source={{ uri: item.imageUrl }} style={styles.thumb} resizeMode="cover" />
+      <View style={styles.info}>
+        <Text style={styles.name} numberOfLines={1}>{item.name}</Text>
+        <Text style={styles.category}>{item.category}</Text>
+        <View style={styles.metaRow}>
+          <Iconify icon="solar:star-bold" size={wScale(11)} color={colors.warning} />
+          <Text style={styles.rating}>{item.rating?.toFixed(1)}</Text>
+          {item.distance && (
+            <>
+              <View style={styles.dot} />
+              <Text style={styles.metaText}>{item.distance}</Text>
+            </>
+          )}
+        </View>
+      </View>
+      <Iconify icon="solar:alt-arrow-right-linear" size={wScale(16)} color={colors.textSecondary} />
+    </TouchableOpacity>
+  ), [styles, colors, navigation]);
+
   return (
     <View style={styles.root}>
       <StatusBar barStyle={currentTheme === 'dark' ? 'light-content' : 'dark-content'} backgroundColor={colors.inputBackground} />
@@ -96,39 +130,11 @@ const SeeAllScreen = () => {
         keyExtractor={(item: any) => item.id}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
-        renderItem={({ item }: { item: any }) => (
-          <TouchableOpacity
-            style={styles.card}
-            activeOpacity={0.85}
-            onPress={() => (navigation as any).navigate('PlaceDetail', {
-              placeId: item.id,
-              name: item.name,
-              category: item.category,
-              rating: item.rating,
-              imageUrl: item.imageUrl,
-              distance: item.distance,
-              price: item.price,
-              reviewCount: item.reviewCount,
-            })}
-          >
-            <Image source={{ uri: item.imageUrl }} style={styles.thumb} resizeMode="cover" />
-            <View style={styles.info}>
-              <Text style={styles.name} numberOfLines={1}>{item.name}</Text>
-              <Text style={styles.category}>{item.category}</Text>
-              <View style={styles.metaRow}>
-                <Iconify icon="solar:star-bold" size={wScale(11)} color={colors.warning} />
-                <Text style={styles.rating}>{item.rating?.toFixed(1)}</Text>
-                {item.distance && (
-                  <>
-                    <View style={styles.dot} />
-                    <Text style={styles.metaText}>{item.distance}</Text>
-                  </>
-                )}
-              </View>
-            </View>
-            <Iconify icon="solar:alt-arrow-right-linear" size={wScale(16)} color={colors.textSecondary} />
-          </TouchableOpacity>
-        )}
+        renderItem={renderItem}
+        removeClippedSubviews
+        maxToRenderPerBatch={10}
+        windowSize={10}
+        initialNumToRender={8}
         ListEmptyComponent={
           <View style={styles.empty}>
             <Iconify icon="solar:compass-bold" size={wScale(40)} color={colors.textSecondary} />

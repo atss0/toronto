@@ -4,8 +4,11 @@ import {
   Dimensions, StatusBar,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../types/navigation';
 import { Iconify } from 'react-native-iconify';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 
 import { useColors } from '../context/ThemeContext';
 import { AppColors } from '../styles/theme';
@@ -16,46 +19,22 @@ import { RootState } from '../redux/store';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
-const SLIDES = [
-  {
-    id: '1',
-    icon: 'solar:map-point-wave-bold',
-    iconColor: '#3182ED',
-    iconBg: '#EBF3FE',
-    title: 'Discover Hidden Gems',
-    subtitle: 'Explore unique places and off-the-beaten-path destinations curated just for you.',
-  },
-  {
-    id: '2',
-    icon: 'solar:map-arrow-right-bold',
-    iconColor: '#10B981',
-    iconBg: '#D1FAE5',
-    title: 'AI-Powered Routes',
-    subtitle: 'Let Belen, your AI travel assistant, build personalized routes in seconds.',
-  },
-  {
-    id: '3',
-    icon: 'solar:star-bold',
-    iconColor: '#F59E0B',
-    iconBg: '#FEF3C7',
-    title: 'Save & Share Trips',
-    subtitle: 'Bookmark your favorite places and share your adventures with friends.',
-  },
-  {
-    id: '4',
-    icon: 'solar:compass-bold',
-    iconColor: '#8B5CF6',
-    iconBg: '#EDE9FE',
-    title: 'Ready to Explore?',
-    subtitle: 'Your next great adventure is just a tap away. Let\'s get started!',
-  },
+const SLIDE_META = [
+  { id: '1', icon: 'solar:map-point-wave-bold', iconColor: '#3182ED', iconBg: '#EBF3FE', titleKey: 'onboarding.slide1Title', subtitleKey: 'onboarding.slide1Subtitle' },
+  { id: '2', icon: 'solar:map-arrow-right-bold', iconColor: '#10B981', iconBg: '#D1FAE5', titleKey: 'onboarding.slide2Title', subtitleKey: 'onboarding.slide2Subtitle' },
+  { id: '3', icon: 'solar:star-bold', iconColor: '#F59E0B', iconBg: '#FEF3C7', titleKey: 'onboarding.slide3Title', subtitleKey: 'onboarding.slide3Subtitle' },
+  { id: '4', icon: 'solar:compass-bold', iconColor: '#8B5CF6', iconBg: '#EDE9FE', titleKey: 'onboarding.slide4Title', subtitleKey: 'onboarding.slide4Subtitle' },
 ];
 
+type NavProp = NativeStackNavigationProp<RootStackParamList, 'Onboarding'>;
+
 const OnboardingScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavProp>();
   const colors = useColors();
+  const { t } = useTranslation();
   const currentTheme = useSelector((s: RootState) => s.Theme.theme);
   const styles = useMemo(() => makeStyles(colors), [colors]);
+  const SLIDES = useMemo(() => SLIDE_META.map(s => ({ ...s, title: t(s.titleKey), subtitle: t(s.subtitleKey) })), [t]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const flatListRef = useRef<FlatList>(null);
@@ -70,7 +49,7 @@ const OnboardingScreen = () => {
 
   const finishOnboarding = () => {
     storage.set('onboardingComplete', 'true');
-    navigation.navigate('Login' as never);
+    navigation.navigate('Login');
   };
 
   return (
@@ -82,7 +61,7 @@ const OnboardingScreen = () => {
 
       {/* Skip */}
       <TouchableOpacity style={styles.skipBtn} onPress={finishOnboarding}>
-        <Text style={styles.skipText}>Skip</Text>
+        <Text style={styles.skipText}>{t('onboarding.skip')}</Text>
       </TouchableOpacity>
 
       {/* Slides */}
@@ -121,7 +100,7 @@ const OnboardingScreen = () => {
       {/* Next / Get Started */}
       <TouchableOpacity style={styles.nextBtn} onPress={goNext} activeOpacity={0.85}>
         <Text style={styles.nextBtnText}>
-          {currentIndex < SLIDES.length - 1 ? 'Next' : 'Get Started'}
+          {currentIndex < SLIDES.length - 1 ? t('onboarding.next') : t('onboarding.getStarted')}
         </Text>
         <Iconify
           icon={currentIndex < SLIDES.length - 1 ? 'solar:arrow-right-linear' : 'solar:map-point-wave-bold'}

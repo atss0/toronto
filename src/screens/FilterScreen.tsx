@@ -3,6 +3,8 @@ import {
   View, Text, StyleSheet, TouchableOpacity, ScrollView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RootStackParamList } from '../types/navigation';
 import { Iconify } from 'react-native-iconify';
 import { useTranslation } from 'react-i18next';
 
@@ -18,8 +20,10 @@ const DISTANCES = ['< 1 km', '< 5 km', '< 10 km', '< 25 km', 'Any'];
 const RATINGS = [4.5, 4.0, 3.5, 3.0];
 const PRICES = ['Free', '$', '$$', '$$$'];
 
+type NavProp = NativeStackNavigationProp<RootStackParamList, 'Filter'>;
+
 const FilterScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavProp>();
   const colors = useColors();
   const { t } = useTranslation();
   const styles = useMemo(() => makeStyles(colors), [colors]);
@@ -43,18 +47,15 @@ const FilterScreen = () => {
 
   const applyFilters = () => {
     // Pass filters back via navigation params
-    navigation.navigate({
-      name: 'SearchResults' as never,
-      params: {
-        filters: {
-          category: selectedCategory,
-          distance: selectedDistance,
-          minRating,
-          prices: selectedPrices,
-        },
+    navigation.navigate('SearchResults', {
+      query: '',
+      filters: {
+        category: selectedCategory,
+        distance: selectedDistance,
+        minRating,
+        prices: selectedPrices,
       },
-      merge: true,
-    } as never);
+    });
   };
 
   const activeFilterCount = [

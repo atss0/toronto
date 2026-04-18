@@ -12,7 +12,7 @@ interface User {
 
 export type UserState = {
     user: User | null;
-    token: any;
+    token: string | null;
     location: { latitude: number | null, longitude: number | null };
     locationName?: string;
 }
@@ -31,6 +31,8 @@ const UserSlice = createSlice({
         setUser: (state, action) => {
             state.user = action.payload.user;
             state.token = action.payload.token;
+            storage.set('user', JSON.stringify(action.payload.user));
+            storage.set('token', action.payload.token ?? '');
         },
         clearUser: state => {
             state.user = null;

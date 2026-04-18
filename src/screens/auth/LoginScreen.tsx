@@ -1,7 +1,9 @@
 import React, { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
+import { useDispatch } from 'react-redux';
 import Fonts from '../../styles/Fonts';
 import Input from '../../components/Input';
 import Button from '../../components/Button';
@@ -11,17 +13,26 @@ import AuthHeader from '../../components/AuthHeader';
 import AuthDivider from '../../components/AuthDivider';
 import SocialLogins from '../../components/SocialLogins';
 import { useColors } from '../../context/ThemeContext';
+import { setUser } from '../../redux/UserSlice';
+import { RootStackParamList } from '../../types/navigation';
+
+type NavProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavProp>();
   const { t } = useTranslation();
   const colors = useColors();
+  const dispatch = useDispatch();
   const styles = useMemo(() => makeStyles(colors.primary, colors.textSecondary), [colors]);
 
   const handleLogin = () => {
-    console.log('Giriş yapılıyor...', { email, password });
+    dispatch(setUser({
+      user: { id: 1, name: 'Test', surname: 'User', username: 'testuser', email, photo: '' },
+      token: 'mock-token',
+    }));
+    navigation.navigate('Main');
   };
 
   return (

@@ -497,7 +497,6 @@ const BelenScreen = () => {
     setMessages(prev => [...prev, userMsg, assistantMsg]);
     setReplyIndex(i => i + 1);
     setInputText('');
-    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
   };
 
   return (
@@ -528,7 +527,7 @@ const BelenScreen = () => {
         style={styles.msgList}
         contentContainerStyle={styles.msgContent}
         showsVerticalScrollIndicator={false}
-        onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: false })}
+        onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
       >
         {messages.map(msg => (
           <MessageBubble

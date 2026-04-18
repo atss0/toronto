@@ -128,7 +128,7 @@ const makeStyles = (colors: AppColors) => StyleSheet.create({
   cityName: { fontSize: wScale(18), fontFamily: Fonts.plusJakartaSansBold, color: '#FFFFFF', opacity: 0.9, marginBottom: hScale(8) },
   tempLarge: { fontSize: wScale(64), fontFamily: Fonts.plusJakartaSansExtraBold, color: '#FFFFFF', lineHeight: hScale(76) },
   condition: { fontSize: wScale(16), fontFamily: Fonts.plusJakartaSansRegular, color: 'rgba(255,255,255,0.85)' },
-  hiLow: { fontSize: wScale(14), fontFamily: Fonts.plusJakartaSansMedium, color: 'rgba(255,255,255,0.75)' },
+  hiLow: { fontSize: wScale(14), fontFamily: Fonts.plusJakartaSansMedium, color: 'rgba(255,255,255,0.9)' },
   content: { paddingHorizontal: Layout.screenPaddingH, paddingTop: hScale(20), paddingBottom: hScale(40) },
   section: { marginBottom: hScale(24) },
   sectionTitle: { fontSize: wScale(15), fontFamily: Fonts.plusJakartaSansBold, color: colors.textPrimary, marginBottom: hScale(12) },

@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, StatusBar
 import { useNavigation } from '@react-navigation/native';
 import { Iconify } from 'react-native-iconify';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 
 import { useColors } from '../context/ThemeContext';
 import { AppColors } from '../styles/theme';
@@ -14,6 +15,7 @@ import { RootState } from '../redux/store';
 const ChatSettingsScreen = () => {
   const navigation = useNavigation();
   const colors = useColors();
+  const { t } = useTranslation();
   const currentTheme = useSelector((s: RootState) => s.Theme.theme);
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
@@ -23,16 +25,16 @@ const ChatSettingsScreen = () => {
   const [personalizeAI, setPersonalizeAI] = useState(true);
 
   const clearHistory = () =>
-    Alert.alert('Clear History', 'Delete all conversation history with Belen?', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: () => {} },
+    Alert.alert(t('chatSettings.clearHistoryTitle'), t('chatSettings.clearHistoryMsg'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('common.delete'), style: 'destructive', onPress: () => {} },
     ]);
 
   const settings = [
-    { label: 'Save Conversation History', desc: 'Keep chat history for better AI context', value: saveHistory, setter: setSaveHistory },
-    { label: 'Voice Input', desc: 'Use microphone to send voice messages', value: voiceInput, setter: setVoiceInput },
-    { label: 'Auto-suggest Places', desc: 'Show quick suggestion chips during chat', value: autoSuggest, setter: setAutoSuggest },
-    { label: 'Personalize AI Responses', desc: 'Use your travel preferences to refine answers', value: personalizeAI, setter: setPersonalizeAI },
+    { label: t('chatSettings.saveHistory'), desc: t('chatSettings.saveHistoryDesc'), value: saveHistory, setter: setSaveHistory },
+    { label: t('chatSettings.voiceInput'), desc: t('chatSettings.voiceInputDesc'), value: voiceInput, setter: setVoiceInput },
+    { label: t('chatSettings.autoSuggest'), desc: t('chatSettings.autoSuggestDesc'), value: autoSuggest, setter: setAutoSuggest },
+    { label: t('chatSettings.personalizeAI'), desc: t('chatSettings.personalizeAIDesc'), value: personalizeAI, setter: setPersonalizeAI },
   ];
 
   return (
@@ -42,7 +44,7 @@ const ChatSettingsScreen = () => {
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
           <Iconify icon="solar:alt-arrow-left-linear" size={wScale(22)} color={colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Assistant Settings</Text>
+        <Text style={styles.headerTitle}>{t('chatSettings.title')}</Text>
         <View style={{ width: wScale(36) }} />
       </View>
 
@@ -66,7 +68,7 @@ const ChatSettingsScreen = () => {
 
         <TouchableOpacity style={styles.dangerBtn} onPress={clearHistory} activeOpacity={0.8}>
           <Iconify icon="solar:trash-bin-trash-bold" size={wScale(18)} color={colors.danger} />
-          <Text style={styles.dangerText}>Clear Conversation History</Text>
+          <Text style={styles.dangerText}>{t('chatSettings.clearHistory')}</Text>
         </TouchableOpacity>
       </ScrollView>
     </View>

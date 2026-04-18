@@ -24,7 +24,7 @@ export default function ForgotPasswordScreen() {
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const handleSendReset = () => {
-    console.log('Reset link gönderiliyor...', { email });
+    // TODO: call authService.forgotPassword(email) when backend is ready
   };
 
   return (

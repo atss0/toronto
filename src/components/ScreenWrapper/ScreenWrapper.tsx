@@ -9,7 +9,9 @@ import {
   ViewStyle,
   StyleProp,
 } from 'react-native';
+import { useSelector } from 'react-redux';
 import { useColors } from '../../context/ThemeContext';
+import { RootState } from '../../redux/store';
 import Layout from '../../styles/Layout';
 
 interface ScreenWrapperProps {
@@ -32,8 +34,9 @@ const ScreenWrapper: React.FC<ScreenWrapperProps> = ({
   statusBarStyle,
 }) => {
   const colors = useColors();
+  const { theme } = useSelector((s: RootState) => s.Theme);
   const bg = backgroundColor ?? colors.inputBackground;
-  const barStyle = statusBarStyle ?? (colors.background === '#0F172A' ? 'light-content' : 'dark-content');
+  const barStyle = statusBarStyle ?? (theme === 'dark' ? 'light-content' : 'dark-content');
 
   const inner = scrollable ? (
     <ScrollView

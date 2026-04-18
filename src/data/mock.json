@@ -1,0 +1,25 @@
+{
+  "tripHistory": [
+    { "id": "1", "name": "Historic Peninsula Walk", "date": "April 10, 2025", "duration": "2h 15m", "distance": "6.2 km", "stops": 8, "rating": 5 },
+    { "id": "2", "name": "Bosphorus Coastal Route", "date": "March 28, 2025", "duration": "1h 48m", "distance": "4.8 km", "stops": 5, "rating": 4 },
+    { "id": "3", "name": "Asian Side Discovery", "date": "March 14, 2025", "duration": "3h 02m", "distance": "8.4 km", "stops": 10, "rating": 5 },
+    { "id": "4", "name": "Grand Bazaar Circuit", "date": "February 21, 2025", "duration": "1h 30m", "distance": "2.6 km", "stops": 4, "rating": 3 }
+  ],
+  "offlineRoutes": [
+    { "id": "1", "name": "Historic Peninsula Walk", "stops": 8, "distance": "6.2 km", "size": "14.3 MB", "downloaded": "3 days ago" },
+    { "id": "2", "name": "Bosphorus Coastal Route", "stops": 5, "distance": "4.8 km", "size": "9.7 MB", "downloaded": "1 week ago" }
+  ],
+  "bookmarks": [
+    { "id": "1", "name": "Hagia Sophia", "category": "Museum", "rating": 4.9, "location": "Sultanahmet", "imageUrl": "https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=400&q=80&fit=crop", "savedAt": "2 days ago" },
+    { "id": "2", "name": "Galata Tower", "category": "Historic", "rating": 4.6, "location": "Beyoğlu", "imageUrl": "https://images.unsplash.com/photo-1524661135-423995f22d0b?w=400&q=80&fit=crop", "savedAt": "1 week ago" },
+    { "id": "3", "name": "Grand Bazaar", "category": "Shopping", "rating": 4.5, "location": "Fatih", "imageUrl": "https://images.unsplash.com/photo-1519822472072-ec86d5ab6f5c?w=400&q=80&fit=crop", "savedAt": "2 weeks ago" },
+    { "id": "4", "name": "Blue Mosque", "category": "Historic", "rating": 4.8, "location": "Sultanahmet", "imageUrl": "https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=400&q=80&fit=crop", "savedAt": "3 weeks ago" }
+  ],
+  "notifications": [
+    { "id": "1", "type": "route", "title": "Route Reminder", "body": "You have an active route — Historical Sultanahmet Walk. Continue your journey!", "time": "5m ago", "isRead": false },
+    { "id": "2", "type": "suggestion", "title": "New Gem Nearby", "body": "Basilica Cistern is 0.3 km away and highly rated by travelers like you.", "time": "1h ago", "isRead": false },
+    { "id": "3", "type": "reminder", "title": "Don't forget!", "body": "Your saved route \"Grand Bazaar & Spice Market\" starts tomorrow at 10:00.", "time": "3h ago", "isRead": true },
+    { "id": "4", "type": "suggestion", "title": "Trending Today", "body": "Blue Mosque is trending with 4.9 rating today. A must-see in Sultanahmet!", "time": "1d ago", "isRead": true },
+    { "id": "5", "type": "route", "title": "Route Completed", "body": "Congratulations! You completed the Bosphorus Waterfront Stroll.", "time": "2d ago", "isRead": true }
+  ]
+}

@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
   TextInput, Image, StatusBar,
@@ -42,6 +42,42 @@ const SearchResultsScreen = () => {
       r.location?.toLowerCase().includes(q),
     ));
   }, [query]);
+
+  const renderItem = useCallback(({ item }: { item: any }) => (
+    <TouchableOpacity
+      style={styles.card}
+      activeOpacity={0.85}
+      onPress={() => navigation.navigate('PlaceDetail', {
+        placeId: item.id,
+        name: item.name,
+        category: item.category,
+        rating: item.rating,
+        imageUrl: item.imageUrl,
+        reviewCount: item.reviewCount,
+        price: item.price,
+      })}
+      accessibilityLabel={`${item.name}, ${item.category}`}
+      accessibilityRole="button"
+    >
+      <Image source={{ uri: item.imageUrl }} style={styles.thumb} resizeMode="cover" />
+      <View style={styles.info}>
+        <Text style={styles.name} numberOfLines={1}>{item.name}</Text>
+        <Text style={styles.category}>{item.category}</Text>
+        <View style={styles.metaRow}>
+          <Iconify icon="solar:star-bold" size={wScale(11)} color={colors.warning} />
+          <Text style={styles.rating}>{item.rating?.toFixed(1)}</Text>
+          {item.location && (
+            <>
+              <View style={styles.dot} />
+              <Iconify icon="solar:map-point-linear" size={wScale(10)} color={colors.textSecondary} />
+              <Text style={styles.location}>{item.location}</Text>
+            </>
+          )}
+        </View>
+      </View>
+      <Iconify icon="solar:alt-arrow-right-linear" size={wScale(16)} color={colors.textSecondary} />
+    </TouchableOpacity>
+  ), [styles, colors, navigation]);
 
   return (
     <View style={styles.root}>
@@ -96,41 +132,11 @@ const SearchResultsScreen = () => {
         keyExtractor={(item: any) => item.id}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
-        renderItem={({ item }: { item: any }) => (
-          <TouchableOpacity
-            style={styles.card}
-            activeOpacity={0.85}
-            onPress={() => navigation.navigate('PlaceDetail', {
-              placeId: item.id,
-              name: item.name,
-              category: item.category,
-              rating: item.rating,
-              imageUrl: item.imageUrl,
-              reviewCount: item.reviewCount,
-              price: item.price,
-            })}
-            accessibilityLabel={`${item.name}, ${item.category}`}
-            accessibilityRole="button"
-          >
-            <Image source={{ uri: item.imageUrl }} style={styles.thumb} resizeMode="cover" />
-            <View style={styles.info}>
-              <Text style={styles.name} numberOfLines={1}>{item.name}</Text>
-              <Text style={styles.category}>{item.category}</Text>
-              <View style={styles.metaRow}>
-                <Iconify icon="solar:star-bold" size={wScale(11)} color={colors.warning} />
-                <Text style={styles.rating}>{item.rating?.toFixed(1)}</Text>
-                {item.location && (
-                  <>
-                    <View style={styles.dot} />
-                    <Iconify icon="solar:map-point-linear" size={wScale(10)} color={colors.textSecondary} />
-                    <Text style={styles.location}>{item.location}</Text>
-                  </>
-                )}
-              </View>
-            </View>
-            <Iconify icon="solar:alt-arrow-right-linear" size={wScale(16)} color={colors.textSecondary} />
-          </TouchableOpacity>
-        )}
+        renderItem={renderItem}
+        removeClippedSubviews
+        maxToRenderPerBatch={10}
+        windowSize={10}
+        initialNumToRender={8}
         ListEmptyComponent={
           query.trim().length > 0 ? (
             <View style={styles.empty}>

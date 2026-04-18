@@ -246,11 +246,43 @@
     "noTripsSub": "Start a route to see your history"
   },
   "premium": {
-    "title": "Go Premium",
-    "upgradeBtn": "Upgrade to Premium"
+    "title": "Toronto Premium",
+    "subtitle": "Unlock the full travel experience",
+    "upgradeBtn": "Upgrade to Premium",
+    "startTrial": "Start Free Trial",
+    "trialNote": "3-day free trial • Cancel anytime",
+    "popular": "POPULAR",
+    "monthly": "Monthly",
+    "annual": "Annual",
+    "monthlyPrice": "$4.99",
+    "monthlyPer": "per month",
+    "annualPrice": "$39.99",
+    "annualPer": "per year · Save 33%",
+    "legalNote": "Prices shown in USD. Subscription auto-renews unless cancelled 24 hours before period ends.",
+    "feature1Label": "Unlimited AI Route Planning",
+    "feature1Desc": "Generate unlimited personalized routes with Belen AI",
+    "feature2Label": "Offline Routes",
+    "feature2Desc": "Download routes for use without internet connection",
+    "feature3Label": "Smart Recommendations",
+    "feature3Desc": "Get highly personalized place suggestions",
+    "feature4Label": "Priority Notifications",
+    "feature4Desc": "Real-time alerts for route updates and new gems",
+    "feature5Label": "No Ads",
+    "feature5Desc": "Enjoy a completely ad-free experience"
   },
   "chatSettings": {
-    "title": "Chat Settings"
+    "title": "Assistant Settings",
+    "saveHistory": "Save Conversation History",
+    "saveHistoryDesc": "Keep chat history for better AI context",
+    "voiceInput": "Voice Input",
+    "voiceInputDesc": "Use microphone to send voice messages",
+    "autoSuggest": "Auto-suggest Places",
+    "autoSuggestDesc": "Show quick suggestion chips during chat",
+    "personalizeAI": "Personalize AI Responses",
+    "personalizeAIDesc": "Use your travel preferences to refine answers",
+    "clearHistory": "Clear Conversation History",
+    "clearHistoryTitle": "Clear History",
+    "clearHistoryMsg": "Delete all conversation history with Belen?"
   },
   "legal": {
     "privacyPolicy": "Privacy Policy",
@@ -271,5 +303,11 @@
     "addedToRoute": "Added to route!",
     "bookmarkAdded": "Place saved!",
     "bookmarkRemoved": "Removed from saved"
+  },
+  "time": {
+    "just_now": "Just now",
+    "minutes": "{{count}}m ago",
+    "hours": "{{count}}h ago",
+    "days": "{{count}}d ago"
   }
 }

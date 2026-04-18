@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, LinkingOptions } from '@react-navigation/native';
 import RootStackNavigator from './src/navigators/RootStackNavigator';
 import AuthStackNavigator from './src/navigators/AuthStackNavigator';
 import SplashScreen from './src/screens/SplashScreen';
@@ -9,6 +9,27 @@ import { setUser } from './src/redux/UserSlice';
 import { setTheme } from './src/redux/ThemeSlice';
 import { setLanguage } from './src/redux/LanguageSlice';
 import storage from './src/storage';
+import { RootStackParamList } from './src/types/navigation';
+
+const linking: LinkingOptions<RootStackParamList> = {
+  prefixes: ['toronto://', 'https://toronto-app.com'],
+  config: {
+    screens: {
+      Main: {
+        screens: {
+          Home: 'home',
+          Explore: 'explore',
+          Routes: 'routes',
+          Profile: 'profile',
+        },
+      },
+      PlaceDetail: 'place/:placeId',
+      RouteDetail: 'route/:routeId',
+      SearchResults: 'search',
+      MapFull: 'map',
+    },
+  },
+};
 
 const App = () => {
   const screenState = useSelector((state: RootState) => state.User);
@@ -39,7 +60,7 @@ const App = () => {
   if (isLoading) return <SplashScreen />;
 
   return (
-    <NavigationContainer>
+    <NavigationContainer linking={linking}>
       {screenState.token ? (
         <RootStackNavigator />
       ) : (

@@ -8,6 +8,7 @@ import i18n from './src/i18n/i18n';
 import store from './src/redux/store';
 import App from './App';
 import { ThemeProvider, useColors } from './src/context/ThemeContext';
+import ErrorBoundary from './src/components/ErrorBoundary/ErrorBoundary';
 
 const ThemedRoot: React.FC = () => {
   const colors = useColors();
@@ -26,7 +27,9 @@ export default function ReduxProvider() {
       <GestureHandlerRootView style={{ flex: 1 }}>
         <Provider store={store}>
           <ThemeProvider>
-            <ThemedRoot />
+            <ErrorBoundary>
+              <ThemedRoot />
+            </ErrorBoundary>
           </ThemeProvider>
         </Provider>
       </GestureHandlerRootView>

@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 import { Iconify } from 'react-native-iconify';
 
@@ -13,11 +14,12 @@ import { useColors } from '../../context/ThemeContext';
 import { RootStackParamList } from '../../types/navigation';
 
 type RouteT = RouteProp<RootStackParamList, 'ResetPassword'>;
+type NavProp = NativeStackNavigationProp<RootStackParamList, 'ResetPassword'>;
 
 export default function ResetPasswordScreen() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavProp>();
   const route = useRoute<RouteT>();
   const { t } = useTranslation();
   const colors = useColors();
@@ -27,7 +29,7 @@ export default function ResetPasswordScreen() {
 
   const handleReset = () => {
     if (!isValid) return;
-    navigation.navigate('Login' as never);
+    navigation.navigate('Login');
   };
 
   return (

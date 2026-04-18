@@ -246,11 +246,43 @@
     "noTripsSub": "Geçmişinizi görmek için bir rota başlatın"
   },
   "premium": {
-    "title": "Premium'a Geç",
-    "upgradeBtn": "Premium'a Geç"
+    "title": "Toronto Premium",
+    "subtitle": "Tam seyahat deneyimini keşfet",
+    "upgradeBtn": "Premium'a Yükselt",
+    "startTrial": "Ücretsiz Denemeyi Başlat",
+    "trialNote": "3 günlük ücretsiz deneme • İstediğin zaman iptal",
+    "popular": "POPÜLER",
+    "monthly": "Aylık",
+    "annual": "Yıllık",
+    "monthlyPrice": "₺149,99",
+    "monthlyPer": "aylık",
+    "annualPrice": "₺999,99",
+    "annualPer": "yıllık · %33 tasarruf",
+    "legalNote": "Fiyatlar TL cinsindendir. Abonelik, dönem bitiminden 24 saat önce iptal edilmezse otomatik olarak yenilenir.",
+    "feature1Label": "Sınırsız AI Rota Planlama",
+    "feature1Desc": "Belen AI ile sınırsız kişiselleştirilmiş rota oluştur",
+    "feature2Label": "Çevrimdışı Rotalar",
+    "feature2Desc": "Rotaları internet bağlantısı olmadan kullanmak için indir",
+    "feature3Label": "Akıllı Öneriler",
+    "feature3Desc": "Yüksek kişiselleştirilmiş yer önerileri al",
+    "feature4Label": "Öncelikli Bildirimler",
+    "feature4Desc": "Rota güncellemeleri ve yeni yerler için anlık uyarılar",
+    "feature5Label": "Reklamsız",
+    "feature5Desc": "Tamamen reklamsız bir deneyimin keyfini çıkar"
   },
   "chatSettings": {
-    "title": "Sohbet Ayarları"
+    "title": "Asistan Ayarları",
+    "saveHistory": "Konuşma Geçmişini Kaydet",
+    "saveHistoryDesc": "Daha iyi AI bağlamı için sohbet geçmişini tut",
+    "voiceInput": "Sesli Giriş",
+    "voiceInputDesc": "Sesli mesaj göndermek için mikrofonu kullan",
+    "autoSuggest": "Otomatik Yer Öner",
+    "autoSuggestDesc": "Sohbet sırasında hızlı öneri butonları göster",
+    "personalizeAI": "AI Yanıtlarını Kişiselleştir",
+    "personalizeAIDesc": "Seyahat tercihlerini kullanarak yanıtları iyileştir",
+    "clearHistory": "Konuşma Geçmişini Temizle",
+    "clearHistoryTitle": "Geçmişi Temizle",
+    "clearHistoryMsg": "Belen ile tüm konuşma geçmişini sil?"
   },
   "legal": {
     "privacyPolicy": "Gizlilik Politikası",
@@ -271,5 +303,11 @@
     "addedToRoute": "Rotaya eklendi!",
     "bookmarkAdded": "Yer kaydedildi!",
     "bookmarkRemoved": "Kaydedilenlerden çıkarıldı"
+  },
+  "time": {
+    "just_now": "Az önce",
+    "minutes": "{{count}} dk önce",
+    "hours": "{{count}} sa önce",
+    "days": "{{count}} gün önce"
   }
 }

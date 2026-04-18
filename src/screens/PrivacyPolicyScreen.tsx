@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, StatusBar } from 
 import { useNavigation } from '@react-navigation/native';
 import { Iconify } from 'react-native-iconify';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 
 import { useColors } from '../context/ThemeContext';
 import { AppColors } from '../styles/theme';
@@ -41,6 +42,7 @@ const SECTIONS = [
 const PrivacyPolicyScreen = () => {
   const navigation = useNavigation();
   const colors = useColors();
+  const { t } = useTranslation();
   const currentTheme = useSelector((s: RootState) => s.Theme.theme);
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
@@ -51,7 +53,7 @@ const PrivacyPolicyScreen = () => {
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
           <Iconify icon="solar:alt-arrow-left-linear" size={wScale(22)} color={colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Privacy Policy</Text>
+        <Text style={styles.headerTitle}>{t('legal.privacyPolicy')}</Text>
         <View style={{ width: wScale(36) }} />
       </View>
 

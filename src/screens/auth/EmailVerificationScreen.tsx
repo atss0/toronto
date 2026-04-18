@@ -1,6 +1,7 @@
 import React, { useMemo, useState, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Iconify } from 'react-native-iconify';
 
 import Fonts from '../../styles/Fonts';
@@ -11,9 +12,10 @@ import { useColors } from '../../context/ThemeContext';
 import { RootStackParamList } from '../../types/navigation';
 
 type RouteT = RouteProp<RootStackParamList, 'EmailVerification'>;
+type NavProp = NativeStackNavigationProp<RootStackParamList, 'EmailVerification'>;
 
 export default function EmailVerificationScreen() {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavProp>();
   const route = useRoute<RouteT>();
   const colors = useColors();
   const styles = useMemo(() => makeStyles(colors), [colors]);
@@ -38,7 +40,7 @@ export default function EmailVerificationScreen() {
 
   const handleVerify = () => {
     if (!isComplete) return;
-    navigation.navigate('Main' as never);
+    navigation.navigate('Main');
   };
 
   return (

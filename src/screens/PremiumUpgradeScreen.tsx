@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, StatusBar } from 
 import { useNavigation } from '@react-navigation/native';
 import { Iconify } from 'react-native-iconify';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 
 import { useColors } from '../context/ThemeContext';
 import { AppColors } from '../styles/theme';
@@ -11,25 +12,34 @@ import { wScale, hScale } from '../styles/Scaler';
 import Layout from '../styles/Layout';
 import { RootState } from '../redux/store';
 
-const FEATURES = [
-  { icon: 'solar:map-arrow-right-bold', label: 'Unlimited AI Route Planning', desc: 'Generate unlimited personalized routes with Belen AI' },
-  { icon: 'solar:cloud-download-bold', label: 'Offline Routes', desc: 'Download routes for use without internet connection' },
-  { icon: 'solar:star-bold', label: 'Smart Recommendations', desc: 'Get highly personalized place suggestions' },
-  { icon: 'solar:bell-bold', label: 'Priority Notifications', desc: 'Real-time alerts for route updates and new gems' },
-  { icon: 'solar:shield-bold', label: 'No Ads', desc: 'Enjoy a completely ad-free experience' },
+const FEATURE_ICONS = [
+  'solar:map-arrow-right-bold',
+  'solar:cloud-download-bold',
+  'solar:star-bold',
+  'solar:bell-bold',
+  'solar:shield-bold',
 ];
 
-const PLANS = [
-  { id: 'monthly', label: 'Monthly', price: '$4.99', sub: 'per month', popular: false },
-  { id: 'annual', label: 'Annual', price: '$39.99', sub: 'per year · Save 33%', popular: true },
-];
+const PLAN_IDS = ['monthly', 'annual'] as const;
 
 const PremiumUpgradeScreen = () => {
   const navigation = useNavigation();
   const colors = useColors();
+  const { t } = useTranslation();
   const currentTheme = useSelector((s: RootState) => s.Theme.theme);
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const [selectedPlan, setSelectedPlan] = React.useState('annual');
+
+  const FEATURES = useMemo(() => FEATURE_ICONS.map((icon, i) => ({
+    icon,
+    label: t(`premium.feature${i + 1}Label`),
+    desc: t(`premium.feature${i + 1}Desc`),
+  })), [t]);
+
+  const PLANS = useMemo(() => [
+    { id: 'monthly', label: t('premium.monthly'), price: t('premium.monthlyPrice'), sub: t('premium.monthlyPer'), popular: false },
+    { id: 'annual', label: t('premium.annual'), price: t('premium.annualPrice'), sub: t('premium.annualPer'), popular: true },
+  ], [t]);
 
   return (
     <View style={styles.root}>
@@ -43,8 +53,8 @@ const PremiumUpgradeScreen = () => {
         <View style={styles.crownWrap}>
           <Iconify icon="solar:crown-bold" size={wScale(40)} color={colors.warning} />
         </View>
-        <Text style={styles.heroTitle}>Toronto Premium</Text>
-        <Text style={styles.heroSubtitle}>Unlock the full travel experience</Text>
+        <Text style={styles.heroTitle}>{t('premium.title')}</Text>
+        <Text style={styles.heroSubtitle}>{t('premium.subtitle')}</Text>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
@@ -74,7 +84,7 @@ const PremiumUpgradeScreen = () => {
             >
               {plan.popular && (
                 <View style={styles.popularBadge}>
-                  <Text style={styles.popularText}>POPULAR</Text>
+                  <Text style={styles.popularText}>{t('premium.popular')}</Text>
                 </View>
               )}
               <Text style={[styles.planLabel, plan.id === selectedPlan && { color: colors.primary }]}>{plan.label}</Text>
@@ -87,13 +97,11 @@ const PremiumUpgradeScreen = () => {
         {/* CTA */}
         <TouchableOpacity style={styles.cta} activeOpacity={0.85}>
           <Iconify icon="solar:crown-bold" size={wScale(18)} color={colors.warning} />
-          <Text style={styles.ctaText}>Start Free Trial</Text>
+          <Text style={styles.ctaText}>{t('premium.startTrial')}</Text>
         </TouchableOpacity>
-        <Text style={styles.ctaNote}>3-day free trial • Cancel anytime</Text>
+        <Text style={styles.ctaNote}>{t('premium.trialNote')}</Text>
 
-        <Text style={styles.legal}>
-          Prices shown in USD. Subscription auto-renews unless cancelled 24 hours before period ends.
-        </Text>
+        <Text style={styles.legal}>{t('premium.legalNote')}</Text>
       </ScrollView>
     </View>
   );

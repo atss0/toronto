@@ -24,6 +24,7 @@ import Layout from '../styles/Layout';
 import { RootState } from '../redux/store';
 
 import discoverData from '../data/discover.json';
+import SkeletonCard from '../components/SkeletonCard/SkeletonCard';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -61,7 +62,7 @@ const MAP_PINS = [
   { top: 0.68, left: 0.60, label: 'Jazz Lounge',         rating: 4.5 },
 ];
 
-const ExploreMapView: React.FC<{ colors: AppColors }> = ({ colors }) => {
+const ExploreMapView: React.FC<{ colors: AppColors }> = React.memo(({ colors }) => {
   const [activePin, setActivePin] = useState<number | null>(null);
   const mapH = hScale(420);
   const mapW = '100%';
@@ -288,11 +289,11 @@ const ExploreMapView: React.FC<{ colors: AppColors }> = ({ colors }) => {
       </View>
     </View>
   );
-};
+});
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-const TrendingNearCard: React.FC<{ item: TrendingItem; colors: AppColors }> = ({ item, colors }) => {
+const TrendingNearCard: React.FC<{ item: TrendingItem; colors: AppColors }> = React.memo(({ item, colors }) => {
   const styles = useMemo(() => makeTrendingCardStyles(colors), [colors]);
   return (
     <TouchableOpacity style={styles.card} activeOpacity={0.88}>
@@ -319,7 +320,7 @@ const TrendingNearCard: React.FC<{ item: TrendingItem; colors: AppColors }> = ({
       </View>
     </TouchableOpacity>
   );
-};
+});
 
 const makeTrendingCardStyles = (colors: AppColors) =>
   StyleSheet.create({
@@ -388,7 +389,7 @@ const PlaceRow: React.FC<{
   colors: AppColors;
   onToggleLike: (id: string) => void;
   onPress: () => void;
-}> = ({ item, colors, onToggleLike, onPress }) => {
+}> = React.memo(({ item, colors, onToggleLike, onPress }) => {
   const styles = useMemo(() => makeResultItemStyles(colors), [colors]);
   return (
     <TouchableOpacity style={styles.row} activeOpacity={0.85} onPress={onPress}>
@@ -421,7 +422,7 @@ const PlaceRow: React.FC<{
       </TouchableOpacity>
     </TouchableOpacity>
   );
-};
+});
 
 const makeResultItemStyles = (colors: AppColors) =>
   StyleSheet.create({
@@ -495,6 +496,7 @@ const ExploreScreen = () => {
   const [activeFilter, setActiveFilter] = useState('all');
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [results, setResults] = useState<PlaceResult[]>(discoverData.allResults as PlaceResult[]);
+  const [isLoading, setIsLoading] = useState(false); // TODO: true when API is wired
 
   const handleToggleLike = (id: string) => {
     setResults(prev =>
@@ -644,7 +646,9 @@ const ExploreScreen = () => {
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.hList}
               >
-                {discoverData.trending.map(item => (
+                {isLoading
+                  ? [1, 2, 3].map(i => <SkeletonCard key={i} width={wScale(160)} height={hScale(170)} style={{ marginRight: wScale(12) }} />)
+                  : discoverData.trending.map(item => (
                   <TrendingNearCard
                     key={item.id}
                     item={item as TrendingItem}

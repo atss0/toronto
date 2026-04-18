@@ -12,18 +12,14 @@ import { AppColors } from '../styles/theme';
 import Fonts from '../styles/Fonts';
 import { wScale, hScale } from '../styles/Scaler';
 import Layout from '../styles/Layout';
-
-const OFFLINE_ROUTES = [
-  { id: '1', name: 'Historic Peninsula Walk', stops: 8, distance: '6.2 km', size: '14.3 MB', downloaded: '3 days ago' },
-  { id: '2', name: 'Bosphorus Coastal Route', stops: 5, distance: '4.8 km', size: '9.7 MB', downloaded: '1 week ago' },
-];
+import mockData from '../data/mock.json';
 
 const OfflineRoutesScreen = () => {
   const navigation = useNavigation();
   const colors = useColors();
   const { t } = useTranslation();
   const styles = useMemo(() => makeStyles(colors), [colors]);
-  const [routes, setRoutes] = useState(OFFLINE_ROUTES);
+  const [routes, setRoutes] = useState(mockData.offlineRoutes);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const removeRoute = (id: string, name: string) => {

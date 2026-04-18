@@ -17,6 +17,7 @@ import Fonts from '../styles/Fonts';
 import { wScale, hScale } from '../styles/Scaler';
 import Layout from '../styles/Layout';
 import { RootState } from '../redux/store';
+import mockData from '../data/mock.json';
 
 interface Notification {
   id: string;
@@ -27,13 +28,7 @@ interface Notification {
   isRead: boolean;
 }
 
-const INITIAL_NOTIFICATIONS: Notification[] = [
-  { id: '1', type: 'route', title: 'Route Reminder', body: 'You have an active route — Historical Sultanahmet Walk. Continue your journey!', time: '5m ago', isRead: false },
-  { id: '2', type: 'suggestion', title: 'New Gem Nearby', body: 'Basilica Cistern is 0.3 km away and highly rated by travelers like you.', time: '1h ago', isRead: false },
-  { id: '3', type: 'reminder', title: 'Don\'t forget!', body: 'Your saved route "Grand Bazaar & Spice Market" starts tomorrow at 10:00.', time: '3h ago', isRead: true },
-  { id: '4', type: 'suggestion', title: 'Trending Today', body: 'Blue Mosque is trending with 4.9 rating today. A must-see in Sultanahmet!', time: '1d ago', isRead: true },
-  { id: '5', type: 'route', title: 'Route Completed', body: 'Congratulations! You completed the Bosphorus Waterfront Stroll.', time: '2d ago', isRead: true },
-];
+const INITIAL_NOTIFICATIONS: Notification[] = mockData.notifications as Notification[];
 
 const typeIcon: Record<Notification['type'], string> = {
   route: 'solar:route-bold',

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
   Image, RefreshControl,
@@ -17,15 +17,11 @@ import Fonts from '../styles/Fonts';
 import { wScale, hScale } from '../styles/Scaler';
 import Layout from '../styles/Layout';
 import { RootState } from '../redux/store';
+import mockData from '../data/mock.json';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
-const BOOKMARKS = [
-  { id: '1', name: 'Hagia Sophia', category: 'Museum', rating: 4.9, location: 'Sultanahmet', imageUrl: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=400&q=80&fit=crop', savedAt: '2 days ago' },
-  { id: '2', name: 'Galata Tower', category: 'Historic', rating: 4.6, location: 'Beyoğlu', imageUrl: 'https://images.unsplash.com/photo-1524661135-423995f22d0b?w=400&q=80&fit=crop', savedAt: '1 week ago' },
-  { id: '3', name: 'Grand Bazaar', category: 'Shopping', rating: 4.5, location: 'Fatih', imageUrl: 'https://images.unsplash.com/photo-1519822472072-ec86d5ab6f5c?w=400&q=80&fit=crop', savedAt: '2 weeks ago' },
-  { id: '4', name: 'Blue Mosque', category: 'Historic', rating: 4.8, location: 'Sultanahmet', imageUrl: 'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=400&q=80&fit=crop', savedAt: '3 weeks ago' },
-];
+const BOOKMARKS = mockData.bookmarks;
 
 const FILTER_TABS = ['All', 'Museums', 'Historic', 'Shopping', 'Dining'];
 
@@ -39,17 +35,53 @@ const BookmarksSavedScreen = () => {
   const [bookmarks, setBookmarks] = useState(BOOKMARKS);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const removeBookmark = (id: string) =>
-    setBookmarks(prev => prev.filter(b => b.id !== id));
+  const removeBookmark = useCallback((id: string) =>
+    setBookmarks(prev => prev.filter(b => b.id !== id)), []);
 
   const filtered = activeTab === 'All'
     ? bookmarks
     : bookmarks.filter(b => b.category === activeTab);
 
-  const onRefresh = () => {
+  const onRefresh = useCallback(() => {
     setIsRefreshing(true);
     setTimeout(() => setIsRefreshing(false), 1000);
-  };
+  }, []);
+
+  const renderItem = useCallback(({ item }: { item: typeof BOOKMARKS[0] }) => (
+    <TouchableOpacity
+      style={styles.card}
+      activeOpacity={0.85}
+      onPress={() => navigation.navigate('PlaceDetail', {
+        placeId: item.id,
+        name: item.name,
+        category: item.category,
+        rating: item.rating,
+        imageUrl: item.imageUrl,
+      })}
+      accessibilityLabel={`${item.name}, ${item.category}`}
+      accessibilityRole="button"
+    >
+      <Image source={{ uri: item.imageUrl }} style={styles.thumb} resizeMode="cover" />
+      <View style={styles.info}>
+        <Text style={styles.name} numberOfLines={1}>{item.name}</Text>
+        <Text style={styles.category}>{item.category} · {item.location}</Text>
+        <View style={styles.metaRow}>
+          <Iconify icon="solar:star-bold" size={wScale(11)} color={colors.warning} />
+          <Text style={styles.rating}>{item.rating.toFixed(1)}</Text>
+          <View style={styles.dot} />
+          <Text style={styles.savedAt}>{t('bookmarks.savedAgo', { time: item.savedAt })}</Text>
+        </View>
+      </View>
+      <TouchableOpacity
+        onPress={() => removeBookmark(item.id)}
+        hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+        accessibilityLabel={`Remove ${item.name}`}
+        accessibilityRole="button"
+      >
+        <Iconify icon="solar:bookmark-bold" size={wScale(20)} color={colors.primary} />
+      </TouchableOpacity>
+    </TouchableOpacity>
+  ), [styles, colors, navigation, t, removeBookmark]);
 
   return (
     <View style={styles.root}>
@@ -82,44 +114,14 @@ const BookmarksSavedScreen = () => {
         keyExtractor={item => item.id}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
+        renderItem={renderItem}
+        removeClippedSubviews
+        maxToRenderPerBatch={10}
+        windowSize={10}
+        initialNumToRender={8}
         refreshControl={
           <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} colors={[colors.primary]} tintColor={colors.primary} />
         }
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            style={styles.card}
-            activeOpacity={0.85}
-            onPress={() => navigation.navigate('PlaceDetail', {
-              placeId: item.id,
-              name: item.name,
-              category: item.category,
-              rating: item.rating,
-              imageUrl: item.imageUrl,
-            })}
-            accessibilityLabel={`${item.name}, ${item.category}`}
-            accessibilityRole="button"
-          >
-            <Image source={{ uri: item.imageUrl }} style={styles.thumb} resizeMode="cover" />
-            <View style={styles.info}>
-              <Text style={styles.name} numberOfLines={1}>{item.name}</Text>
-              <Text style={styles.category}>{item.category} · {item.location}</Text>
-              <View style={styles.metaRow}>
-                <Iconify icon="solar:star-bold" size={wScale(11)} color={colors.warning} />
-                <Text style={styles.rating}>{item.rating.toFixed(1)}</Text>
-                <View style={styles.dot} />
-                <Text style={styles.savedAt}>{t('bookmarks.savedAgo', { time: item.savedAt })}</Text>
-              </View>
-            </View>
-            <TouchableOpacity
-              onPress={() => removeBookmark(item.id)}
-              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-              accessibilityLabel={`Remove ${item.name}`}
-              accessibilityRole="button"
-            >
-              <Iconify icon="solar:bookmark-bold" size={wScale(20)} color={colors.primary} />
-            </TouchableOpacity>
-          </TouchableOpacity>
-        )}
         ListEmptyComponent={
           <View style={styles.empty}>
             <Iconify icon="solar:bookmark-linear" size={wScale(48)} color={colors.textSecondary} />

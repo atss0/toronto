@@ -6,9 +6,6 @@ export type RootStackParamList = {
     ResetPassword: { email: string };
     EmailVerification: { email: string };
 
-    // Onboarding
-    Onboarding: undefined;
-
     // Main tabs wrapper
     Main: undefined;
 
@@ -41,8 +38,19 @@ export type RootStackParamList = {
     ChatSettings: undefined;
     ChangePassword: undefined;
 
+    // Onboarding
+    Onboarding: undefined;
+
     // Important screens
-    SearchResults: { query: string };
+    SearchResults: {
+        query: string;
+        filters?: {
+            category?: string;
+            distance?: string;
+            minRating?: number;
+            prices?: string[];
+        };
+    };
     MapFull: { title?: string };
     Navigation: { routeName: string; stops?: string[] };
     BookmarksSaved: undefined;

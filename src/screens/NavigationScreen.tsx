@@ -36,6 +36,11 @@ const NavigationScreen = () => {
 
   const step = MOCK_STEPS[currentStep];
 
+  const gridBlocks = useMemo(() => Array.from({ length: 24 }, (_, i) => ({
+    top: (Math.floor(i / 4) * 0.15 + 0.05),
+    left: ((i % 4) * 0.22 + 0.05),
+  })), []);
+
   useEffect(() => {
     const pulse = Animated.loop(
       Animated.sequence([
@@ -56,10 +61,7 @@ const NavigationScreen = () => {
         <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.mapBackground }]} />
 
         {/* Grid */}
-        {useMemo(() => Array.from({ length: 24 }, (_, i) => ({
-          top: (Math.floor(i / 4) * 0.15 + 0.05),
-          left: ((i % 4) * 0.22 + 0.05),
-        })), []).map((b, i) => (
+        {gridBlocks.map((b, i) => (
           <View key={i} style={{ position: 'absolute', top: b.top * H * 0.6, left: b.left * W, width: W * 0.17, height: H * 0.09, borderRadius: wScale(5), backgroundColor: colors.mapGrid, opacity: 0.6 }} />
         ))}
 

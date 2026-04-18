@@ -14,15 +14,11 @@ import { AppColors } from '../styles/theme';
 import Fonts from '../styles/Fonts';
 import { wScale, hScale } from '../styles/Scaler';
 import Layout from '../styles/Layout';
+import mockData from '../data/mock.json';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
-const TRIPS = [
-  { id: '1', name: 'Historic Peninsula Walk', date: 'April 10, 2025', duration: '2h 15m', distance: '6.2 km', stops: 8, rating: 5 },
-  { id: '2', name: 'Bosphorus Coastal Route', date: 'March 28, 2025', duration: '1h 48m', distance: '4.8 km', stops: 5, rating: 4 },
-  { id: '3', name: 'Asian Side Discovery', date: 'March 14, 2025', duration: '3h 02m', distance: '8.4 km', stops: 10, rating: 5 },
-  { id: '4', name: 'Grand Bazaar Circuit', date: 'February 21, 2025', duration: '1h 30m', distance: '2.6 km', stops: 4, rating: 3 },
-];
+const TRIPS = mockData.tripHistory;
 
 const TripHistoryScreen = () => {
   const navigation = useNavigation<Nav>();

@@ -1,4 +1,4 @@
-import React, { useRef, useState, useMemo, useCallback } from 'react';
+import React, { useRef, useState, useMemo, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -29,6 +29,7 @@ import GemCard from '../components/GemCard';
 import OngoingJourneyCard from '../components/OngoingJourneyCard';
 import TrendingCard from '../components/TrendingCard';
 import QuickActions from '../components/QuickActions';
+import SkeletonCard from '../components/SkeletonCard/SkeletonCard';
 
 import homeData from '../data/home.json';
 
@@ -58,6 +59,8 @@ const HomeScreen = () => {
   const currentTheme = useSelector((s: RootState) => s.Theme.theme);
   const colors = useColors();
   const styles = useMemo(() => makeStyles(colors), [colors]);
+
+  const [isLoading, setIsLoading] = useState(false); // TODO: true when API is wired
 
   const firstName = user?.name ?? 'Traveler';
   const city = locationName || 'İstanbul';
@@ -214,7 +217,9 @@ const HomeScreen = () => {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.hList}
           >
-            {homeData.nearbyGems.map(gem => (
+            {isLoading
+              ? [1, 2, 3].map(i => <SkeletonCard key={i} width={wScale(160)} height={hScale(200)} style={{ marginRight: wScale(12) }} />)
+              : homeData.nearbyGems.map(gem => (
               <GemCard
                 key={gem.id}
                 name={gem.name}
@@ -237,6 +242,7 @@ const HomeScreen = () => {
         </View>
 
         {/* Ongoing Journey */}
+
         <View style={styles.section}>
           <SectionHeader title={t('home.ongoingJourney')} showSeeAll={false} />
           <View style={styles.padH}>
