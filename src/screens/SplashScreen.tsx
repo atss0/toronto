@@ -2,10 +2,15 @@ import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { Iconify } from 'react-native-iconify';
 
+import { useColors } from '../context/ThemeContext';
+import { AppColors } from '../styles/theme';
 import { wScale, hScale } from '../styles/Scaler';
 import Fonts from '../styles/Fonts';
 
 const SplashScreen = () => {
+  const colors = useColors();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   return (
     <View style={styles.root}>
       <View style={styles.iconWrap}>
@@ -24,10 +29,10 @@ const SplashScreen = () => {
 
 export default SplashScreen;
 
-const styles = StyleSheet.create({
+const makeStyles = (colors: AppColors) => StyleSheet.create({
   root: {
     flex: 1,
-    backgroundColor: '#3182ED',
+    backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     gap: hScale(12),

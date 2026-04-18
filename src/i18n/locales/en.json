@@ -2,7 +2,7 @@
   "tabs": {
     "home": "Home",
     "explore": "Explore",
-    "belen": "Assistant",
+    "belen": "AI",
     "routes": "Routes",
     "profile": "Profile"
   },
@@ -103,5 +103,173 @@
     "forgotPasswordSubtitle": "No worries! Enter your email to receive a secure reset link for your account.",
     "emailPlaceholderFP": "e.g. wanderlust@travel.com",
     "sendResetLink": "Send Reset Link"
+  },
+  "placeDetail": {
+    "about": "About",
+    "location": "Location",
+    "openingHours": "Opening Hours",
+    "addToRoute": "Add to Route",
+    "reviews": "Reviews",
+    "save": "Save",
+    "saved": "Saved"
+  },
+  "routeDetail": {
+    "progress": "Progress",
+    "stops": "Stops",
+    "startNavigation": "Start Navigation",
+    "activeRoute": "ACTIVE ROUTE",
+    "totalStops": "Total Stops",
+    "duration": "Duration",
+    "distance": "Distance",
+    "completed": "completed",
+    "upcoming": "upcoming"
+  },
+  "navigation": {
+    "endNavigation": "End Navigation",
+    "endConfirmTitle": "End Navigation?",
+    "endConfirmMessage": "Are you sure you want to end the current navigation?",
+    "endConfirmYes": "End",
+    "endConfirmNo": "Cancel",
+    "eta": "ETA",
+    "remaining": "Remaining",
+    "nextStop": "Next stop",
+    "prev": "Prev",
+    "next": "Next"
+  },
+  "map": {
+    "title": "Map",
+    "placesOnMap": "{{count}} places on map",
+    "listView": "List View",
+    "layersNotAvailable": "Map layers coming soon"
+  },
+  "bookmarks": {
+    "title": "Saved Places",
+    "noBookmarks": "No saved places",
+    "noBookmarksSub": "Bookmark places to find them here",
+    "all": "All",
+    "savedAgo": "Saved {{time}}"
+  },
+  "reviews": {
+    "title": "Reviews",
+    "writeReview": "Write a Review",
+    "submitReview": "Submit Review",
+    "helpful": "Helpful",
+    "shareExperience": "Share your experience...",
+    "noReviews": "No reviews yet",
+    "reviewLabels": ["", "Poor", "Fair", "Good", "Very Good", "Excellent"]
+  },
+  "filter": {
+    "title": "Filters",
+    "category": "Category",
+    "distance": "Distance",
+    "minimumRating": "Minimum Rating",
+    "priceRange": "Price Range",
+    "applyFilters": "Apply Filters",
+    "reset": "Reset"
+  },
+  "search": {
+    "placeholder": "Search places...",
+    "noResults": "No results found",
+    "noResultsSub": "Try different keywords or check spelling",
+    "resultCount": "{{count}} result",
+    "resultCountPlural": "{{count}} results",
+    "resultsFor": "for \"{{query}}\""
+  },
+  "changePassword": {
+    "title": "Change Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmNewPassword": "Confirm New Password",
+    "updatePassword": "Update Password",
+    "subtitle": "Keep your account secure with a strong password",
+    "enterCurrent": "Enter current password",
+    "enterNew": "Enter new password",
+    "repeatNew": "Repeat new password",
+    "minChars": "At least 8 characters",
+    "passwordsMatch": "Passwords match"
+  },
+  "editProfile": {
+    "title": "Edit Profile",
+    "save": "Save Changes"
+  },
+  "onboarding": {
+    "skip": "Skip",
+    "next": "Next",
+    "getStarted": "Get Started",
+    "slide1Title": "Discover Hidden Gems",
+    "slide1Subtitle": "Explore unique places and off-the-beaten-path destinations curated just for you.",
+    "slide2Title": "AI-Powered Routes",
+    "slide2Subtitle": "Let Belen, your AI travel assistant, build personalized routes in seconds.",
+    "slide3Title": "Save & Share Trips",
+    "slide3Subtitle": "Bookmark your favorite places and share your adventures with friends.",
+    "slide4Title": "Ready to Explore?",
+    "slide4Subtitle": "Your next great adventure is just a tap away. Let's get started!"
+  },
+  "weather": {
+    "hourlyForecast": "Hourly Forecast",
+    "weeklyForecast": "7-Day Forecast",
+    "wind": "Wind",
+    "humidity": "Humidity",
+    "visibility": "Visibility",
+    "uvIndex": "UV Index",
+    "condition": "Mostly Sunny"
+  },
+  "share": {
+    "title": "Share Route",
+    "copyLink": "Copy Link",
+    "shareVia": "Share via...",
+    "showQR": "Show QR Code",
+    "shareTo": "Share to",
+    "shareWith": "Share this route with friends",
+    "linkCopied": "Link copied!",
+    "qrComingSoon": "QR code feature coming soon"
+  },
+  "cityPicker": {
+    "title": "Select City",
+    "searchPlaceholder": "Search cities...",
+    "popularCities": "Popular Cities",
+    "allCities": "All Cities"
+  },
+  "offlineRoutes": {
+    "title": "Offline Routes",
+    "storageUsed": "Storage Used",
+    "noRoutes": "No offline routes",
+    "noRoutesSub": "Download routes to use them without internet",
+    "downloaded": "Downloaded {{time}}"
+  },
+  "tripHistory": {
+    "title": "Trip History",
+    "trips": "Trips",
+    "distance": "Distance",
+    "avgRating": "Avg Rating",
+    "noTrips": "No trips yet",
+    "noTripsSub": "Start a route to see your history"
+  },
+  "premium": {
+    "title": "Go Premium",
+    "upgradeBtn": "Upgrade to Premium"
+  },
+  "chatSettings": {
+    "title": "Chat Settings"
+  },
+  "legal": {
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
+    "helpCenter": "Help Center"
+  },
+  "common": {
+    "seeAll": "See All",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "retry": "Retry",
+    "noData": "No data available",
+    "goBack": "Go back",
+    "addedToRoute": "Added to route!",
+    "bookmarkAdded": "Place saved!",
+    "bookmarkRemoved": "Removed from saved"
   }
 }

@@ -205,7 +205,7 @@ const ExploreMapView: React.FC<{ colors: AppColors }> = ({ colors }) => {
                   {pin.label}
                 </Text>
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: wScale(3), marginTop: hScale(1) }}>
-                  <Iconify icon="solar:star-bold" size={wScale(8)} color="#F59E0B" />
+                  <Iconify icon="solar:star-bold" size={wScale(8)} color={colors.warning} />
                   <Text
                     style={{
                       fontSize: wScale(9),
@@ -312,7 +312,7 @@ const TrendingNearCard: React.FC<{ item: TrendingItem; colors: AppColors }> = ({
       <View style={styles.bottom}>
         <Text style={styles.name} numberOfLines={2}>{item.name}</Text>
         <View style={styles.ratingRow}>
-          <Iconify icon="solar:star-bold" size={wScale(10)} color="#F59E0B" />
+          <Iconify icon="solar:star-bold" size={wScale(10)} color={colors.warning} />
           <Text style={styles.rating}>{item.rating.toFixed(1)}</Text>
           <Text style={styles.category}>{item.category.toUpperCase()}</Text>
         </View>
@@ -337,7 +337,7 @@ const makeTrendingCardStyles = (colors: AppColors) =>
       position: 'absolute',
       top: hScale(10),
       left: wScale(10),
-      backgroundColor: '#F59E0B',
+      backgroundColor: colors.warning,
       paddingHorizontal: wScale(8),
       paddingVertical: hScale(3),
       borderRadius: wScale(6),
@@ -401,7 +401,7 @@ const PlaceRow: React.FC<{
         <Text style={styles.name} numberOfLines={1}>{item.name}</Text>
         <Text style={styles.sub} numberOfLines={1}>{item.category}</Text>
         <View style={styles.meta}>
-          <Iconify icon="solar:star-bold" size={wScale(10)} color="#F59E0B" />
+          <Iconify icon="solar:star-bold" size={wScale(10)} color={colors.warning} />
           <Text style={styles.rating}>{item.rating.toFixed(1)}</Text>
           <View style={styles.dot} />
           <Iconify icon="solar:map-point-bold" size={wScale(10)} color={colors.textSecondary} />

@@ -1,23 +1,23 @@
 import React, { useMemo, useState } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, StatusBar,
-  TextInput, ScrollView,
+  View, Text, StyleSheet, TouchableOpacity, ActivityIndicator,
+  TextInput, ScrollView, Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Iconify } from 'react-native-iconify';
-import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 
+import StackHeader from '../components/StackHeader/StackHeader';
 import { useColors } from '../context/ThemeContext';
 import { AppColors } from '../styles/theme';
 import Fonts from '../styles/Fonts';
 import { wScale, hScale } from '../styles/Scaler';
 import Layout from '../styles/Layout';
-import { RootState } from '../redux/store';
 
 const ChangePasswordScreen = () => {
   const navigation = useNavigation();
   const colors = useColors();
-  const currentTheme = useSelector((s: RootState) => s.Theme.theme);
+  const { t } = useTranslation();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const [current, setCurrent] = useState('');
@@ -26,80 +26,107 @@ const ChangePasswordScreen = () => {
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const isValid = current.length >= 6 && newPass.length >= 8 && newPass === confirm;
 
   const requirements = [
-    { label: 'At least 8 characters', met: newPass.length >= 8 },
-    { label: 'Passwords match', met: newPass === confirm && confirm.length > 0 },
+    { label: t('changePassword.minChars'), met: newPass.length >= 8 },
+    { label: t('changePassword.passwordsMatch'), met: newPass === confirm && confirm.length > 0 },
   ];
+
+  const handleUpdate = async () => {
+    if (!isValid) return;
+    setIsLoading(true);
+    // Simulate API call
+    setTimeout(() => {
+      setIsLoading(false);
+      Alert.alert('✓', t('changePassword.updatePassword'), [
+        { text: 'OK', onPress: () => navigation.goBack() },
+      ]);
+    }, 1200);
+  };
 
   return (
     <View style={styles.root}>
-      <StatusBar barStyle={currentTheme === 'dark' ? 'light-content' : 'dark-content'} backgroundColor={colors.inputBackground} />
+      <StackHeader title={t('changePassword.title')} />
 
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-          <Iconify icon="solar:alt-arrow-left-linear" size={wScale(22)} color={colors.textPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Change Password</Text>
-        <View style={{ width: wScale(36) }} />
-      </View>
-
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         <View style={styles.iconWrap}>
           <View style={styles.iconCircle}>
             <Iconify icon="solar:lock-password-bold" size={wScale(32)} color={colors.primary} />
           </View>
         </View>
-        <Text style={styles.subtitle}>Keep your account secure with a strong password</Text>
+        <Text style={styles.subtitle}>{t('changePassword.subtitle')}</Text>
 
         <View style={styles.fieldGroup}>
-          <Text style={styles.label}>Current Password</Text>
+          <Text style={styles.label}>{t('changePassword.currentPassword')}</Text>
           <View style={styles.inputRow}>
             <TextInput
               style={styles.input}
               value={current}
               onChangeText={setCurrent}
-              placeholder="Enter current password"
+              placeholder={t('changePassword.enterCurrent')}
               placeholderTextColor={colors.textSecondary}
               secureTextEntry={!showCurrent}
+              accessibilityLabel={t('changePassword.currentPassword')}
             />
-            <TouchableOpacity onPress={() => setShowCurrent(v => !v)} hitSlop={8}>
+            <TouchableOpacity
+              onPress={() => setShowCurrent(v => !v)}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              accessibilityLabel={showCurrent ? 'Hide password' : 'Show password'}
+              accessibilityRole="button"
+            >
               <Iconify icon={showCurrent ? 'solar:eye-bold' : 'solar:eye-closed-bold'} size={wScale(18)} color={colors.textSecondary} />
             </TouchableOpacity>
           </View>
         </View>
 
         <View style={styles.fieldGroup}>
-          <Text style={styles.label}>New Password</Text>
+          <Text style={styles.label}>{t('changePassword.newPassword')}</Text>
           <View style={styles.inputRow}>
             <TextInput
               style={styles.input}
               value={newPass}
               onChangeText={setNewPass}
-              placeholder="Enter new password"
+              placeholder={t('changePassword.enterNew')}
               placeholderTextColor={colors.textSecondary}
               secureTextEntry={!showNew}
+              accessibilityLabel={t('changePassword.newPassword')}
             />
-            <TouchableOpacity onPress={() => setShowNew(v => !v)} hitSlop={8}>
+            <TouchableOpacity
+              onPress={() => setShowNew(v => !v)}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              accessibilityLabel={showNew ? 'Hide password' : 'Show password'}
+              accessibilityRole="button"
+            >
               <Iconify icon={showNew ? 'solar:eye-bold' : 'solar:eye-closed-bold'} size={wScale(18)} color={colors.textSecondary} />
             </TouchableOpacity>
           </View>
         </View>
 
         <View style={styles.fieldGroup}>
-          <Text style={styles.label}>Confirm New Password</Text>
+          <Text style={styles.label}>{t('changePassword.confirmNewPassword')}</Text>
           <View style={styles.inputRow}>
             <TextInput
               style={styles.input}
               value={confirm}
               onChangeText={setConfirm}
-              placeholder="Repeat new password"
+              placeholder={t('changePassword.repeatNew')}
               placeholderTextColor={colors.textSecondary}
               secureTextEntry={!showConfirm}
+              accessibilityLabel={t('changePassword.confirmNewPassword')}
             />
-            <TouchableOpacity onPress={() => setShowConfirm(v => !v)} hitSlop={8}>
+            <TouchableOpacity
+              onPress={() => setShowConfirm(v => !v)}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              accessibilityLabel={showConfirm ? 'Hide password' : 'Show password'}
+              accessibilityRole="button"
+            >
               <Iconify icon={showConfirm ? 'solar:eye-bold' : 'solar:eye-closed-bold'} size={wScale(18)} color={colors.textSecondary} />
             </TouchableOpacity>
           </View>
@@ -122,11 +149,17 @@ const ChangePasswordScreen = () => {
 
         <TouchableOpacity
           style={[styles.saveBtn, !isValid && styles.saveBtnDisabled]}
-          onPress={() => isValid && navigation.goBack()}
-          disabled={!isValid}
+          onPress={handleUpdate}
+          disabled={!isValid || isLoading}
           activeOpacity={0.85}
+          accessibilityLabel={t('changePassword.updatePassword')}
+          accessibilityRole="button"
         >
-          <Text style={styles.saveBtnText}>Update Password</Text>
+          {isLoading ? (
+            <ActivityIndicator color="#FFFFFF" size="small" />
+          ) : (
+            <Text style={styles.saveBtnText}>{t('changePassword.updatePassword')}</Text>
+          )}
         </TouchableOpacity>
       </ScrollView>
     </View>
@@ -137,13 +170,6 @@ export default ChangePasswordScreen;
 
 const makeStyles = (colors: AppColors) => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background },
-  header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: Layout.screenPaddingH, paddingTop: hScale(16), paddingBottom: hScale(14),
-    backgroundColor: colors.inputBackground, borderBottomWidth: 1, borderBottomColor: colors.stroke,
-  },
-  backBtn: { width: wScale(36), height: wScale(36), alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontSize: wScale(17), fontFamily: Fonts.plusJakartaSansBold, color: colors.textPrimary },
   content: { paddingHorizontal: Layout.screenPaddingH, paddingTop: hScale(24), paddingBottom: hScale(40) },
   iconWrap: { alignItems: 'center', marginBottom: hScale(8) },
   iconCircle: {
@@ -159,19 +185,20 @@ const makeStyles = (colors: AppColors) => StyleSheet.create({
   label: { fontSize: wScale(13), fontFamily: Fonts.plusJakartaSansSemiBold, color: colors.textPrimary, marginBottom: hScale(8) },
   inputRow: {
     flexDirection: 'row', alignItems: 'center',
-    backgroundColor: colors.inputBackground, borderRadius: wScale(14), borderWidth: 1, borderColor: colors.stroke,
+    backgroundColor: colors.inputBackground, borderRadius: Layout.borderRadius.md, borderWidth: 1, borderColor: colors.stroke,
     paddingHorizontal: wScale(14), paddingVertical: hScale(12),
   },
   input: { flex: 1, fontSize: wScale(14), fontFamily: Fonts.plusJakartaSansRegular, color: colors.textPrimary, padding: 0 },
   requirementsCard: {
-    backgroundColor: colors.inputBackground, borderRadius: wScale(14), borderWidth: 1, borderColor: colors.stroke,
+    backgroundColor: colors.inputBackground, borderRadius: Layout.borderRadius.md, borderWidth: 1, borderColor: colors.stroke,
     padding: wScale(14), marginBottom: hScale(24), gap: hScale(8),
   },
   requirementRow: { flexDirection: 'row', alignItems: 'center', gap: wScale(8) },
   requirementText: { fontSize: wScale(13), fontFamily: Fonts.plusJakartaSansRegular, color: colors.textSecondary },
   saveBtn: {
-    backgroundColor: colors.primary, borderRadius: wScale(16), paddingVertical: hScale(15), alignItems: 'center',
-    shadowColor: colors.primary, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4,
+    backgroundColor: colors.primary, borderRadius: Layout.borderRadius.lg, paddingVertical: hScale(15), alignItems: 'center',
+    ...Layout.shadow.md,
+    shadowColor: colors.primary,
     marginTop: hScale(8),
   },
   saveBtnDisabled: { backgroundColor: colors.textSecondary, shadowOpacity: 0, elevation: 0 },

@@ -1,14 +1,17 @@
 import React, { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, StatusBar, Dimensions, Alert } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Iconify } from 'react-native-iconify';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 
 import { RootStackParamList } from '../types/navigation';
 import { useColors } from '../context/ThemeContext';
 import { AppColors } from '../styles/theme';
 import Fonts from '../styles/Fonts';
 import { wScale, hScale } from '../styles/Scaler';
+import Layout from '../styles/Layout';
 import { RootState } from '../redux/store';
 
 type RouteT = RouteProp<RootStackParamList, 'MapFull'>;
@@ -25,11 +28,14 @@ const MAP_PINS = [
   { top: 0.50, left: 0.82, label: 'Ortaköy Mosque', rating: 4.8 },
 ];
 
+type Nav = NativeStackNavigationProp<RootStackParamList>;
+
 const MapFullScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<Nav>();
   const route = useRoute<RouteT>();
   const colors = useColors();
   const currentTheme = useSelector((s: RootState) => s.Theme.theme);
+  const { t } = useTranslation();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const [activePin, setActivePin] = useState<number | null>(null);
   const [zoom, setZoom] = useState(1);
@@ -84,14 +90,28 @@ const MapFullScreen = () => {
             <TouchableOpacity
               key={i}
               activeOpacity={0.85}
-              onPress={() => setActivePin(isActive ? null : i)}
+              onPress={() => {
+                if (isActive) {
+                  navigation.navigate('PlaceDetail', {
+                    placeId: String(i),
+                    name: pin.label,
+                    category: 'Landmark',
+                    rating: pin.rating,
+                    imageUrl: `https://picsum.photos/400/300?random=${i}`,
+                  });
+                } else {
+                  setActivePin(i);
+                }
+              }}
               style={{ position: 'absolute', top: pin.top * H - hScale(isActive ? 52 : 36), left: pin.left * W, alignItems: 'center', zIndex: isActive ? 10 : 1 }}
+              accessibilityLabel={pin.label}
+              accessibilityRole="button"
             >
               {isActive && (
                 <View style={styles.pinLabel}>
                   <Text style={styles.pinLabelName} numberOfLines={1}>{pin.label}</Text>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: wScale(3) }}>
-                    <Iconify icon="solar:star-bold" size={wScale(9)} color="#F59E0B" />
+                    <Iconify icon="solar:star-bold" size={wScale(9)} color={colors.warning} />
                     <Text style={styles.pinLabelRating}>{pin.rating}</Text>
                   </View>
                 </View>
@@ -105,13 +125,23 @@ const MapFullScreen = () => {
 
         {/* Top controls */}
         <View style={styles.topBar}>
-          <TouchableOpacity style={styles.topBtn} onPress={() => navigation.goBack()}>
+          <TouchableOpacity
+            style={styles.topBtn}
+            onPress={() => navigation.goBack()}
+            accessibilityLabel={t('common.goBack')}
+            accessibilityRole="button"
+          >
             <Iconify icon="solar:alt-arrow-left-bold" size={wScale(20)} color={colors.textPrimary} />
           </TouchableOpacity>
           <View style={styles.titlePill}>
-            <Text style={styles.titleText}>{route.params?.title ?? 'Map'}</Text>
+            <Text style={styles.titleText}>{route.params?.title ?? t('map.title')}</Text>
           </View>
-          <TouchableOpacity style={styles.topBtn} onPress={() => Alert.alert('Map Layers', 'Satellite · Terrain · Traffic', [{ text: 'Close' }])}>
+          <TouchableOpacity
+            style={styles.topBtn}
+            onPress={() => Alert.alert(t('map.title'), t('map.layersNotAvailable'))}
+            accessibilityLabel="Map layers"
+            accessibilityRole="button"
+          >
             <Iconify icon="solar:layers-linear" size={wScale(20)} color={colors.textPrimary} />
           </TouchableOpacity>
         </View>
@@ -119,7 +149,13 @@ const MapFullScreen = () => {
         {/* Zoom controls */}
         <View style={styles.zoomControls}>
           {(['+', '−'] as const).map(label => (
-            <TouchableOpacity key={label} style={styles.zoomBtn} onPress={() => setZoom(z => label === '+' ? Math.min(z + 0.25, 3) : Math.max(z - 0.25, 0.5))}>
+            <TouchableOpacity
+              key={label}
+              style={styles.zoomBtn}
+              onPress={() => setZoom(z => label === '+' ? Math.min(z + 0.25, 3) : Math.max(z - 0.25, 0.5))}
+              accessibilityLabel={label === '+' ? 'Zoom in' : 'Zoom out'}
+              accessibilityRole="button"
+            >
               <Text style={styles.zoomLabel}>{label}</Text>
             </TouchableOpacity>
           ))}
@@ -129,11 +165,16 @@ const MapFullScreen = () => {
         <View style={styles.bottomBar}>
           <View style={styles.pinCountPill}>
             <Iconify icon="solar:map-point-bold" size={wScale(14)} color={colors.primary} />
-            <Text style={styles.pinCountText}>{MAP_PINS.length} places on map</Text>
+            <Text style={styles.pinCountText}>{t('map.placesOnMap', { count: MAP_PINS.length })}</Text>
           </View>
-          <TouchableOpacity style={styles.listViewBtn} onPress={() => navigation.goBack()}>
+          <TouchableOpacity
+            style={styles.listViewBtn}
+            onPress={() => navigation.goBack()}
+            accessibilityLabel={t('map.listView')}
+            accessibilityRole="button"
+          >
             <Iconify icon="solar:list-linear" size={wScale(16)} color={colors.primary} />
-            <Text style={styles.listViewText}>List View</Text>
+            <Text style={styles.listViewText}>{t('map.listView')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -146,13 +187,13 @@ export default MapFullScreen;
 const makeStyles = (colors: AppColors) => StyleSheet.create({
   root: { flex: 1 },
   topBar: {
-    position: 'absolute', top: hScale(48), left: wScale(16), right: wScale(16),
+    position: 'absolute', top: Layout.translucentTopOffset, left: wScale(16), right: wScale(16),
     flexDirection: 'row', alignItems: 'center', gap: wScale(10),
   },
   topBtn: {
-    width: wScale(40), height: wScale(40), borderRadius: wScale(12),
+    width: Layout.hitArea.backButton, height: Layout.hitArea.backButton, borderRadius: Layout.borderRadius.sm,
     backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: colors.stroke, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.12, shadowRadius: 4, elevation: 4,
+    borderWidth: 1, borderColor: colors.stroke, ...Layout.shadow.md,
   },
   titlePill: {
     flex: 1, backgroundColor: colors.white, borderRadius: wScale(12), borderWidth: 1, borderColor: colors.stroke,
@@ -178,10 +219,10 @@ const makeStyles = (colors: AppColors) => StyleSheet.create({
     position: 'absolute', right: wScale(16), bottom: hScale(110), gap: hScale(4),
   },
   zoomBtn: {
-    width: wScale(36), height: wScale(36), backgroundColor: colors.white,
-    borderRadius: wScale(10), borderWidth: 1, borderColor: colors.stroke,
+    width: Layout.hitArea.min, height: Layout.hitArea.min, backgroundColor: colors.white,
+    borderRadius: Layout.borderRadius.sm, borderWidth: 1, borderColor: colors.stroke,
     alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 3, elevation: 2,
+    ...Layout.shadow.sm,
   },
   zoomLabel: { fontSize: wScale(20), fontFamily: Fonts.plusJakartaSansBold, color: colors.textPrimary, lineHeight: wScale(24) },
   bottomBar: {

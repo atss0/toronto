@@ -6,13 +6,15 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
-  StatusBar,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Iconify } from 'react-native-iconify';
 import { useDispatch, useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 
+import StackHeader from '../components/StackHeader/StackHeader';
 import { useColors } from '../context/ThemeContext';
 import { AppColors } from '../styles/theme';
 import Fonts from '../styles/Fonts';
@@ -28,7 +30,9 @@ const EditProfileScreen = () => {
   const user = useSelector((s: RootState) => s.User.user);
   const token = useSelector((s: RootState) => s.User.token);
   const dispatch = useDispatch();
+  const { t } = useTranslation();
   const styles = useMemo(() => makeStyles(colors), [colors]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [name, setName] = useState(user?.name ?? '');
   const [surname, setSurname] = useState(user?.surname ?? '');
@@ -43,31 +47,34 @@ const EditProfileScreen = () => {
       Alert.alert('Validation', 'Name cannot be empty.');
       return;
     }
-    dispatch(setUser({
-      user: { ...user, name: name.trim(), surname: surname.trim(), email: email.trim() },
-      token,
-    }));
-    navigation.goBack();
+    setIsLoading(true);
+    setTimeout(() => {
+      dispatch(setUser({
+        user: { ...user, name: name.trim(), surname: surname.trim(), email: email.trim() },
+        token,
+      }));
+      setIsLoading(false);
+      navigation.goBack();
+    }, 800);
   };
 
   return (
     <View style={styles.root}>
-      <StatusBar
-        barStyle={currentTheme === 'dark' ? 'light-content' : 'dark-content'}
-        backgroundColor={colors.inputBackground}
+      <StackHeader
+        title={t('editProfile.title')}
+        rightComponent={
+          <TouchableOpacity
+            onPress={handleSave}
+            disabled={isLoading}
+            accessibilityLabel={t('editProfile.save')}
+            accessibilityRole="button"
+          >
+            <Text style={styles.saveText}>{t('common.save')}</Text>
+          </TouchableOpacity>
+        }
       />
 
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-          <Iconify icon="solar:alt-arrow-left-linear" size={wScale(22)} color={colors.textPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Edit Profile</Text>
-        <TouchableOpacity onPress={handleSave}>
-          <Text style={styles.saveText}>Save</Text>
-        </TouchableOpacity>
-      </View>
-
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         {/* Avatar */}
         <View style={styles.avatarSection}>
           <View style={styles.avatarWrap}>
@@ -106,8 +113,19 @@ const EditProfileScreen = () => {
           ))}
         </View>
 
-        <TouchableOpacity style={styles.saveBtn} onPress={handleSave} activeOpacity={0.85}>
-          <Text style={styles.saveBtnText}>Save Changes</Text>
+        <TouchableOpacity
+          style={styles.saveBtn}
+          onPress={handleSave}
+          activeOpacity={0.85}
+          disabled={isLoading}
+          accessibilityLabel={t('editProfile.save')}
+          accessibilityRole="button"
+        >
+          {isLoading ? (
+            <ActivityIndicator color="#FFFFFF" size="small" />
+          ) : (
+            <Text style={styles.saveBtnText}>{t('editProfile.save')}</Text>
+          )}
         </TouchableOpacity>
       </ScrollView>
     </View>
@@ -120,19 +138,6 @@ const makeStyles = (colors: AppColors) =>
   StyleSheet.create({
     root: { flex: 1, backgroundColor: colors.background },
 
-    header: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingHorizontal: Layout.screenPaddingH,
-      paddingTop: hScale(16),
-      paddingBottom: hScale(14),
-      backgroundColor: colors.inputBackground,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.stroke,
-    },
-    backBtn: { width: wScale(36), height: wScale(36), alignItems: 'center', justifyContent: 'center' },
-    headerTitle: { fontSize: wScale(17), fontFamily: Fonts.plusJakartaSansBold, color: colors.textPrimary },
     saveText: { fontSize: wScale(14), fontFamily: Fonts.plusJakartaSansBold, color: colors.primary },
 
     scroll: { paddingBottom: hScale(40) },

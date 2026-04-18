@@ -1,17 +1,17 @@
 import React, { useMemo, useState } from 'react';
 import {
-  View, Text, StyleSheet, FlatList, TouchableOpacity, StatusBar,
+  View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, RefreshControl,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Iconify } from 'react-native-iconify';
-import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 
+import StackHeader from '../components/StackHeader/StackHeader';
 import { useColors } from '../context/ThemeContext';
 import { AppColors } from '../styles/theme';
 import Fonts from '../styles/Fonts';
 import { wScale, hScale } from '../styles/Scaler';
 import Layout from '../styles/Layout';
-import { RootState } from '../redux/store';
 
 const OFFLINE_ROUTES = [
   { id: '1', name: 'Historic Peninsula Walk', stops: 8, distance: '6.2 km', size: '14.3 MB', downloaded: '3 days ago' },
@@ -21,32 +21,43 @@ const OFFLINE_ROUTES = [
 const OfflineRoutesScreen = () => {
   const navigation = useNavigation();
   const colors = useColors();
-  const currentTheme = useSelector((s: RootState) => s.Theme.theme);
+  const { t } = useTranslation();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const [routes, setRoutes] = useState(OFFLINE_ROUTES);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const removeRoute = (id: string) => setRoutes(prev => prev.filter(r => r.id !== id));
+  const removeRoute = (id: string, name: string) => {
+    Alert.alert(
+      t('common.delete'),
+      `${name}?`,
+      [
+        { text: t('common.cancel'), style: 'cancel' },
+        {
+          text: t('common.delete'),
+          style: 'destructive',
+          onPress: () => setRoutes(prev => prev.filter(r => r.id !== id)),
+        },
+      ],
+    );
+  };
+
+  const onRefresh = () => {
+    setIsRefreshing(true);
+    setTimeout(() => setIsRefreshing(false), 1000);
+  };
 
   return (
     <View style={styles.root}>
-      <StatusBar barStyle={currentTheme === 'dark' ? 'light-content' : 'dark-content'} backgroundColor={colors.inputBackground} />
-
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-          <Iconify icon="solar:alt-arrow-left-linear" size={wScale(22)} color={colors.textPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Offline Routes</Text>
-        <View style={{ width: wScale(36) }} />
-      </View>
+      <StackHeader title={t('offlineRoutes.title')} />
 
       <View style={styles.storageCard}>
         <Iconify icon="solar:database-bold" size={wScale(22)} color={colors.primary} />
         <View style={{ flex: 1 }}>
-          <Text style={styles.storageTitle}>Storage Used</Text>
+          <Text style={styles.storageTitle}>{t('offlineRoutes.storageUsed')}</Text>
           <View style={styles.storageBarBg}>
             <View style={[styles.storageBarFill, { width: '24%' }]} />
           </View>
-          <Text style={styles.storageSubtitle}>24 MB of 100 MB used</Text>
+          <Text style={styles.storageSubtitle}>24 MB / 100 MB</Text>
         </View>
       </View>
 
@@ -55,11 +66,14 @@ const OfflineRoutesScreen = () => {
         keyExtractor={item => item.id}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} colors={[colors.primary]} tintColor={colors.primary} />
+        }
         ListEmptyComponent={
           <View style={styles.empty}>
             <Iconify icon="solar:cloud-download-linear" size={wScale(48)} color={colors.textSecondary} />
-            <Text style={styles.emptyTitle}>No offline routes</Text>
-            <Text style={styles.emptySubtitle}>Download routes to use them without internet</Text>
+            <Text style={styles.emptyTitle}>{t('offlineRoutes.noRoutes')}</Text>
+            <Text style={styles.emptySubtitle}>{t('offlineRoutes.noRoutesSub')}</Text>
           </View>
         }
         renderItem={({ item }) => (
@@ -75,9 +89,14 @@ const OfflineRoutesScreen = () => {
                 <View style={styles.dot} />
                 <Text style={styles.metaText}>{item.size}</Text>
               </View>
-              <Text style={styles.downloadedAt}>Downloaded {item.downloaded}</Text>
+              <Text style={styles.downloadedAt}>{t('offlineRoutes.downloaded', { time: item.downloaded })}</Text>
             </View>
-            <TouchableOpacity onPress={() => removeRoute(item.id)} hitSlop={8}>
+            <TouchableOpacity
+              onPress={() => removeRoute(item.id, item.name)}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              accessibilityLabel={`Delete ${item.name}`}
+              accessibilityRole="button"
+            >
               <Iconify icon="solar:trash-bin-trash-linear" size={wScale(18)} color={colors.textSecondary} />
             </TouchableOpacity>
           </View>
@@ -91,17 +110,10 @@ export default OfflineRoutesScreen;
 
 const makeStyles = (colors: AppColors) => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background },
-  header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: Layout.screenPaddingH, paddingTop: hScale(16), paddingBottom: hScale(14),
-    backgroundColor: colors.inputBackground, borderBottomWidth: 1, borderBottomColor: colors.stroke,
-  },
-  backBtn: { width: wScale(36), height: wScale(36), alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontSize: wScale(17), fontFamily: Fonts.plusJakartaSansBold, color: colors.textPrimary },
   storageCard: {
     flexDirection: 'row', alignItems: 'center', gap: wScale(14),
     marginHorizontal: Layout.screenPaddingH, marginVertical: hScale(14),
-    backgroundColor: colors.white, borderRadius: wScale(16), borderWidth: 1, borderColor: colors.stroke, padding: wScale(16),
+    backgroundColor: colors.white, borderRadius: Layout.borderRadius.lg, borderWidth: 1, borderColor: colors.stroke, padding: wScale(16),
   },
   storageTitle: { fontSize: wScale(13), fontFamily: Fonts.plusJakartaSansSemiBold, color: colors.textPrimary, marginBottom: hScale(6) },
   storageBarBg: { height: hScale(6), backgroundColor: colors.inputBackground, borderRadius: wScale(3), overflow: 'hidden', marginBottom: hScale(4) },
@@ -110,10 +122,10 @@ const makeStyles = (colors: AppColors) => StyleSheet.create({
   list: { paddingHorizontal: Layout.screenPaddingH, paddingBottom: hScale(40), gap: hScale(10) },
   card: {
     flexDirection: 'row', alignItems: 'center', gap: wScale(12),
-    backgroundColor: colors.white, borderRadius: wScale(16), borderWidth: 1, borderColor: colors.stroke, padding: wScale(14),
+    backgroundColor: colors.white, borderRadius: Layout.borderRadius.lg, borderWidth: 1, borderColor: colors.stroke, padding: wScale(14),
   },
   cardIcon: {
-    width: wScale(48), height: wScale(48), borderRadius: wScale(14),
+    width: wScale(48), height: wScale(48), borderRadius: Layout.borderRadius.md,
     backgroundColor: colors.primaryLight, alignItems: 'center', justifyContent: 'center',
   },
   cardInfo: { flex: 1 },

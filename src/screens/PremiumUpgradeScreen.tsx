@@ -41,7 +41,7 @@ const PremiumUpgradeScreen = () => {
           <Iconify icon="solar:close-circle-linear" size={wScale(22)} color="#FFFFFF" />
         </TouchableOpacity>
         <View style={styles.crownWrap}>
-          <Iconify icon="solar:crown-bold" size={wScale(40)} color="#F59E0B" />
+          <Iconify icon="solar:crown-bold" size={wScale(40)} color={colors.warning} />
         </View>
         <Text style={styles.heroTitle}>Toronto Premium</Text>
         <Text style={styles.heroSubtitle}>Unlock the full travel experience</Text>
@@ -86,7 +86,7 @@ const PremiumUpgradeScreen = () => {
 
         {/* CTA */}
         <TouchableOpacity style={styles.cta} activeOpacity={0.85}>
-          <Iconify icon="solar:crown-bold" size={wScale(18)} color="#F59E0B" />
+          <Iconify icon="solar:crown-bold" size={wScale(18)} color={colors.warning} />
           <Text style={styles.ctaText}>Start Free Trial</Text>
         </TouchableOpacity>
         <Text style={styles.ctaNote}>3-day free trial • Cancel anytime</Text>

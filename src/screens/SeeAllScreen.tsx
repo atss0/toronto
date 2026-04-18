@@ -116,7 +116,7 @@ const SeeAllScreen = () => {
               <Text style={styles.name} numberOfLines={1}>{item.name}</Text>
               <Text style={styles.category}>{item.category}</Text>
               <View style={styles.metaRow}>
-                <Iconify icon="solar:star-bold" size={wScale(11)} color="#F59E0B" />
+                <Iconify icon="solar:star-bold" size={wScale(11)} color={colors.warning} />
                 <Text style={styles.rating}>{item.rating?.toFixed(1)}</Text>
                 {item.distance && (
                   <>

@@ -13,6 +13,7 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Iconify } from 'react-native-iconify';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 
 import { RootStackParamList } from '../types/navigation';
 import { useColors } from '../context/ThemeContext';
@@ -40,7 +41,9 @@ const PlaceDetailScreen = () => {
   const { name, category, rating, imageUrl, distance, price, reviewCount } = route.params;
   const colors = useColors();
   const currentTheme = useSelector((s: RootState) => s.Theme.theme);
+  const { t } = useTranslation();
   const styles = useMemo(() => makeStyles(colors), [colors]);
+  const [isSaved, setIsSaved] = useState(false);
 
   return (
     <View style={styles.root}>
@@ -52,12 +55,25 @@ const PlaceDetailScreen = () => {
           <Image source={{ uri: imageUrl }} style={styles.hero} resizeMode="cover" />
           <View style={styles.heroOverlay} />
 
-          <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+          <TouchableOpacity
+            style={styles.backBtn}
+            onPress={() => navigation.goBack()}
+            accessibilityLabel={t('common.goBack')}
+            accessibilityRole="button"
+          >
             <Iconify icon="solar:alt-arrow-left-bold" size={wScale(20)} color="#FFFFFF" />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.saveBtn}>
-            <Iconify icon="solar:bookmark-linear" size={wScale(20)} color="#FFFFFF" />
+          <TouchableOpacity
+            style={styles.saveBtn}
+            onPress={() => {
+              setIsSaved(!isSaved);
+              Alert.alert('✓', isSaved ? t('common.bookmarkRemoved') : t('common.bookmarkAdded'));
+            }}
+            accessibilityLabel={isSaved ? t('placeDetail.saved') : t('placeDetail.save')}
+            accessibilityRole="button"
+          >
+            <Iconify icon={isSaved ? 'solar:bookmark-bold' : 'solar:bookmark-linear'} size={wScale(20)} color="#FFFFFF" />
           </TouchableOpacity>
 
           <View style={styles.heroInfo}>
@@ -71,7 +87,7 @@ const PlaceDetailScreen = () => {
           {/* Rating Row */}
           <View style={styles.metaRow}>
             <View style={styles.ratingPill}>
-              <Iconify icon="solar:star-bold" size={wScale(13)} color="#F59E0B" />
+              <Iconify icon="solar:star-bold" size={wScale(13)} color={colors.warning} />
               <Text style={styles.ratingText}>{rating.toFixed(1)}</Text>
               {reviewCount != null && (
                 <Text style={styles.reviewCount}>({reviewCount} reviews)</Text>
@@ -102,7 +118,7 @@ const PlaceDetailScreen = () => {
 
           {/* Description */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>About</Text>
+            <Text style={styles.sectionTitle}>{t('placeDetail.about')}</Text>
             <Text style={styles.description}>
               A remarkable destination offering an unforgettable experience. Visitors can enjoy
               stunning views, rich history, and a vibrant atmosphere that captures the essence of
@@ -113,7 +129,7 @@ const PlaceDetailScreen = () => {
 
           {/* Location */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Location</Text>
+            <Text style={styles.sectionTitle}>{t('placeDetail.location')}</Text>
             <View style={styles.mapPlaceholder}>
               <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.mapBackground, borderRadius: wScale(14) }]} />
               <View style={styles.mapPin}>
@@ -125,7 +141,7 @@ const PlaceDetailScreen = () => {
 
           {/* Hours */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Opening Hours</Text>
+            <Text style={styles.sectionTitle}>{t('placeDetail.openingHours')}</Text>
             <View style={styles.hoursCard}>
               {HOURS.map((h, i) => (
                 <View key={h.day} style={[styles.hourRow, i < HOURS.length - 1 && styles.hourBorder]}>
@@ -146,11 +162,17 @@ const PlaceDetailScreen = () => {
           onPress={() => navigation.navigate('Reviews', { placeId: route.params.placeId, placeName: name, rating })}
         >
           <Iconify icon="solar:star-linear" size={wScale(16)} color={colors.primary} />
-          <Text style={styles.reviewsBtnText}>Reviews</Text>
+          <Text style={styles.reviewsBtnText}>{t('placeDetail.reviews')}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.addRouteBtn} activeOpacity={0.85}>
+        <TouchableOpacity
+          style={styles.addRouteBtn}
+          activeOpacity={0.85}
+          onPress={() => Alert.alert('✓', t('common.addedToRoute'))}
+          accessibilityLabel={t('placeDetail.addToRoute')}
+          accessibilityRole="button"
+        >
           <Iconify icon="solar:route-bold" size={wScale(18)} color="#FFFFFF" />
-          <Text style={styles.addRouteBtnText}>Add to Route</Text>
+          <Text style={styles.addRouteBtnText}>{t('placeDetail.addToRoute')}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -171,10 +193,10 @@ const makeStyles = (colors: AppColors) =>
     },
     backBtn: {
       position: 'absolute',
-      top: hScale(52),
+      top: Layout.translucentTopOffset,
       left: wScale(16),
-      width: wScale(40),
-      height: wScale(40),
+      width: Layout.hitArea.backButton,
+      height: Layout.hitArea.backButton,
       borderRadius: wScale(20),
       backgroundColor: 'rgba(0,0,0,0.4)',
       alignItems: 'center',
@@ -182,10 +204,10 @@ const makeStyles = (colors: AppColors) =>
     },
     saveBtn: {
       position: 'absolute',
-      top: hScale(52),
+      top: Layout.translucentTopOffset,
       right: wScale(16),
-      width: wScale(40),
-      height: wScale(40),
+      width: Layout.hitArea.backButton,
+      height: Layout.hitArea.backButton,
       borderRadius: wScale(20),
       backgroundColor: 'rgba(0,0,0,0.4)',
       alignItems: 'center',

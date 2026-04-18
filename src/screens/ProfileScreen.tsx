@@ -309,7 +309,7 @@ const ProfileScreen = () => {
         <View style={styles.premiumCard}>
           <View style={styles.premiumTop}>
             <View style={styles.premiumIconWrap}>
-              <Iconify icon="solar:crown-bold" size={wScale(20)} color="#F59E0B" />
+              <Iconify icon="solar:crown-bold" size={wScale(20)} color={colors.warning} />
             </View>
             <Text style={styles.premiumTitle}>Premium Member</Text>
           </View>

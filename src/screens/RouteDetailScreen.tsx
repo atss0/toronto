@@ -11,6 +11,7 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Iconify } from 'react-native-iconify';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 
 import { RootStackParamList } from '../types/navigation';
 import { useColors } from '../context/ThemeContext';
@@ -37,6 +38,7 @@ const RouteDetailScreen = () => {
   const { name } = route.params;
   const colors = useColors();
   const currentTheme = useSelector((s: RootState) => s.Theme.theme);
+  const { t } = useTranslation();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const completed = MOCK_STOPS.filter(s => s.status === 'completed').length;
@@ -55,7 +57,12 @@ const RouteDetailScreen = () => {
           <Iconify icon="solar:alt-arrow-left-linear" size={wScale(22)} color={colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle} numberOfLines={1}>{name}</Text>
-        <TouchableOpacity style={styles.shareBtn} onPress={() => navigation.navigate('ShareRoute', { routeName: name })}>
+        <TouchableOpacity
+          style={styles.shareBtn}
+          onPress={() => navigation.navigate('ShareRoute', { routeName: name })}
+          accessibilityLabel={t('share.title')}
+          accessibilityRole="button"
+        >
           <Iconify icon="solar:share-linear" size={wScale(20)} color={colors.textPrimary} />
         </TouchableOpacity>
       </View>
@@ -66,7 +73,7 @@ const RouteDetailScreen = () => {
           <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.mapBackground }]} />
           <View style={styles.activeBadge}>
             <View style={styles.activeDot} />
-            <Text style={styles.activeBadgeText}>ACTIVE ROUTE</Text>
+            <Text style={styles.activeBadgeText}>{t('routeDetail.activeRoute')}</Text>
           </View>
           <View style={styles.mapCenter}>
             <Iconify icon="solar:route-bold" size={wScale(36)} color={colors.primary} />
@@ -76,9 +83,9 @@ const RouteDetailScreen = () => {
         {/* Stats */}
         <View style={styles.statsRow}>
           {[
-            { icon: 'solar:map-point-linear', value: `${MOCK_STOPS.length} stops`, label: 'Total Stops' },
-            { icon: 'solar:clock-circle-linear', value: '3.5 h', label: 'Duration' },
-            { icon: 'solar:walking-bold', value: '2.4 km', label: 'Distance' },
+            { icon: 'solar:map-point-linear', value: `${MOCK_STOPS.length} ${t('routeDetail.stops').toLowerCase()}`, label: t('routeDetail.totalStops') },
+            { icon: 'solar:clock-circle-linear', value: '3.5 h', label: t('routeDetail.duration') },
+            { icon: 'solar:walking-bold', value: '2.4 km', label: t('routeDetail.distance') },
           ].map(stat => (
             <View key={stat.label} style={styles.statItem}>
               <Iconify icon={stat.icon} size={wScale(18)} color={colors.primary} />
@@ -91,7 +98,7 @@ const RouteDetailScreen = () => {
         {/* Progress */}
         <View style={styles.section}>
           <View style={styles.progressHeader}>
-            <Text style={styles.sectionTitle}>Progress</Text>
+            <Text style={styles.sectionTitle}>{t('routeDetail.progress')}</Text>
             <Text style={styles.progressLabel}>{completed}/{MOCK_STOPS.length} stops</Text>
           </View>
           <View style={styles.progressTrack}>
@@ -101,7 +108,7 @@ const RouteDetailScreen = () => {
 
         {/* Stops */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Stops</Text>
+          <Text style={styles.sectionTitle}>{t('routeDetail.stops')}</Text>
           {MOCK_STOPS.map((stop, i) => (
             <View key={stop.name} style={styles.stopRow}>
               <View style={styles.stopDotCol}>
@@ -137,9 +144,15 @@ const RouteDetailScreen = () => {
 
       {/* Footer */}
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.navBtn} activeOpacity={0.85} onPress={() => navigation.navigate('Navigation', { routeName: name })}>
+        <TouchableOpacity
+          style={styles.navBtn}
+          activeOpacity={0.85}
+          onPress={() => navigation.navigate('Navigation', { routeName: name })}
+          accessibilityLabel={t('routeDetail.startNavigation')}
+          accessibilityRole="button"
+        >
           <Iconify icon="solar:map-arrow-right-bold" size={wScale(18)} color="#FFFFFF" />
-          <Text style={styles.navBtnText}>Start Navigation</Text>
+          <Text style={styles.navBtnText}>{t('routeDetail.startNavigation')}</Text>
         </TouchableOpacity>
       </View>
     </View>

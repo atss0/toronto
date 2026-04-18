@@ -7,6 +7,7 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { Iconify } from 'react-native-iconify';
 import { useSelector } from 'react-redux';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useTranslation } from 'react-i18next';
 
 import { RootStackParamList } from '../types/navigation';
 import { useColors } from '../context/ThemeContext';
@@ -25,6 +26,7 @@ const SearchResultsScreen = () => {
   const route = useRoute<RouteT>();
   const colors = useColors();
   const currentTheme = useSelector((s: RootState) => s.Theme.theme);
+  const { t } = useTranslation();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const [query, setQuery] = useState(route.params.query);
@@ -47,7 +49,12 @@ const SearchResultsScreen = () => {
 
       {/* Header with embedded search */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+        <TouchableOpacity
+          style={styles.backBtn}
+          onPress={() => navigation.goBack()}
+          accessibilityLabel={t('common.goBack')}
+          accessibilityRole="button"
+        >
           <Iconify icon="solar:alt-arrow-left-linear" size={wScale(22)} color={colors.textPrimary} />
         </TouchableOpacity>
         <View style={styles.searchBox}>
@@ -56,13 +63,19 @@ const SearchResultsScreen = () => {
             style={styles.searchInput}
             value={query}
             onChangeText={setQuery}
-            placeholder="Search places..."
+            placeholder={t('search.placeholder')}
             placeholderTextColor={colors.textSecondary}
             autoFocus
             returnKeyType="search"
+            accessibilityLabel={t('search.placeholder')}
           />
           {query.length > 0 && (
-            <TouchableOpacity onPress={() => setQuery('')} hitSlop={8}>
+            <TouchableOpacity
+              onPress={() => setQuery('')}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              accessibilityLabel="Clear search"
+              accessibilityRole="button"
+            >
               <Iconify icon="solar:close-circle-bold" size={wScale(15)} color={colors.textSecondary} />
             </TouchableOpacity>
           )}
@@ -73,7 +86,7 @@ const SearchResultsScreen = () => {
       {query.trim().length > 0 && (
         <View style={styles.resultBanner}>
           <Text style={styles.resultText}>
-            {results.length} result{results.length !== 1 ? 's' : ''} for "{query}"
+            {results.length} {t('search.resultCountPlural', { count: results.length })} {t('search.resultsFor', { query })}
           </Text>
         </View>
       )}
@@ -96,13 +109,15 @@ const SearchResultsScreen = () => {
               reviewCount: item.reviewCount,
               price: item.price,
             })}
+            accessibilityLabel={`${item.name}, ${item.category}`}
+            accessibilityRole="button"
           >
             <Image source={{ uri: item.imageUrl }} style={styles.thumb} resizeMode="cover" />
             <View style={styles.info}>
               <Text style={styles.name} numberOfLines={1}>{item.name}</Text>
               <Text style={styles.category}>{item.category}</Text>
               <View style={styles.metaRow}>
-                <Iconify icon="solar:star-bold" size={wScale(11)} color="#F59E0B" />
+                <Iconify icon="solar:star-bold" size={wScale(11)} color={colors.warning} />
                 <Text style={styles.rating}>{item.rating?.toFixed(1)}</Text>
                 {item.location && (
                   <>
@@ -120,8 +135,8 @@ const SearchResultsScreen = () => {
           query.trim().length > 0 ? (
             <View style={styles.empty}>
               <Iconify icon="solar:magnifer-linear" size={wScale(40)} color={colors.textSecondary} />
-              <Text style={styles.emptyTitle}>No results found</Text>
-              <Text style={styles.emptySubtitle}>Try different keywords or check spelling</Text>
+              <Text style={styles.emptyTitle}>{t('search.noResults')}</Text>
+              <Text style={styles.emptySubtitle}>{t('search.noResultsSub')}</Text>
             </View>
           ) : null
         }
@@ -139,7 +154,7 @@ const makeStyles = (colors: AppColors) => StyleSheet.create({
     paddingHorizontal: Layout.screenPaddingH, paddingTop: hScale(16), paddingBottom: hScale(14),
     backgroundColor: colors.inputBackground, borderBottomWidth: 1, borderBottomColor: colors.stroke,
   },
-  backBtn: { width: wScale(36), height: wScale(36), alignItems: 'center', justifyContent: 'center' },
+  backBtn: { width: Layout.hitArea.backButton, height: Layout.hitArea.backButton, alignItems: 'center', justifyContent: 'center' },
   searchBox: {
     flex: 1, flexDirection: 'row', alignItems: 'center', gap: wScale(8),
     backgroundColor: colors.white, borderRadius: wScale(12), borderWidth: 1, borderColor: colors.stroke,

@@ -1,11 +1,13 @@
 import React, { useMemo, useState } from 'react';
 import {
-  View, Text, StyleSheet, FlatList, TouchableOpacity, StatusBar, TextInput,
+  View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Iconify } from 'react-native-iconify';
 import { useSelector, useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 
+import StackHeader from '../components/StackHeader/StackHeader';
 import { useColors } from '../context/ThemeContext';
 import { AppColors } from '../styles/theme';
 import Fonts from '../styles/Fonts';
@@ -29,36 +31,25 @@ const CityPickerScreen = () => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const colors = useColors();
-  const currentTheme = useSelector((s: RootState) => s.Theme.theme);
-  const storedCity = useSelector((s: RootState) => s.User.locationName) || 'Istanbul';
+  const { t } = useTranslation();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const [query, setQuery] = useState('');
-  const [selectedCity, setSelectedCity] = useState(storedCity);
+  const currentCity = useSelector((s: RootState) => s.User.locationName) || 'Istanbul';
 
   const filtered = query.trim()
     ? CITIES.filter(c => c.name.toLowerCase().includes(query.toLowerCase()))
     : CITIES;
 
   const popular = filtered.filter(c => c.popular);
-  const others = filtered.filter(c => !c.popular);
 
   const selectCity = (name: string) => {
-    setSelectedCity(name);
     dispatch(setLocationName(name));
     navigation.goBack();
   };
 
   return (
     <View style={styles.root}>
-      <StatusBar barStyle={currentTheme === 'dark' ? 'light-content' : 'dark-content'} backgroundColor={colors.inputBackground} />
-
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-          <Iconify icon="solar:alt-arrow-left-linear" size={wScale(22)} color={colors.textPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Select City</Text>
-        <View style={{ width: wScale(36) }} />
-      </View>
+      <StackHeader title={t('cityPicker.title')} />
 
       <View style={styles.searchWrap}>
         <Iconify icon="solar:magnifer-linear" size={wScale(15)} color={colors.textSecondary} />
@@ -66,12 +57,18 @@ const CityPickerScreen = () => {
           style={styles.searchInput}
           value={query}
           onChangeText={setQuery}
-          placeholder="Search cities..."
+          placeholder={t('cityPicker.searchPlaceholder')}
           placeholderTextColor={colors.textSecondary}
           autoFocus
+          accessibilityLabel={t('cityPicker.searchPlaceholder')}
         />
         {query.length > 0 && (
-          <TouchableOpacity onPress={() => setQuery('')} hitSlop={8}>
+          <TouchableOpacity
+            onPress={() => setQuery('')}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            accessibilityLabel="Clear search"
+            accessibilityRole="button"
+          >
             <Iconify icon="solar:close-circle-bold" size={wScale(15)} color={colors.textSecondary} />
           </TouchableOpacity>
         )}
@@ -85,27 +82,31 @@ const CityPickerScreen = () => {
         keyboardShouldPersistTaps="handled"
         ListHeaderComponent={
           popular.length > 0 && !query ? (
-            <Text style={styles.sectionTitle}>Popular Cities</Text>
+            <Text style={styles.sectionTitle}>{t('cityPicker.popularCities')}</Text>
           ) : null
         }
         renderItem={({ item, index }) => {
           const isFirstOther = !item.popular && query === '' && index === popular.length;
+          const isSelected = item.name === currentCity;
           return (
             <>
-              {isFirstOther && <Text style={[styles.sectionTitle, { marginTop: hScale(8) }]}>All Cities</Text>}
+              {isFirstOther && <Text style={[styles.sectionTitle, { marginTop: hScale(8) }]}>{t('cityPicker.allCities')}</Text>}
               <TouchableOpacity
-                style={[styles.cityRow, item.name === selectedCity && styles.cityRowActive]}
+                style={[styles.cityRow, isSelected && styles.cityRowActive]}
                 onPress={() => selectCity(item.name)}
                 activeOpacity={0.8}
+                accessibilityLabel={`${item.name}, ${item.country}`}
+                accessibilityRole="button"
+                accessibilityState={{ selected: isSelected }}
               >
-                <View style={[styles.cityIcon, item.name === selectedCity && styles.cityIconActive]}>
-                  <Iconify icon={item.icon} size={wScale(18)} color={item.name === selectedCity ? '#FFF' : colors.primary} />
+                <View style={[styles.cityIcon, isSelected && styles.cityIconActive]}>
+                  <Iconify icon={item.icon} size={wScale(18)} color={isSelected ? '#FFF' : colors.primary} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={[styles.cityName, item.name === selectedCity && styles.cityNameActive]}>{item.name}</Text>
+                  <Text style={[styles.cityName, isSelected && styles.cityNameActive]}>{item.name}</Text>
                   <Text style={styles.countryName}>{item.country}</Text>
                 </View>
-                {item.name === selectedCity && (
+                {isSelected && (
                   <Iconify icon="solar:check-circle-bold" size={wScale(20)} color={colors.primary} />
                 )}
               </TouchableOpacity>
@@ -121,17 +122,10 @@ export default CityPickerScreen;
 
 const makeStyles = (colors: AppColors) => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background },
-  header: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingHorizontal: Layout.screenPaddingH, paddingTop: hScale(16), paddingBottom: hScale(14),
-    backgroundColor: colors.inputBackground, borderBottomWidth: 1, borderBottomColor: colors.stroke,
-  },
-  backBtn: { width: wScale(36), height: wScale(36), alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { fontSize: wScale(17), fontFamily: Fonts.plusJakartaSansBold, color: colors.textPrimary },
   searchWrap: {
     flexDirection: 'row', alignItems: 'center', gap: wScale(8),
     marginHorizontal: Layout.screenPaddingH, marginVertical: hScale(12),
-    backgroundColor: colors.white, borderRadius: wScale(14), borderWidth: 1, borderColor: colors.stroke,
+    backgroundColor: colors.white, borderRadius: Layout.borderRadius.md, borderWidth: 1, borderColor: colors.stroke,
     paddingHorizontal: wScale(14), paddingVertical: hScale(12),
   },
   searchInput: { flex: 1, fontSize: wScale(14), fontFamily: Fonts.plusJakartaSansRegular, color: colors.textPrimary, padding: 0 },
@@ -139,11 +133,11 @@ const makeStyles = (colors: AppColors) => StyleSheet.create({
   sectionTitle: { fontSize: wScale(13), fontFamily: Fonts.plusJakartaSansSemiBold, color: colors.textSecondary, marginBottom: hScale(4) },
   cityRow: {
     flexDirection: 'row', alignItems: 'center', gap: wScale(12),
-    backgroundColor: colors.white, borderRadius: wScale(14), borderWidth: 1, borderColor: colors.stroke, padding: wScale(12),
+    backgroundColor: colors.white, borderRadius: Layout.borderRadius.md, borderWidth: 1, borderColor: colors.stroke, padding: wScale(12),
   },
   cityRowActive: { borderColor: colors.primary, backgroundColor: colors.primaryLight },
   cityIcon: {
-    width: wScale(40), height: wScale(40), borderRadius: wScale(12),
+    width: wScale(40), height: wScale(40), borderRadius: Layout.borderRadius.sm,
     backgroundColor: colors.primaryLight, alignItems: 'center', justifyContent: 'center',
   },
   cityIconActive: { backgroundColor: colors.primary },

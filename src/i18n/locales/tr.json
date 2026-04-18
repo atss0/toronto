@@ -2,7 +2,7 @@
   "tabs": {
     "home": "Ana Sayfa",
     "explore": "Keşfet",
-    "belen": "Asistan",
+    "belen": "AI",
     "routes": "Rotalar",
     "profile": "Profil"
   },
@@ -103,5 +103,173 @@
     "forgotPasswordSubtitle": "Endişelenme! E-postanı girerek şifre sıfırlama bağlantısı alabilirsin.",
     "emailPlaceholderFP": "örn. wanderlust@travel.com",
     "sendResetLink": "Sıfırlama Bağlantısı Gönder"
+  },
+  "placeDetail": {
+    "about": "Hakkında",
+    "location": "Konum",
+    "openingHours": "Çalışma Saatleri",
+    "addToRoute": "Rotaya Ekle",
+    "reviews": "Yorumlar",
+    "save": "Kaydet",
+    "saved": "Kaydedildi"
+  },
+  "routeDetail": {
+    "progress": "İlerleme",
+    "stops": "Duraklar",
+    "startNavigation": "Navigasyonu Başlat",
+    "activeRoute": "AKTİF ROTA",
+    "totalStops": "Toplam Durak",
+    "duration": "Süre",
+    "distance": "Mesafe",
+    "completed": "tamamlandı",
+    "upcoming": "yaklaşan"
+  },
+  "navigation": {
+    "endNavigation": "Navigasyonu Bitir",
+    "endConfirmTitle": "Navigasyonu Bitir?",
+    "endConfirmMessage": "Mevcut navigasyonu bitirmek istediğinizden emin misiniz?",
+    "endConfirmYes": "Bitir",
+    "endConfirmNo": "İptal",
+    "eta": "TVZ",
+    "remaining": "Kalan",
+    "nextStop": "Sonraki durak",
+    "prev": "Önceki",
+    "next": "Sonraki"
+  },
+  "map": {
+    "title": "Harita",
+    "placesOnMap": "Haritada {{count}} yer",
+    "listView": "Liste Görünümü",
+    "layersNotAvailable": "Harita katmanları yakında"
+  },
+  "bookmarks": {
+    "title": "Kayıtlı Yerler",
+    "noBookmarks": "Kayıtlı yer yok",
+    "noBookmarksSub": "Burada bulmak için yerleri kaydedin",
+    "all": "Tümü",
+    "savedAgo": "{{time}} önce kaydedildi"
+  },
+  "reviews": {
+    "title": "Yorumlar",
+    "writeReview": "Yorum Yaz",
+    "submitReview": "Yorumu Gönder",
+    "helpful": "Faydalı",
+    "shareExperience": "Deneyiminizi paylaşın...",
+    "noReviews": "Henüz yorum yok",
+    "reviewLabels": ["", "Kötü", "Orta", "İyi", "Çok İyi", "Mükemmel"]
+  },
+  "filter": {
+    "title": "Filtreler",
+    "category": "Kategori",
+    "distance": "Mesafe",
+    "minimumRating": "Minimum Puan",
+    "priceRange": "Fiyat Aralığı",
+    "applyFilters": "Filtreleri Uygula",
+    "reset": "Sıfırla"
+  },
+  "search": {
+    "placeholder": "Yer ara...",
+    "noResults": "Sonuç bulunamadı",
+    "noResultsSub": "Farklı anahtar kelimeler deneyin veya yazımı kontrol edin",
+    "resultCount": "{{count}} sonuç",
+    "resultCountPlural": "{{count}} sonuç",
+    "resultsFor": "\"{{query}}\" için"
+  },
+  "changePassword": {
+    "title": "Şifre Değiştir",
+    "currentPassword": "Mevcut Şifre",
+    "newPassword": "Yeni Şifre",
+    "confirmNewPassword": "Yeni Şifre (Tekrar)",
+    "updatePassword": "Şifreyi Güncelle",
+    "subtitle": "Güçlü bir şifre ile hesabınızı güvende tutun",
+    "enterCurrent": "Mevcut şifreyi girin",
+    "enterNew": "Yeni şifreyi girin",
+    "repeatNew": "Yeni şifreyi tekrarlayın",
+    "minChars": "En az 8 karakter",
+    "passwordsMatch": "Şifreler eşleşiyor"
+  },
+  "editProfile": {
+    "title": "Profili Düzenle",
+    "save": "Değişiklikleri Kaydet"
+  },
+  "onboarding": {
+    "skip": "Atla",
+    "next": "İleri",
+    "getStarted": "Başlayalım",
+    "slide1Title": "Gizli Hazineleri Keşfet",
+    "slide1Subtitle": "Özellikle senin için seçilmiş benzersiz yerleri ve bilinmeyen rotaları keşfet.",
+    "slide2Title": "AI Destekli Rotalar",
+    "slide2Subtitle": "AI seyahat asistanın Belen, saniyeler içinde kişiselleştirilmiş rotalar oluştursun.",
+    "slide3Title": "Kaydet ve Paylaş",
+    "slide3Subtitle": "Favori yerlerini kaydet ve maceralarını arkadaşlarınla paylaş.",
+    "slide4Title": "Keşfetmeye Hazır mısın?",
+    "slide4Subtitle": "Bir sonraki büyük maceran sadece bir dokunuş uzağında. Hadi başlayalım!"
+  },
+  "weather": {
+    "hourlyForecast": "Saatlik Tahmin",
+    "weeklyForecast": "7 Günlük Tahmin",
+    "wind": "Rüzgâr",
+    "humidity": "Nem",
+    "visibility": "Görüş Mesafesi",
+    "uvIndex": "UV İndeksi",
+    "condition": "Çoğunlukla Güneşli"
+  },
+  "share": {
+    "title": "Rotayı Paylaş",
+    "copyLink": "Linki Kopyala",
+    "shareVia": "Paylaş...",
+    "showQR": "QR Kod Göster",
+    "shareTo": "Paylaş",
+    "shareWith": "Bu rotayı arkadaşlarınla paylaş",
+    "linkCopied": "Link kopyalandı!",
+    "qrComingSoon": "QR kod özelliği yakında"
+  },
+  "cityPicker": {
+    "title": "Şehir Seç",
+    "searchPlaceholder": "Şehir ara...",
+    "popularCities": "Popüler Şehirler",
+    "allCities": "Tüm Şehirler"
+  },
+  "offlineRoutes": {
+    "title": "Çevrimdışı Rotalar",
+    "storageUsed": "Kullanılan Alan",
+    "noRoutes": "Çevrimdışı rota yok",
+    "noRoutesSub": "İnternetsiz kullanmak için rotaları indirin",
+    "downloaded": "{{time}} önce indirildi"
+  },
+  "tripHistory": {
+    "title": "Seyahat Geçmişi",
+    "trips": "Seyahatler",
+    "distance": "Mesafe",
+    "avgRating": "Ort. Puan",
+    "noTrips": "Henüz seyahat yok",
+    "noTripsSub": "Geçmişinizi görmek için bir rota başlatın"
+  },
+  "premium": {
+    "title": "Premium'a Geç",
+    "upgradeBtn": "Premium'a Geç"
+  },
+  "chatSettings": {
+    "title": "Sohbet Ayarları"
+  },
+  "legal": {
+    "privacyPolicy": "Gizlilik Politikası",
+    "termsOfService": "Kullanım Koşulları",
+    "helpCenter": "Yardım Merkezi"
+  },
+  "common": {
+    "seeAll": "Tümünü Gör",
+    "cancel": "İptal",
+    "save": "Kaydet",
+    "delete": "Sil",
+    "confirm": "Onayla",
+    "loading": "Yükleniyor...",
+    "error": "Bir şeyler yanlış gitti",
+    "retry": "Tekrar Dene",
+    "noData": "Veri bulunamadı",
+    "goBack": "Geri dön",
+    "addedToRoute": "Rotaya eklendi!",
+    "bookmarkAdded": "Yer kaydedildi!",
+    "bookmarkRemoved": "Kaydedilenlerden çıkarıldı"
   }
 }

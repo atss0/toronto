@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { Iconify } from 'react-native-iconify';
+import { useTranslation } from 'react-i18next';
 
 import { RootStackParamList } from '../types/navigation';
 import { useColors } from '../context/ThemeContext';
@@ -27,6 +28,7 @@ const NavigationScreen = () => {
   const navigation = useNavigation();
   const route = useRoute<RouteT>();
   const colors = useColors();
+  const { t } = useTranslation();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const [currentStep, setCurrentStep] = useState(0);
   const [isActive, setIsActive] = useState(true);
@@ -54,10 +56,10 @@ const NavigationScreen = () => {
         <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.mapBackground }]} />
 
         {/* Grid */}
-        {Array.from({ length: 24 }, (_, i) => ({
+        {useMemo(() => Array.from({ length: 24 }, (_, i) => ({
           top: (Math.floor(i / 4) * 0.15 + 0.05),
           left: ((i % 4) * 0.22 + 0.05),
-        })).map((b, i) => (
+        })), []).map((b, i) => (
           <View key={i} style={{ position: 'absolute', top: b.top * H * 0.6, left: b.left * W, width: W * 0.17, height: H * 0.09, borderRadius: wScale(5), backgroundColor: colors.mapGrid, opacity: 0.6 }} />
         ))}
 
@@ -72,7 +74,12 @@ const NavigationScreen = () => {
         </View>
 
         {/* Close button */}
-        <TouchableOpacity style={styles.closeBtn} onPress={() => navigation.goBack()}>
+        <TouchableOpacity
+          style={styles.closeBtn}
+          onPress={() => navigation.goBack()}
+          accessibilityLabel={t('common.goBack')}
+          accessibilityRole="button"
+        >
           <Iconify icon="solar:close-circle-bold" size={wScale(18)} color={colors.textPrimary} />
         </TouchableOpacity>
       </View>
@@ -95,9 +102,9 @@ const NavigationScreen = () => {
         {/* Stats row */}
         <View style={styles.statsRow}>
           {[
-            { icon: 'solar:clock-circle-linear', label: 'ETA', value: '18 min' },
-            { icon: 'solar:walking-bold', label: 'Remaining', value: '1.2 km' },
-            { icon: 'solar:map-point-linear', label: 'Next stop', value: MOCK_STEPS[Math.min(currentStep + 1, MOCK_STEPS.length - 1)].instruction.split(' ').slice(0, 3).join(' ') + '...' },
+            { icon: 'solar:clock-circle-linear', label: t('navigation.eta'), value: '18 min' },
+            { icon: 'solar:walking-bold', label: t('navigation.remaining'), value: '1.2 km' },
+            { icon: 'solar:map-point-linear', label: t('navigation.nextStop'), value: MOCK_STEPS[Math.min(currentStep + 1, MOCK_STEPS.length - 1)].instruction.split(' ').slice(0, 3).join(' ') + '...' },
           ].map(stat => (
             <View key={stat.label} style={styles.statItem}>
               <Iconify icon={stat.icon} size={wScale(14)} color={colors.textSecondary} />
@@ -113,32 +120,38 @@ const NavigationScreen = () => {
             style={[styles.stepBtn, currentStep === 0 && styles.stepBtnDisabled]}
             onPress={() => setCurrentStep(i => Math.max(0, i - 1))}
             disabled={currentStep === 0}
+            accessibilityLabel={t('navigation.prev')}
+            accessibilityRole="button"
           >
             <Iconify icon="solar:alt-arrow-left-linear" size={wScale(18)} color={currentStep === 0 ? colors.textSecondary : colors.primary} />
-            <Text style={[styles.stepBtnText, currentStep === 0 && { color: colors.textSecondary }]}>Prev</Text>
+            <Text style={[styles.stepBtnText, currentStep === 0 && { color: colors.textSecondary }]}>{t('navigation.prev')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.endBtn}
             onPress={() => Alert.alert(
-              'End Navigation',
-              'Are you sure you want to end navigation?',
+              t('navigation.endConfirmTitle'),
+              t('navigation.endConfirmMessage'),
               [
-                { text: 'Cancel', style: 'cancel' },
-                { text: 'End', style: 'destructive', onPress: () => navigation.goBack() },
+                { text: t('navigation.endConfirmNo'), style: 'cancel' },
+                { text: t('navigation.endConfirmYes'), style: 'destructive', onPress: () => navigation.goBack() },
               ],
             )}
             activeOpacity={0.8}
+            accessibilityLabel={t('navigation.endNavigation')}
+            accessibilityRole="button"
           >
-            <Text style={styles.endBtnText}>End Navigation</Text>
+            <Text style={styles.endBtnText}>{t('navigation.endNavigation')}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             style={[styles.stepBtn, currentStep === MOCK_STEPS.length - 1 && styles.stepBtnDisabled]}
             onPress={() => setCurrentStep(i => Math.min(MOCK_STEPS.length - 1, i + 1))}
             disabled={currentStep === MOCK_STEPS.length - 1}
+            accessibilityLabel={t('navigation.next')}
+            accessibilityRole="button"
           >
-            <Text style={[styles.stepBtnText, currentStep === MOCK_STEPS.length - 1 && { color: colors.textSecondary }]}>Next</Text>
+            <Text style={[styles.stepBtnText, currentStep === MOCK_STEPS.length - 1 && { color: colors.textSecondary }]}>{t('navigation.next')}</Text>
             <Iconify icon="solar:alt-arrow-right-linear" size={wScale(18)} color={currentStep === MOCK_STEPS.length - 1 ? colors.textSecondary : colors.primary} />
           </TouchableOpacity>
         </View>
@@ -158,10 +171,10 @@ const makeStyles = (colors: AppColors) => StyleSheet.create({
   userPulse: { position: 'absolute', width: wScale(30), height: wScale(30), borderRadius: wScale(15) },
   userDot: { width: wScale(16), height: wScale(16), borderRadius: wScale(8), backgroundColor: colors.primary, borderWidth: 3, borderColor: '#FFFFFF', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 4, elevation: 4 },
   closeBtn: {
-    position: 'absolute', top: hScale(50), right: wScale(16),
-    width: wScale(40), height: wScale(40), borderRadius: wScale(12),
+    position: 'absolute', top: Layout.translucentTopOffset, right: wScale(16),
+    width: Layout.hitArea.backButton, height: Layout.hitArea.backButton, borderRadius: Layout.borderRadius.sm,
     backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1, borderColor: colors.stroke, elevation: 3,
+    borderWidth: 1, borderColor: colors.stroke, ...Layout.shadow.sm,
   },
   panel: {
     backgroundColor: colors.white, borderTopLeftRadius: wScale(24), borderTopRightRadius: wScale(24),
@@ -176,7 +189,7 @@ const makeStyles = (colors: AppColors) => StyleSheet.create({
   instructionIcon: { width: wScale(44), height: wScale(44), borderRadius: wScale(12), backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
   instructionInfo: { flex: 1 },
   instructionText: { fontSize: wScale(14), fontFamily: Fonts.plusJakartaSansBold, color: '#FFFFFF', lineHeight: hScale(20) },
-  distanceText: { fontSize: wScale(12), fontFamily: Fonts.plusJakartaSansRegular, color: 'rgba(255,255,255,0.75)', marginTop: hScale(3) },
+  distanceText: { fontSize: wScale(12), fontFamily: Fonts.plusJakartaSansRegular, color: 'rgba(255,255,255,0.85)', marginTop: hScale(3) },
   statsRow: {
     flexDirection: 'row', backgroundColor: colors.inputBackground,
     borderRadius: wScale(16), padding: wScale(14), gap: wScale(4),

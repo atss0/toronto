@@ -178,6 +178,6 @@ const makeStyles = (colors: AppColors) => StyleSheet.create({
   reviewText: {
     fontSize: wScale(10),
     fontFamily: Fonts.plusJakartaSansRegular,
-    color: 'rgba(255,255,255,0.65)',
+    color: 'rgba(255,255,255,0.85)',
   },
 });

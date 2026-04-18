@@ -136,7 +136,7 @@ const makeStyles = (colors: AppColors) => StyleSheet.create({
   subtitle: {
     fontSize: wScale(12),
     fontFamily: Fonts.plusJakartaSansRegular,
-    color: 'rgba(255,255,255,0.65)',
+    color: 'rgba(255,255,255,0.85)',
     lineHeight: hScale(17),
     marginTop: -hScale(8),
   },

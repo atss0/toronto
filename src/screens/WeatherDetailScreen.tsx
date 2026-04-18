@@ -5,6 +5,7 @@ import {
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { Iconify } from 'react-native-iconify';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 
 import { RootStackParamList } from '../types/navigation';
 import { useColors } from '../context/ThemeContext';
@@ -40,33 +41,39 @@ const WeatherDetailScreen = () => {
   const route = useRoute<RouteT>();
   const colors = useColors();
   const currentTheme = useSelector((s: RootState) => s.Theme.theme);
+  const { t } = useTranslation();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const { city } = route.params;
 
   return (
     <View style={styles.root}>
-      <StatusBar barStyle={currentTheme === 'dark' ? 'light-content' : 'dark-content'} backgroundColor={colors.primary} />
+      <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
 
       <View style={styles.hero}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+        <TouchableOpacity
+          style={styles.backBtn}
+          onPress={() => navigation.goBack()}
+          accessibilityLabel={t('common.goBack')}
+          accessibilityRole="button"
+        >
           <Iconify icon="solar:alt-arrow-left-linear" size={wScale(22)} color="#FFFFFF" />
         </TouchableOpacity>
         <Text style={styles.cityName}>{city}</Text>
         <Iconify icon="solar:sun-bold" size={wScale(64)} color="#FFFFFF" />
         <Text style={styles.tempLarge}>21°C</Text>
-        <Text style={styles.condition}>Mostly Sunny</Text>
+        <Text style={styles.condition}>{t('weather.condition')}</Text>
         <Text style={styles.hiLow}>H: 23°  L: 14°</Text>
       </View>
 
       <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Hourly Forecast</Text>
+          <Text style={styles.sectionTitle}>{t('weather.hourlyForecast')}</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.hourlyList}>
             {HOURLY.map((h, i) => (
               <View key={i} style={[styles.hourCard, i === 0 && styles.hourCardActive]}>
                 <Text style={[styles.hourTime, i === 0 && styles.hourTimeActive]}>{h.time}</Text>
-                <Iconify icon={h.icon} size={wScale(20)} color={i === 0 ? '#FFF' : '#F59E0B'} />
+                <Iconify icon={h.icon} size={wScale(20)} color={i === 0 ? '#FFF' : colors.warning} />
                 <Text style={[styles.hourTemp, i === 0 && styles.hourTempActive]}>{h.temp}°</Text>
               </View>
             ))}
@@ -74,11 +81,11 @@ const WeatherDetailScreen = () => {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>7-Day Forecast</Text>
+          <Text style={styles.sectionTitle}>{t('weather.weeklyForecast')}</Text>
           {WEEKLY.map((day, i) => (
             <View key={i} style={styles.dayRow}>
               <Text style={styles.dayName}>{day.day}</Text>
-              <Iconify icon={day.icon} size={wScale(18)} color="#F59E0B" />
+              <Iconify icon={day.icon} size={wScale(18)} color={colors.warning} />
               <View style={{ flex: 1 }} />
               <Text style={styles.dayHigh}>{day.high}°</Text>
               <Text style={styles.dayLow}>{day.low}°</Text>
@@ -88,10 +95,10 @@ const WeatherDetailScreen = () => {
 
         <View style={styles.detailsGrid}>
           {[
-            { icon: 'solar:wind-bold', label: 'Wind', value: '12 km/h' },
-            { icon: 'solar:waterdrop-bold', label: 'Humidity', value: '58%' },
-            { icon: 'solar:eye-bold', label: 'Visibility', value: '10 km' },
-            { icon: 'solar:sun-2-bold', label: 'UV Index', value: '5 (Mod)' },
+            { icon: 'solar:wind-bold', label: t('weather.wind'), value: '12 km/h' },
+            { icon: 'solar:waterdrop-bold', label: t('weather.humidity'), value: '58%' },
+            { icon: 'solar:eye-bold', label: t('weather.visibility'), value: '10 km' },
+            { icon: 'solar:sun-2-bold', label: t('weather.uvIndex'), value: '5 (Mod)' },
           ].map(d => (
             <View key={d.label} style={styles.detailCard}>
               <Iconify icon={d.icon} size={wScale(20)} color={colors.primary} />
@@ -113,11 +120,15 @@ const makeStyles = (colors: AppColors) => StyleSheet.create({
     backgroundColor: colors.primary, alignItems: 'center', paddingBottom: hScale(28),
     paddingHorizontal: Layout.screenPaddingH, paddingTop: hScale(16), gap: hScale(4),
   },
-  backBtn: { alignSelf: 'flex-start', width: wScale(36), height: wScale(36), alignItems: 'center', justifyContent: 'center', marginBottom: hScale(8) },
-  cityName: { fontSize: wScale(18), fontFamily: Fonts.plusJakartaSansBold, color: '#FFFFFF', opacity: 0.85, marginBottom: hScale(8) },
+  backBtn: {
+    alignSelf: 'flex-start',
+    width: Layout.hitArea.backButton, height: Layout.hitArea.backButton,
+    alignItems: 'center', justifyContent: 'center', marginBottom: hScale(8),
+  },
+  cityName: { fontSize: wScale(18), fontFamily: Fonts.plusJakartaSansBold, color: '#FFFFFF', opacity: 0.9, marginBottom: hScale(8) },
   tempLarge: { fontSize: wScale(64), fontFamily: Fonts.plusJakartaSansExtraBold, color: '#FFFFFF', lineHeight: hScale(76) },
-  condition: { fontSize: wScale(16), fontFamily: Fonts.plusJakartaSansRegular, color: 'rgba(255,255,255,0.8)' },
-  hiLow: { fontSize: wScale(14), fontFamily: Fonts.plusJakartaSansMedium, color: 'rgba(255,255,255,0.65)' },
+  condition: { fontSize: wScale(16), fontFamily: Fonts.plusJakartaSansRegular, color: 'rgba(255,255,255,0.85)' },
+  hiLow: { fontSize: wScale(14), fontFamily: Fonts.plusJakartaSansMedium, color: 'rgba(255,255,255,0.75)' },
   content: { paddingHorizontal: Layout.screenPaddingH, paddingTop: hScale(20), paddingBottom: hScale(40) },
   section: { marginBottom: hScale(24) },
   sectionTitle: { fontSize: wScale(15), fontFamily: Fonts.plusJakartaSansBold, color: colors.textPrimary, marginBottom: hScale(12) },
@@ -125,24 +136,24 @@ const makeStyles = (colors: AppColors) => StyleSheet.create({
   hourCard: {
     alignItems: 'center', gap: hScale(6),
     paddingHorizontal: wScale(14), paddingVertical: hScale(12),
-    backgroundColor: colors.white, borderRadius: wScale(14), borderWidth: 1, borderColor: colors.stroke,
+    backgroundColor: colors.white, borderRadius: Layout.borderRadius.md, borderWidth: 1, borderColor: colors.stroke,
   },
   hourCardActive: { backgroundColor: colors.primary, borderColor: colors.primary },
   hourTime: { fontSize: wScale(11), fontFamily: Fonts.plusJakartaSansMedium, color: colors.textSecondary },
-  hourTimeActive: { color: 'rgba(255,255,255,0.75)' },
+  hourTimeActive: { color: 'rgba(255,255,255,0.85)' },
   hourTemp: { fontSize: wScale(14), fontFamily: Fonts.plusJakartaSansBold, color: colors.textPrimary },
   hourTempActive: { color: '#FFFFFF' },
   dayRow: {
     flexDirection: 'row', alignItems: 'center', gap: wScale(12),
     paddingVertical: hScale(10), borderBottomWidth: 1, borderBottomColor: colors.stroke,
   },
-  dayName: { fontSize: wScale(14), fontFamily: Fonts.plusJakartaSansMedium, color: colors.textPrimary, width: wScale(40) },
+  dayName: { fontSize: wScale(14), fontFamily: Fonts.plusJakartaSansMedium, color: colors.textPrimary, width: wScale(44) },
   dayHigh: { fontSize: wScale(14), fontFamily: Fonts.plusJakartaSansBold, color: colors.textPrimary, width: wScale(32), textAlign: 'right' },
   dayLow: { fontSize: wScale(14), fontFamily: Fonts.plusJakartaSansRegular, color: colors.textSecondary, width: wScale(32), textAlign: 'right' },
   detailsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: wScale(10) },
   detailCard: {
     width: '47.5%', alignItems: 'center', gap: hScale(4),
-    backgroundColor: colors.white, borderRadius: wScale(16), borderWidth: 1, borderColor: colors.stroke, padding: wScale(16),
+    backgroundColor: colors.white, borderRadius: Layout.borderRadius.lg, borderWidth: 1, borderColor: colors.stroke, padding: wScale(16),
   },
   detailValue: { fontSize: wScale(15), fontFamily: Fonts.plusJakartaSansBold, color: colors.textPrimary },
   detailLabel: { fontSize: wScale(11), fontFamily: Fonts.plusJakartaSansRegular, color: colors.textSecondary },
