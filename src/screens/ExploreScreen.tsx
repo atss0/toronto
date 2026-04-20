@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   TextInput,
   Image,
   StatusBar,
+  Animated,
 } from 'react-native';
 import { Iconify } from 'react-native-iconify';
 import { useSelector } from 'react-redux';
@@ -493,10 +494,14 @@ const ExploreScreen = () => {
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const [searchText, setSearchText] = useState('');
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [activeFilter, setActiveFilter] = useState('all');
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
   const [results, setResults] = useState<PlaceResult[]>(discoverData.allResults as PlaceResult[]);
   const [isLoading, setIsLoading] = useState(false); // TODO: true when API is wired
+  const searchRef = useRef<TextInput>(null);
+
+  const isSearchMode = isSearchFocused || searchText.trim().length > 0;
 
   const handleToggleLike = (id: string) => {
     setResults(prev =>
@@ -547,16 +552,18 @@ const ExploreScreen = () => {
 
         {/* ── Search Bar ────────────────────────────────────────────────────── */}
         <View style={styles.searchRow}>
-          <View style={styles.searchBox}>
-            <Iconify icon="solar:magnifer-linear" size={wScale(16)} color={colors.textSecondary} />
+          <View style={[styles.searchBox, isSearchMode && styles.searchBoxActive]}>
+            <Iconify icon="solar:magnifer-linear" size={wScale(16)} color={isSearchMode ? colors.primary : colors.textSecondary} />
             <TextInput
+              ref={searchRef}
               style={styles.searchInput}
               placeholder={t('explore.searchPlaceholder')}
               placeholderTextColor={colors.textSecondary}
               value={searchText}
               onChangeText={setSearchText}
               returnKeyType="search"
-              onSubmitEditing={() => searchText.trim() && navigation.navigate('SearchResults', { query: searchText.trim() })}
+              onFocus={() => setIsSearchFocused(true)}
+              onBlur={() => setIsSearchFocused(false)}
             />
             {searchText.length > 0 && (
               <TouchableOpacity onPress={() => setSearchText('')} hitSlop={8}>
@@ -564,12 +571,21 @@ const ExploreScreen = () => {
               </TouchableOpacity>
             )}
           </View>
-          <TouchableOpacity
-            style={[styles.filterBtn, activeFilter !== 'all' && styles.filterBtnActive]}
-            onPress={() => navigation.navigate('Filter')}
-          >
-            <Iconify icon="solar:filter-bold-duotone" size={wScale(18)} color="#FFFFFF" />
-          </TouchableOpacity>
+          {isSearchMode ? (
+            <TouchableOpacity
+              style={styles.cancelBtn}
+              onPress={() => { setSearchText(''); setIsSearchFocused(false); searchRef.current?.blur(); }}
+            >
+              <Text style={styles.cancelText}>Cancel</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={[styles.filterBtn, activeFilter !== 'all' && styles.filterBtnActive]}
+              onPress={() => navigation.navigate('Filter')}
+            >
+              <Iconify icon="solar:filter-bold-duotone" size={wScale(18)} color="#FFFFFF" />
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* ── Filter Chips ──────────────────────────────────────────────────── */}
@@ -633,35 +649,43 @@ const ExploreScreen = () => {
           </View>
         ) : (
           <>
-            {/* ── Trending Near You ──────────────────────────────────────────── */}
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>{t('explore.trendingNearYou')}</Text>
-                <TouchableOpacity onPress={() => navigation.navigate('SeeAll', { type: 'explore', title: t('explore.trendingNearYou') })}>
-                  <Text style={styles.seeAll}>{t('routes.seeAll')}</Text>
-                </TouchableOpacity>
+            {/* ── Trending Near You — hidden in search mode ─────────────────── */}
+            {!isSearchMode && (
+              <View style={styles.section}>
+                <View style={styles.sectionHeader}>
+                  <Text style={styles.sectionTitle}>{t('explore.trendingNearYou')}</Text>
+                  <TouchableOpacity onPress={() => navigation.navigate('SeeAll', { type: 'explore', title: t('explore.trendingNearYou') })}>
+                    <Text style={styles.seeAll}>{t('routes.seeAll')}</Text>
+                  </TouchableOpacity>
+                </View>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.hList}
+                >
+                  {isLoading
+                    ? [1, 2, 3].map(i => <SkeletonCard key={i} width={wScale(160)} height={hScale(170)} style={{ marginRight: wScale(12) }} />)
+                    : discoverData.trending.map(item => (
+                    <TrendingNearCard
+                      key={item.id}
+                      item={item as TrendingItem}
+                      colors={colors}
+                    />
+                  ))}
+                </ScrollView>
               </View>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.hList}
-              >
-                {isLoading
-                  ? [1, 2, 3].map(i => <SkeletonCard key={i} width={wScale(160)} height={hScale(170)} style={{ marginRight: wScale(12) }} />)
-                  : discoverData.trending.map(item => (
-                  <TrendingNearCard
-                    key={item.id}
-                    item={item as TrendingItem}
-                    colors={colors}
-                  />
-                ))}
-              </ScrollView>
-            </View>
+            )}
 
-            {/* ── All Results ────────────────────────────────────────────────── */}
+            {/* ── Results ────────────────────────────────────────────────────── */}
             <View style={styles.section}>
               <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>{t('explore.allResults')}</Text>
+                {isSearchMode && searchText.trim() ? (
+                  <Text style={styles.sectionTitle}>
+                    {t('search.resultsFor', { query: searchText.trim() })}
+                  </Text>
+                ) : (
+                  <Text style={styles.sectionTitle}>{t('explore.allResults')}</Text>
+                )}
                 <Text style={styles.resultCount}>
                   {t('explore.placesFound', { count: filteredResults.length })}
                 </Text>
@@ -781,6 +805,10 @@ const makeStyles = (colors: AppColors) =>
       color: colors.textPrimary,
       padding: 0,
     },
+    searchBoxActive: {
+      borderColor: colors.primary,
+      borderWidth: 1.5,
+    },
     filterBtn: {
       width: wScale(44),
       height: wScale(44),
@@ -791,6 +819,16 @@ const makeStyles = (colors: AppColors) =>
     },
     filterBtnActive: {
       backgroundColor: colors.secondary,
+    },
+    cancelBtn: {
+      paddingHorizontal: wScale(4),
+      paddingVertical: hScale(10),
+      justifyContent: 'center',
+    },
+    cancelText: {
+      fontSize: wScale(14),
+      fontFamily: Fonts.plusJakartaSansSemiBold,
+      color: colors.primary,
     },
 
     // Filter Chips

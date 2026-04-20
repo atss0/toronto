@@ -48,39 +48,60 @@ const SeeAllScreen = () => {
     );
   }, [rawItems, search]);
 
-  const renderItem = useCallback(({ item }: { item: any }) => (
-    <TouchableOpacity
-      style={styles.card}
-      activeOpacity={0.85}
-      onPress={() => (navigation as any).navigate('PlaceDetail', {
-        placeId: item.id,
-        name: item.name,
-        category: item.category,
-        rating: item.rating,
-        imageUrl: item.imageUrl,
-        distance: item.distance,
-        price: item.price,
-        reviewCount: item.reviewCount,
-      })}
-    >
-      <Image source={{ uri: item.imageUrl }} style={styles.thumb} resizeMode="cover" />
-      <View style={styles.info}>
-        <Text style={styles.name} numberOfLines={1}>{item.name}</Text>
-        <Text style={styles.category}>{item.category}</Text>
-        <View style={styles.metaRow}>
-          <Iconify icon="solar:star-bold" size={wScale(11)} color={colors.warning} />
-          <Text style={styles.rating}>{item.rating?.toFixed(1)}</Text>
-          {item.distance && (
-            <>
-              <View style={styles.dot} />
-              <Text style={styles.metaText}>{item.distance}</Text>
-            </>
-          )}
+  const navigateToPlace = useCallback((item: any) => {
+    (navigation as any).navigate('PlaceDetail', {
+      placeId: item.id,
+      name: item.name,
+      category: item.category,
+      rating: item.rating,
+      imageUrl: item.imageUrl,
+      distance: item.distance,
+      price: item.price,
+      reviewCount: item.reviewCount,
+    });
+  }, [navigation]);
+
+  const renderItem = useCallback(({ item }: { item: any }) => {
+    if (type === 'trending') {
+      return (
+        <TouchableOpacity style={styles.trendCard} activeOpacity={0.85} onPress={() => navigateToPlace(item)}>
+          <Image source={{ uri: item.imageUrl }} style={styles.trendImage} resizeMode="cover" />
+          <View style={styles.trendOverlay} />
+          <View style={styles.trendRatingBadge}>
+            <Iconify icon="solar:star-bold" size={wScale(10)} color="#F59E0B" />
+            <Text style={styles.trendRatingText}>{item.rating?.toFixed(1)}</Text>
+          </View>
+          <View style={styles.trendBottom}>
+            <Text style={styles.trendName} numberOfLines={1}>{item.name}</Text>
+            <View style={styles.trendMeta}>
+              <Text style={styles.trendCategory}>{item.category}</Text>
+              {item.distance && <Text style={styles.trendDistance}>{item.distance}</Text>}
+            </View>
+          </View>
+        </TouchableOpacity>
+      );
+    }
+    return (
+      <TouchableOpacity style={styles.card} activeOpacity={0.85} onPress={() => navigateToPlace(item)}>
+        <Image source={{ uri: item.imageUrl }} style={styles.thumb} resizeMode="cover" />
+        <View style={styles.info}>
+          <Text style={styles.name} numberOfLines={1}>{item.name}</Text>
+          <Text style={styles.category}>{item.category}</Text>
+          <View style={styles.metaRow}>
+            <Iconify icon="solar:star-bold" size={wScale(11)} color={colors.warning} />
+            <Text style={styles.rating}>{item.rating?.toFixed(1)}</Text>
+            {item.distance && (
+              <>
+                <View style={styles.dot} />
+                <Text style={styles.metaText}>{item.distance}</Text>
+              </>
+            )}
+          </View>
         </View>
-      </View>
-      <Iconify icon="solar:alt-arrow-right-linear" size={wScale(16)} color={colors.textSecondary} />
-    </TouchableOpacity>
-  ), [styles, colors, navigation]);
+        <Iconify icon="solar:alt-arrow-right-linear" size={wScale(16)} color={colors.textSecondary} />
+      </TouchableOpacity>
+    );
+  }, [styles, colors, type, navigateToPlace]);
 
   return (
     <View style={styles.root}>
@@ -191,4 +212,25 @@ const makeStyles = (colors: AppColors) => StyleSheet.create({
   metaText: { fontSize: wScale(11), fontFamily: Fonts.plusJakartaSansRegular, color: colors.textSecondary },
   empty: { alignItems: 'center', paddingVertical: hScale(60), gap: hScale(10) },
   emptyTitle: { fontSize: wScale(15), fontFamily: Fonts.plusJakartaSansBold, color: colors.textPrimary },
+
+  // Trending card (large image)
+  trendCard: {
+    borderRadius: wScale(18), overflow: 'hidden', height: hScale(180),
+    borderWidth: 1, borderColor: colors.stroke,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.08, shadowRadius: 8, elevation: 3,
+  },
+  trendImage: { width: '100%', height: '100%' },
+  trendOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.3)' },
+  trendRatingBadge: {
+    position: 'absolute', top: hScale(10), right: wScale(10),
+    flexDirection: 'row', alignItems: 'center', gap: wScale(3),
+    backgroundColor: 'rgba(0,0,0,0.55)', paddingHorizontal: wScale(8), paddingVertical: hScale(4),
+    borderRadius: wScale(10),
+  },
+  trendRatingText: { fontSize: wScale(11), fontFamily: Fonts.plusJakartaSansBold, color: '#FFFFFF' },
+  trendBottom: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: wScale(14) },
+  trendName: { fontSize: wScale(16), fontFamily: Fonts.plusJakartaSansExtraBold, color: '#FFFFFF', marginBottom: hScale(3) },
+  trendMeta: { flexDirection: 'row', alignItems: 'center', gap: wScale(8) },
+  trendCategory: { fontSize: wScale(12), fontFamily: Fonts.plusJakartaSansMedium, color: 'rgba(255,255,255,0.85)' },
+  trendDistance: { fontSize: wScale(12), fontFamily: Fonts.plusJakartaSansMedium, color: 'rgba(255,255,255,0.75)' },
 });

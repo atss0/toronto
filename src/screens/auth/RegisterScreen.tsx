@@ -13,7 +13,8 @@ import ScreenWrapper from '../../components/ScreenWrapper';
 import { useColors } from '../../context/ThemeContext';
 
 export default function RegisterScreen() {
-  const [fullName, setFullName] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -24,7 +25,7 @@ export default function RegisterScreen() {
 
   const handleRegister = () => {
     if (password !== confirmPassword) return;
-    // TODO: call authService.register({ name: fullName, email, password }) when backend is ready
+    // TODO: call authService.register({ name: firstName, surname: lastName, email, password }) when backend is ready
   };
 
   return (
@@ -35,13 +36,26 @@ export default function RegisterScreen() {
       />
 
       <View style={styles.formContainer}>
-        <Input
-          label={t('auth.fullNameLabel')}
-          placeholder={t('auth.fullNamePlaceholder')}
-          autoCapitalize="words"
-          value={fullName}
-          onChangeText={setFullName}
-        />
+        <View style={styles.nameRow}>
+          <View style={styles.nameField}>
+            <Input
+              label={t('auth.nameLabel')}
+              placeholder={t('auth.namePlaceholder')}
+              autoCapitalize="words"
+              value={firstName}
+              onChangeText={setFirstName}
+            />
+          </View>
+          <View style={styles.nameField}>
+            <Input
+              label={t('auth.surnameLabel')}
+              placeholder={t('auth.surnamePlaceholder')}
+              autoCapitalize="words"
+              value={lastName}
+              onChangeText={setLastName}
+            />
+          </View>
+        </View>
         <Input
           label={t('auth.emailLabel')}
           placeholder={t('auth.emailPlaceholder')}
@@ -90,6 +104,13 @@ export default function RegisterScreen() {
 const makeStyles = (primary: string, textSecondary: string) => StyleSheet.create({
   formContainer: {
     gap: hScale(4),
+  },
+  nameRow: {
+    flexDirection: 'row',
+    gap: wScale(10),
+  },
+  nameField: {
+    flex: 1,
   },
   lastInput: {
     marginBottom: hScale(4),

@@ -46,6 +46,12 @@ const OfflineRoutesScreen = () => {
     <View style={styles.root}>
       <StackHeader title={t('offlineRoutes.title')} />
 
+      {/* Map tiles notice */}
+      <View style={styles.mapTilesNotice}>
+        <Iconify icon="solar:map-bold" size={wScale(18)} color="#F59E0B" />
+        <Text style={styles.mapTilesText}>Offline map tiles are coming soon. Currently only route data is saved.</Text>
+      </View>
+
       <View style={styles.storageCard}>
         <Iconify icon="solar:database-bold" size={wScale(22)} color={colors.primary} />
         <View style={{ flex: 1 }}>
@@ -130,6 +136,16 @@ const makeStyles = (colors: AppColors) => StyleSheet.create({
   metaText: { fontSize: wScale(11), fontFamily: Fonts.plusJakartaSansRegular, color: colors.textSecondary },
   dot: { width: wScale(3), height: wScale(3), borderRadius: wScale(2), backgroundColor: colors.textSecondary },
   downloadedAt: { fontSize: wScale(11), fontFamily: Fonts.plusJakartaSansRegular, color: colors.textSecondary },
+  mapTilesNotice: {
+    flexDirection: 'row', alignItems: 'flex-start', gap: wScale(10),
+    marginHorizontal: Layout.screenPaddingH, marginTop: hScale(12),
+    backgroundColor: '#FFFBEB', borderRadius: wScale(12), borderWidth: 1, borderColor: '#FDE68A',
+    paddingHorizontal: wScale(14), paddingVertical: hScale(10),
+  },
+  mapTilesText: {
+    flex: 1, fontSize: wScale(12), fontFamily: Fonts.plusJakartaSansRegular,
+    color: '#92400E', lineHeight: hScale(18),
+  },
   empty: { alignItems: 'center', paddingVertical: hScale(60), gap: hScale(10) },
   emptyTitle: { fontSize: wScale(16), fontFamily: Fonts.plusJakartaSansBold, color: colors.textPrimary },
   emptySubtitle: { fontSize: wScale(13), fontFamily: Fonts.plusJakartaSansRegular, color: colors.textSecondary, textAlign: 'center' },

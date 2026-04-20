@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, StatusBar, Linking } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Iconify } from 'react-native-iconify';
 import { useSelector } from 'react-redux';
@@ -11,6 +11,22 @@ import Fonts from '../styles/Fonts';
 import { wScale, hScale } from '../styles/Scaler';
 import Layout from '../styles/Layout';
 import { RootState } from '../redux/store';
+
+const EMERGENCY_NUMBERS = [
+  { region: 'Europe', number: '112', desc: 'Universal EU emergency' },
+  { region: 'USA / Canada', number: '911', desc: 'Police, fire, ambulance' },
+  { region: 'UK', number: '999', desc: 'Police, fire, ambulance' },
+  { region: 'Australia', number: '000', desc: 'Police, fire, ambulance' },
+  { region: 'Japan', number: '110 / 119', desc: 'Police / Ambulance & fire' },
+];
+
+const SAFETY_TIPS = [
+  'Keep a digital copy of your passport in cloud storage.',
+  'Note your country\'s local embassy address before arrival.',
+  'Share your daily itinerary with someone you trust.',
+  'Keep emergency cash separate from your main wallet.',
+  'Save the local emergency number as a contact immediately.',
+];
 
 const FAQ = [
   { q: 'How do I create a new route?', a: 'Go to the Routes tab and tap "Create New Route". You can add stops, set a start point, and the app will calculate the best path for you.' },
@@ -27,6 +43,7 @@ const HelpCenterScreen = () => {
   const currentTheme = useSelector((s: RootState) => s.Theme.theme);
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+  const [emergencyOpen, setEmergencyOpen] = useState(false);
 
   return (
     <View style={styles.root}>
@@ -54,6 +71,59 @@ const HelpCenterScreen = () => {
             </TouchableOpacity>
           ))}
         </View>
+
+        {/* Emergency Section */}
+        <Text style={styles.sectionLabel}>EMERGENCY & SAFETY</Text>
+        <TouchableOpacity
+          style={styles.emergencyBanner}
+          activeOpacity={0.85}
+          onPress={() => setEmergencyOpen(v => !v)}
+        >
+          <View style={styles.emergencyBannerLeft}>
+            <View style={styles.emergencyIcon}>
+              <Iconify icon="solar:danger-bold" size={wScale(22)} color="#EF4444" />
+            </View>
+            <View>
+              <Text style={styles.emergencyBannerTitle}>Emergency Numbers</Text>
+              <Text style={styles.emergencyBannerSub}>Global emergency contacts by region</Text>
+            </View>
+          </View>
+          <Iconify
+            icon={emergencyOpen ? 'solar:alt-arrow-up-linear' : 'solar:alt-arrow-down-linear'}
+            size={wScale(16)}
+            color="#EF4444"
+          />
+        </TouchableOpacity>
+        {emergencyOpen && (
+          <View style={styles.emergencyCard}>
+            {EMERGENCY_NUMBERS.map((item, i) => (
+              <TouchableOpacity
+                key={item.region}
+                style={[styles.emergencyRow, i < EMERGENCY_NUMBERS.length - 1 && styles.emergencyBorder]}
+                onPress={() => Linking.openURL(`tel:${item.number.split(' / ')[0]}`)}
+                activeOpacity={0.7}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.emergencyRegion}>{item.region}</Text>
+                  <Text style={styles.emergencyDesc}>{item.desc}</Text>
+                </View>
+                <View style={styles.emergencyNumWrap}>
+                  <Text style={styles.emergencyNum}>{item.number}</Text>
+                  <Iconify icon="solar:phone-bold" size={wScale(13)} color="#EF4444" />
+                </View>
+              </TouchableOpacity>
+            ))}
+            <View style={styles.safetyTipsWrap}>
+              <Text style={styles.safetyTipsTitle}>Safety Tips</Text>
+              {SAFETY_TIPS.map((tip, i) => (
+                <View key={i} style={styles.safetyTipRow}>
+                  <Iconify icon="solar:check-circle-bold" size={wScale(14)} color="#10B981" />
+                  <Text style={styles.safetyTipText}>{tip}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
 
         {/* FAQ */}
         <Text style={styles.sectionLabel}>FREQUENTLY ASKED QUESTIONS</Text>
@@ -110,4 +180,41 @@ const makeStyles = (colors: AppColors) => StyleSheet.create({
   faqHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: wScale(10) },
   faqQ: { flex: 1, fontSize: wScale(14), fontFamily: Fonts.plusJakartaSansMedium, color: colors.textPrimary, lineHeight: hScale(20) },
   faqA: { fontSize: wScale(13), fontFamily: Fonts.plusJakartaSansRegular, color: colors.textSecondary, lineHeight: hScale(20), marginTop: hScale(8) },
+
+  // Emergency
+  emergencyBanner: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    backgroundColor: '#FEF2F2', borderRadius: wScale(16), borderWidth: 1, borderColor: '#FECACA',
+    padding: wScale(14),
+  },
+  emergencyBannerLeft: { flexDirection: 'row', alignItems: 'center', gap: wScale(12) },
+  emergencyIcon: {
+    width: wScale(44), height: wScale(44), borderRadius: wScale(12),
+    backgroundColor: '#FFE4E6', alignItems: 'center', justifyContent: 'center',
+  },
+  emergencyBannerTitle: { fontSize: wScale(14), fontFamily: Fonts.plusJakartaSansBold, color: '#EF4444' },
+  emergencyBannerSub: { fontSize: wScale(11), fontFamily: Fonts.plusJakartaSansRegular, color: '#9CA3AF', marginTop: hScale(1) },
+  emergencyCard: {
+    backgroundColor: colors.white, borderRadius: wScale(18), borderWidth: 1, borderColor: colors.stroke,
+    paddingHorizontal: wScale(16), overflow: 'hidden',
+  },
+  emergencyRow: {
+    flexDirection: 'row', alignItems: 'center', paddingVertical: hScale(12),
+  },
+  emergencyBorder: { borderBottomWidth: 1, borderBottomColor: colors.stroke },
+  emergencyRegion: { fontSize: wScale(13), fontFamily: Fonts.plusJakartaSansSemiBold, color: colors.textPrimary },
+  emergencyDesc: { fontSize: wScale(11), fontFamily: Fonts.plusJakartaSansRegular, color: colors.textSecondary, marginTop: hScale(1) },
+  emergencyNumWrap: {
+    flexDirection: 'row', alignItems: 'center', gap: wScale(6),
+    backgroundColor: '#FEF2F2', paddingHorizontal: wScale(10), paddingVertical: hScale(5),
+    borderRadius: wScale(10),
+  },
+  emergencyNum: { fontSize: wScale(13), fontFamily: Fonts.plusJakartaSansBold, color: '#EF4444' },
+  safetyTipsWrap: {
+    borderTopWidth: 1, borderTopColor: colors.stroke,
+    paddingVertical: hScale(14), gap: hScale(8),
+  },
+  safetyTipsTitle: { fontSize: wScale(12), fontFamily: Fonts.plusJakartaSansBold, color: colors.textSecondary, letterSpacing: 0.5, marginBottom: hScale(4) },
+  safetyTipRow: { flexDirection: 'row', alignItems: 'flex-start', gap: wScale(8) },
+  safetyTipText: { flex: 1, fontSize: wScale(12), fontFamily: Fonts.plusJakartaSansRegular, color: colors.textSecondary, lineHeight: hScale(18) },
 });

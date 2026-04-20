@@ -2,7 +2,7 @@
   "tabs": {
     "home": "Ana Sayfa",
     "explore": "Keşfet",
-    "belen": "AI",
+    "belen": "Asistan",
     "routes": "Rotalar",
     "profile": "Profil"
   },
@@ -15,7 +15,9 @@
   "home": {
     "nearbyGems": "Yakındaki Yerler",
     "ongoingJourney": "Devam Eden Yolculuk",
-    "trendingToday": "Bugün Trend"
+    "trendingToday": "Bugün Trend",
+    "startJourney": "Yolculuğa Başla",
+    "startJourneyDesc": "İlk rotanı planla ve keşfetmeye başla"
   },
   "explore": {
     "eyebrow": "KEŞFET",
@@ -44,11 +46,15 @@
   },
   "assistant": {
     "title": "Seyahat Asistanı",
-    "placeholder": "Her şeyi sorabilirsin..."
+    "placeholder": "Ne keşfetmek istersiniz?",
+    "saveRoute": "Rotayı Kaydet",
+    "planWithAI": "AI ile Planla",
+    "planWithAIDesc": "Seyahat asistanın senin için bir rota oluştursun"
   },
   "profile": {
     "title": "Profil",
     "traveler": "Gezgin",
+    "placesVisited": "{{count}} yer ziyaret edildi",
     "editProfile": "Profili Düzenle",
     "accountSettings": "Hesap Ayarları",
     "travelPreferences": "Seyahat Tercihleri",
@@ -64,7 +70,8 @@
     "privacyPolicy": "Gizlilik Politikası",
     "termsOfService": "Kullanım Koşulları",
     "logout": "Çıkış Yap",
-    "version": "Toronto 1.0.0",
+    "version": "Sürüm 1.0.0",
+    "tripHistory": "Seyahat Geçmişi",
     "premiumTitle": "Premium Üye",
     "upgradeBtn": "Premium'a Geç",
     "settings": "Ayarlar",
@@ -94,6 +101,10 @@
     "registerSubtitle": "Yolculuğunuza başlamak için kayıt olun",
     "fullNameLabel": "Ad Soyad",
     "fullNamePlaceholder": "Ahmet Yılmaz",
+    "nameLabel": "Ad",
+    "namePlaceholder": "Ahmet",
+    "surnameLabel": "Soyad",
+    "surnamePlaceholder": "Yılmaz",
     "confirmPasswordLabel": "Şifre (Tekrar)",
     "confirmPasswordPlaceholder": "••••••••",
     "registerButton": "Kayıt Ol",
@@ -245,8 +256,12 @@
     "noTrips": "Henüz seyahat yok",
     "noTripsSub": "Geçmişinizi görmek için bir rota başlatın"
   },
+  "units": {
+    "min": "dk",
+    "hour": "sa"
+  },
   "premium": {
-    "title": "Toronto Premium",
+    "title": "Premium",
     "subtitle": "Tam seyahat deneyimini keşfet",
     "upgradeBtn": "Premium'a Yükselt",
     "startTrial": "Ücretsiz Denemeyi Başlat",

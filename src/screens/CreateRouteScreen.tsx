@@ -6,6 +6,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { Iconify } from 'react-native-iconify';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 
 import { useColors } from '../context/ThemeContext';
 import { AppColors } from '../styles/theme';
@@ -20,6 +21,7 @@ const CreateRouteScreen = () => {
   const navigation = useNavigation();
   const colors = useColors();
   const currentTheme = useSelector((s: RootState) => s.Theme.theme);
+  const { t } = useTranslation();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const [routeName, setRouteName] = useState('');
@@ -57,6 +59,22 @@ const CreateRouteScreen = () => {
         </TouchableOpacity>
       </View>
 
+      {/* AI shortcut banner */}
+      <TouchableOpacity
+        style={styles.aiBar}
+        activeOpacity={0.85}
+        onPress={() => (navigation as any).navigate('Belen')}
+      >
+        <View style={styles.aiBarIcon}>
+          <Iconify icon="solar:magic-stick-3-bold" size={wScale(18)} color={colors.primary} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.aiBarTitle}>{t('assistant.planWithAI')}</Text>
+          <Text style={styles.aiBarDesc}>{t('assistant.planWithAIDesc')}</Text>
+        </View>
+        <Iconify icon="solar:alt-arrow-right-linear" size={wScale(16)} color={colors.primary} />
+      </TouchableOpacity>
+
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
         {/* Route Name */}
         <View style={styles.fieldGroup}>
@@ -65,7 +83,7 @@ const CreateRouteScreen = () => {
             <Iconify icon="solar:route-linear" size={wScale(16)} color={colors.textSecondary} />
             <TextInput
               style={styles.input}
-              placeholder="e.g. Morning in Sultanahmet"
+              placeholder="e.g. Morning at the old town"
               placeholderTextColor={colors.textSecondary}
               value={routeName}
               onChangeText={setRouteName}
@@ -208,4 +226,16 @@ const makeStyles = (colors: AppColors) => StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', gap: hScale(8),
   },
   mapHint: { fontSize: wScale(12), fontFamily: Fonts.plusJakartaSansRegular, color: colors.textSecondary, textAlign: 'center', paddingHorizontal: wScale(20) },
+  aiBar: {
+    flexDirection: 'row', alignItems: 'center', gap: wScale(12),
+    marginHorizontal: Layout.screenPaddingH, marginTop: hScale(12), marginBottom: hScale(4),
+    backgroundColor: colors.primaryLight, borderRadius: wScale(14), borderWidth: 1, borderColor: `${colors.primary}30`,
+    paddingHorizontal: wScale(14), paddingVertical: hScale(12),
+  },
+  aiBarIcon: {
+    width: wScale(36), height: wScale(36), borderRadius: wScale(10),
+    backgroundColor: colors.white, alignItems: 'center', justifyContent: 'center',
+  },
+  aiBarTitle: { fontSize: wScale(13), fontFamily: Fonts.plusJakartaSansBold, color: colors.primary },
+  aiBarDesc: { fontSize: wScale(11), fontFamily: Fonts.plusJakartaSansRegular, color: colors.textSecondary, marginTop: hScale(1) },
 });

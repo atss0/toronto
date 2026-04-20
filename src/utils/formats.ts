@@ -26,7 +26,14 @@ const formatDate = (date: string | number | Date) => {
 };
 
 const fmtKm = (km: number) => `${km.toFixed(km < 10 ? 1 : 0)} km`;
-const fmtMin = (m: number) => (m < 60 ? `${m} dk` : `${Math.floor(m/60)} sa ${m%60 ? (m%60)+' dk' : ''}`);
+const fmtMin = (m: number) => {
+  const min = i18n.t('units.min');
+  const hour = i18n.t('units.hour');
+  if (m < 60) return `${m} ${min}`;
+  const h = Math.floor(m / 60);
+  const rem = m % 60;
+  return rem ? `${h} ${hour} ${rem} ${min}` : `${h} ${hour}`;
+};
 
 const formatCount = (n: number) => {
   if (n < 0) return '0';

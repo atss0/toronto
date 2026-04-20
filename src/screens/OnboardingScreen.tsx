@@ -1,13 +1,13 @@
 import React, { useState, useRef, useMemo } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
-  Dimensions, StatusBar,
+  Dimensions, StatusBar, ScrollView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../types/navigation';
 import { Iconify } from 'react-native-iconify';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
 import { useColors } from '../context/ThemeContext';
@@ -16,6 +16,7 @@ import Fonts from '../styles/Fonts';
 import { wScale, hScale } from '../styles/Scaler';
 import storage from '../storage';
 import { RootState } from '../redux/store';
+import { setLocationName } from '../redux/UserSlice';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -26,10 +27,13 @@ const SLIDE_META = [
   { id: '4', icon: 'solar:compass-bold', iconColor: '#8B5CF6', iconBg: '#EDE9FE', titleKey: 'onboarding.slide4Title', subtitleKey: 'onboarding.slide4Subtitle' },
 ];
 
+const POPULAR_CITIES = ['Paris', 'London', 'Tokyo', 'New York', 'Rome', 'Barcelona', 'Istanbul', 'Amsterdam', 'Dubai', 'Singapore'];
+
 type NavProp = NativeStackNavigationProp<RootStackParamList, 'Onboarding'>;
 
 const OnboardingScreen = () => {
   const navigation = useNavigation<NavProp>();
+  const dispatch = useDispatch();
   const colors = useColors();
   const { t } = useTranslation();
   const currentTheme = useSelector((s: RootState) => s.Theme.theme);
@@ -37,17 +41,28 @@ const OnboardingScreen = () => {
   const SLIDES = useMemo(() => SLIDE_META.map(s => ({ ...s, title: t(s.titleKey), subtitle: t(s.subtitleKey) })), [t]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [selectedCity, setSelectedCity] = useState('');
+  const [showCityPicker, setShowCityPicker] = useState(false);
   const flatListRef = useRef<FlatList>(null);
 
   const goNext = () => {
     if (currentIndex < SLIDES.length - 1) {
       flatListRef.current?.scrollToIndex({ index: currentIndex + 1, animated: true });
+    } else if (!showCityPicker) {
+      setShowCityPicker(true);
     } else {
       finishOnboarding();
     }
   };
 
   const finishOnboarding = () => {
+    dispatch(setLocationName(selectedCity || 'Paris'));
+    storage.set('onboardingComplete', 'true');
+    navigation.navigate('Login');
+  };
+
+  const skipOnboarding = () => {
+    dispatch(setLocationName('Paris'));
     storage.set('onboardingComplete', 'true');
     navigation.navigate('Login');
   };
@@ -60,50 +75,89 @@ const OnboardingScreen = () => {
       />
 
       {/* Skip */}
-      <TouchableOpacity style={styles.skipBtn} onPress={finishOnboarding}>
+      <TouchableOpacity style={styles.skipBtn} onPress={skipOnboarding}>
         <Text style={styles.skipText}>{t('onboarding.skip')}</Text>
       </TouchableOpacity>
 
-      {/* Slides */}
-      <FlatList
-        ref={flatListRef}
-        data={SLIDES}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        keyExtractor={item => item.id}
-        onMomentumScrollEnd={e => {
-          const index = Math.round(e.nativeEvent.contentOffset.x / SCREEN_W);
-          setCurrentIndex(index);
-        }}
-        renderItem={({ item }) => (
-          <View style={styles.slide}>
-            <View style={[styles.slideIcon, { backgroundColor: item.iconBg }]}>
-              <Iconify icon={item.icon} size={wScale(64)} color={item.iconColor} />
-            </View>
-            <Text style={styles.slideTitle}>{item.title}</Text>
-            <Text style={styles.slideSubtitle}>{item.subtitle}</Text>
+      {showCityPicker ? (
+        /* City picker step */
+        <View style={styles.cityStep}>
+          <View style={[styles.slideIcon, { backgroundColor: '#EBF3FE' }]}>
+            <Iconify icon="solar:city-bold" size={wScale(64)} color="#3182ED" />
           </View>
-        )}
-      />
+          <Text style={styles.slideTitle}>Where are you heading?</Text>
+          <Text style={styles.slideSubtitle}>Pick your destination so we can personalize your experience from the start.</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.cityChips}
+          >
+            {POPULAR_CITIES.map(city => (
+              <TouchableOpacity
+                key={city}
+                style={[styles.cityChip, selectedCity === city && styles.cityChipActive]}
+                onPress={() => setSelectedCity(city)}
+                activeOpacity={0.8}
+              >
+                <Text style={[styles.cityChipText, selectedCity === city && styles.cityChipTextActive]}>{city}</Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+          {selectedCity ? (
+            <Text style={styles.citySelectedHint}>Exploring: {selectedCity} ✓</Text>
+          ) : (
+            <Text style={styles.citySelectedHint}>No preference? We'll start with Paris.</Text>
+          )}
+        </View>
+      ) : (
+        /* Slides */
+        <FlatList
+          ref={flatListRef}
+          data={SLIDES}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={item => item.id}
+          onMomentumScrollEnd={e => {
+            const index = Math.round(e.nativeEvent.contentOffset.x / SCREEN_W);
+            setCurrentIndex(index);
+          }}
+          renderItem={({ item }) => (
+            <View style={styles.slide}>
+              <View style={[styles.slideIcon, { backgroundColor: item.iconBg }]}>
+                <Iconify icon={item.icon} size={wScale(64)} color={item.iconColor} />
+              </View>
+              <Text style={styles.slideTitle}>{item.title}</Text>
+              <Text style={styles.slideSubtitle}>{item.subtitle}</Text>
+            </View>
+          )}
+        />
+      )}
 
       {/* Dots */}
-      <View style={styles.dotsRow}>
-        {SLIDES.map((_, i) => (
-          <View
-            key={i}
-            style={[styles.dot, i === currentIndex && styles.dotActive]}
-          />
-        ))}
-      </View>
+      {!showCityPicker && (
+        <View style={styles.dotsRow}>
+          {SLIDES.map((_, i) => (
+            <View
+              key={i}
+              style={[styles.dot, i === currentIndex && styles.dotActive]}
+            />
+          ))}
+        </View>
+      )}
+      {showCityPicker && <View style={{ height: hScale(32) }} />}
 
       {/* Next / Get Started */}
       <TouchableOpacity style={styles.nextBtn} onPress={goNext} activeOpacity={0.85}>
         <Text style={styles.nextBtnText}>
-          {currentIndex < SLIDES.length - 1 ? t('onboarding.next') : t('onboarding.getStarted')}
+          {showCityPicker
+            ? t('onboarding.getStarted')
+            : currentIndex < SLIDES.length - 1
+              ? t('onboarding.next')
+              : t('onboarding.next')}
         </Text>
         <Iconify
-          icon={currentIndex < SLIDES.length - 1 ? 'solar:arrow-right-linear' : 'solar:map-point-wave-bold'}
+          icon={showCityPicker ? 'solar:map-point-wave-bold' : 'solar:arrow-right-linear'}
           size={wScale(18)}
           color="#FFFFFF"
         />
@@ -183,5 +237,46 @@ const makeStyles = (colors: AppColors) => StyleSheet.create({
     fontSize: wScale(16),
     fontFamily: Fonts.plusJakartaSansExtraBold,
     color: '#FFFFFF',
+  },
+
+  // City picker step
+  cityStep: {
+    flex: 1,
+    width: SCREEN_W,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: wScale(32),
+    gap: hScale(16),
+  },
+  cityChips: {
+    paddingHorizontal: wScale(4),
+    gap: wScale(8),
+    paddingVertical: hScale(4),
+  },
+  cityChip: {
+    paddingHorizontal: wScale(16),
+    paddingVertical: hScale(9),
+    borderRadius: wScale(20),
+    backgroundColor: colors.white,
+    borderWidth: 1.5,
+    borderColor: colors.stroke,
+  },
+  cityChipActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  cityChipText: {
+    fontSize: wScale(13),
+    fontFamily: Fonts.plusJakartaSansSemiBold,
+    color: colors.textSecondary,
+  },
+  cityChipTextActive: {
+    color: '#FFFFFF',
+  },
+  citySelectedHint: {
+    fontSize: wScale(13),
+    fontFamily: Fonts.plusJakartaSansMedium,
+    color: colors.textSecondary,
+    textAlign: 'center',
   },
 });

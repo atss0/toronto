@@ -18,10 +18,10 @@ type RouteT = RouteProp<RootStackParamList, 'Navigation'>;
 const { width: W, height: H } = Dimensions.get('window');
 
 const MOCK_STEPS = [
-  { instruction: 'Head northwest on Sultanahmet Meydanı', distance: '120 m', icon: 'solar:arrow-up-bold' },
-  { instruction: 'Turn right onto Divan Yolu Caddesi', distance: '350 m', icon: 'solar:arrow-right-bold' },
-  { instruction: 'Turn left towards Yerebatan Caddesi', distance: '80 m', icon: 'solar:arrow-left-bold' },
-  { instruction: 'Arrive at Basilica Cistern on the left', distance: '', icon: 'solar:map-point-bold' },
+  { instruction: 'Head northwest on Main Street', distance: '120 m', icon: 'solar:arrow-up-bold' },
+  { instruction: 'Turn right onto Central Avenue', distance: '350 m', icon: 'solar:arrow-right-bold' },
+  { instruction: 'Turn left towards the old town square', distance: '80 m', icon: 'solar:arrow-left-bold' },
+  { instruction: 'Arrive at your destination on the left', distance: '', icon: 'solar:map-point-bold' },
 ];
 
 const NavigationScreen = () => {

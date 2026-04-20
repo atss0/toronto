@@ -10,6 +10,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   StatusBar,
+  Alert,
 } from 'react-native';
 import { Iconify } from 'react-native-iconify';
 import { useSelector } from 'react-redux';
@@ -48,30 +49,30 @@ const INITIAL_MESSAGES: Message[] = [
   {
     id: 'm1',
     role: 'user',
-    text: 'Plan a walk in Sultanahmet for this afternoon. I have about 4 hours.',
+    text: 'Plan a morning walk for me. I have about 3 hours to explore.',
   },
   {
     id: 'm2',
     role: 'assistant',
-    text: "Certainly! I've curated a premium walking route through the historic heart of Istanbul for you.",
+    text: "Certainly! I've put together a great route to discover the highlights of your area.",
     card: {
-      title: 'Historical Sultanahmet Walk',
+      title: 'Morning Discovery Walk',
       distance: '2.4 km',
-      duration: '3.5 Hours',
+      duration: '3 Hours',
       imageUrl:
-        'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=600&q=80&fit=crop',
+        'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=600&q=80&fit=crop',
       stops: [
         {
-          name: 'Hagia Sophia',
-          description: 'Iconic Byzantine monument & museum',
+          name: 'Old Town Square',
+          description: 'Historic heart of the city',
         },
         {
-          name: 'Blue Mosque',
-          description: 'Majestic 17th-century landmark',
+          name: 'Local Art Museum',
+          description: 'Regional art and cultural heritage',
         },
         {
-          name: 'Basilica Cistern',
-          description: 'Subterranean Roman water reservoir',
+          name: 'Riverside Promenade',
+          description: 'Scenic waterfront walking path',
         },
       ],
     },
@@ -81,32 +82,32 @@ const INITIAL_MESSAGES: Message[] = [
 // Mock replies for demo purposes
 const MOCK_REPLIES: { text: string; card?: RouteCard }[] = [
   {
-    text: "Great choice! Here's another popular route you might enjoy in the Grand Bazaar area.",
+    text: "Great choice! Here's a popular local food and market tour you might enjoy.",
     card: {
-      title: 'Grand Bazaar & Spice Market',
+      title: 'Local Food & Market Tour',
       distance: '1.8 km',
       duration: '2.5 Hours',
       imageUrl:
-        'https://images.unsplash.com/photo-1551882547-ff40c63fe0fa?w=600&q=80&fit=crop',
+        'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=600&q=80&fit=crop',
       stops: [
-        { name: 'Grand Bazaar', description: 'One of the oldest covered markets in the world' },
-        { name: 'Nuruosmaniye Mosque', description: 'Ottoman Baroque masterpiece' },
-        { name: 'Spice Bazaar', description: 'Vibrant Egyptian market full of aromas' },
+        { name: 'Central Market', description: 'Bustling local produce and craft market' },
+        { name: 'Street Food Alley', description: 'Best local bites and flavors' },
+        { name: 'Artisan Bakery District', description: 'Freshly baked goods and cafés' },
       ],
     },
   },
   {
-    text: "I'd recommend the Bosphorus waterfront for a relaxing afternoon walk. Here's what I suggest.",
+    text: "I'd recommend the waterfront for a relaxing afternoon walk. Here's what I suggest.",
     card: {
-      title: 'Bosphorus Waterfront Stroll',
+      title: 'Waterfront Stroll',
       distance: '3.2 km',
       duration: '2 Hours',
       imageUrl:
-        'https://images.unsplash.com/photo-1524661135-423995f22d0b?w=600&q=80&fit=crop',
+        'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=80&fit=crop',
       stops: [
-        { name: 'Dolmabahçe Palace', description: 'Lavish 19th-century Ottoman palace' },
-        { name: 'Beşiktaş Pier', description: 'Lively ferry terminal & square' },
-        { name: 'Ortaköy Mosque', description: 'Iconic Bosphorus waterside mosque' },
+        { name: 'Harbor Promenade', description: 'Scenic walk along the waterfront' },
+        { name: 'Old Port Area', description: 'Historic docks and maritime heritage' },
+        { name: 'Sunset Viewpoint', description: 'Best spot for golden hour views' },
       ],
     },
   },
@@ -117,8 +118,9 @@ const MOCK_REPLIES: { text: string; card?: RouteCard }[] = [
 
 // ─── Route Card Component ─────────────────────────────────────────────────────
 
-const RouteCardView: React.FC<{ card: RouteCard; colors: AppColors }> = ({ card, colors }) => {
+const RouteCardView: React.FC<{ card: RouteCard; colors: AppColors; onSave?: () => void }> = ({ card, colors, onSave }) => {
   const s = useMemo(() => makeCardStyles(colors), [colors]);
+  const { t } = useTranslation();
   return (
     <View style={s.card}>
       {/* Image */}
@@ -169,11 +171,17 @@ const RouteCardView: React.FC<{ card: RouteCard; colors: AppColors }> = ({ card,
         </View>
       ))}
 
-      {/* Button */}
-      <TouchableOpacity style={s.navBtn} activeOpacity={0.85}>
-        <Iconify icon="solar:map-arrow-right-bold" size={wScale(16)} color="#FFFFFF" />
-        <Text style={s.navBtnText}>Start Navigation</Text>
-      </TouchableOpacity>
+      {/* Buttons */}
+      <View style={s.btnRow}>
+        <TouchableOpacity style={s.saveBtn} activeOpacity={0.85} onPress={onSave}>
+          <Iconify icon="solar:bookmark-linear" size={wScale(15)} color={colors.primary} />
+          <Text style={s.saveBtnText}>{t('assistant.saveRoute')}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={s.navBtn} activeOpacity={0.85}>
+          <Iconify icon="solar:map-arrow-right-bold" size={wScale(15)} color="#FFFFFF" />
+          <Text style={s.navBtnText}>Start Navigation</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -304,16 +312,37 @@ const makeCardStyles = (colors: AppColors) =>
       color: colors.textSecondary,
       lineHeight: hScale(16),
     },
+    btnRow: {
+      flexDirection: 'row',
+      gap: wScale(8),
+      margin: wScale(14),
+      marginTop: hScale(4),
+    },
+    saveBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: wScale(6),
+      borderWidth: 1.5,
+      borderColor: colors.primary,
+      borderRadius: wScale(14),
+      paddingVertical: hScale(12),
+      paddingHorizontal: wScale(14),
+    },
+    saveBtnText: {
+      fontSize: wScale(13),
+      fontFamily: Fonts.plusJakartaSansBold,
+      color: colors.primary,
+    },
     navBtn: {
+      flex: 1,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
       gap: wScale(8),
       backgroundColor: colors.primary,
-      margin: wScale(14),
-      marginTop: hScale(4),
       borderRadius: wScale(14),
-      paddingVertical: hScale(13),
+      paddingVertical: hScale(12),
       shadowColor: colors.primary,
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.3,
@@ -321,7 +350,7 @@ const makeCardStyles = (colors: AppColors) =>
       elevation: 4,
     },
     navBtnText: {
-      fontSize: wScale(14),
+      fontSize: wScale(13),
       fontFamily: Fonts.plusJakartaSansBold,
       color: '#FFFFFF',
     },
@@ -358,7 +387,13 @@ const MessageBubble: React.FC<{ msg: Message; colors: AppColors; userInitials: s
         <View style={s.assistantBubble}>
           <Text style={s.assistantText}>{msg.text}</Text>
         </View>
-        {msg.card && <RouteCardView card={msg.card} colors={colors} />}
+        {msg.card && (
+          <RouteCardView
+            card={msg.card}
+            colors={colors}
+            onSave={() => Alert.alert('✓', 'Route saved to My Routes!')}
+          />
+        )}
       </View>
     </View>
   );

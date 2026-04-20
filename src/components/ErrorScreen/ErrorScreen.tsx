@@ -16,7 +16,7 @@ interface ErrorScreenProps {
 const ErrorScreen: React.FC<ErrorScreenProps> = ({
   message,
   onRetry,
-  icon = 'solar:wifi-problem-bold',
+  icon = 'ic:round-wifi-off',
 }) => {
   const colors = useColors();
   const { t } = useTranslation();

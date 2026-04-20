@@ -2,7 +2,7 @@
   "tabs": {
     "home": "Home",
     "explore": "Explore",
-    "belen": "AI",
+    "belen": "Assistant",
     "routes": "Routes",
     "profile": "Profile"
   },
@@ -15,7 +15,9 @@
   "home": {
     "nearbyGems": "Nearby Gems",
     "ongoingJourney": "Ongoing Journey",
-    "trendingToday": "Trending Today"
+    "trendingToday": "Trending Today",
+    "startJourney": "Start a Journey",
+    "startJourneyDesc": "Plan your first route and start exploring"
   },
   "explore": {
     "eyebrow": "DISCOVER",
@@ -44,11 +46,15 @@
   },
   "assistant": {
     "title": "Travel Assistant",
-    "placeholder": "Ask me anything..."
+    "placeholder": "What would you like to explore?",
+    "saveRoute": "Save Route",
+    "planWithAI": "Plan with AI",
+    "planWithAIDesc": "Let your travel assistant build a route for you"
   },
   "profile": {
     "title": "Profile",
     "traveler": "Traveler",
+    "placesVisited": "{{count}} places visited",
     "editProfile": "Edit Profile",
     "accountSettings": "Account Settings",
     "travelPreferences": "Travel Preferences",
@@ -64,7 +70,8 @@
     "privacyPolicy": "Privacy Policy",
     "termsOfService": "Terms of Service",
     "logout": "Logout",
-    "version": "Toronto 1.0.0",
+    "version": "Version 1.0.0",
+    "tripHistory": "Trip History",
     "premiumTitle": "Premium Member",
     "upgradeBtn": "Upgrade to Premium",
     "settings": "Settings",
@@ -94,6 +101,10 @@
     "registerSubtitle": "Sign up to start your journey",
     "fullNameLabel": "Full Name",
     "fullNamePlaceholder": "John Doe",
+    "nameLabel": "First Name",
+    "namePlaceholder": "John",
+    "surnameLabel": "Last Name",
+    "surnamePlaceholder": "Doe",
     "confirmPasswordLabel": "Confirm Password",
     "confirmPasswordPlaceholder": "••••••••",
     "registerButton": "Sign Up",
@@ -245,8 +256,12 @@
     "noTrips": "No trips yet",
     "noTripsSub": "Start a route to see your history"
   },
+  "units": {
+    "min": "min",
+    "hour": "hr"
+  },
   "premium": {
-    "title": "Toronto Premium",
+    "title": "Premium",
     "subtitle": "Unlock the full travel experience",
     "upgradeBtn": "Upgrade to Premium",
     "startTrial": "Start Free Trial",

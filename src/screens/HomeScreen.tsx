@@ -63,7 +63,7 @@ const HomeScreen = () => {
   const [isLoading, setIsLoading] = useState(false); // TODO: true when API is wired
 
   const firstName = user?.name ?? 'Traveler';
-  const city = locationName || 'İstanbul';
+  const city = locationName || '';
   const greetingKey = getGreetingKey();
   const initials = user?.name
     ? `${user.name[0]}${user.surname?.[0] ?? ''}`.toUpperCase()
@@ -206,7 +206,42 @@ const HomeScreen = () => {
         </View>
 
         <View style={styles.quickActionsSection}>
-          <QuickActions />
+          <QuickActions
+            actions={[
+              {
+                id: '1',
+                label: 'Explore',
+                icon: 'solar:compass-bold',
+                iconColor: colors.primary,
+                bgColor: colors.primaryLight,
+                onPress: () => navigation.navigate('Explore' as any),
+              },
+              {
+                id: '2',
+                label: 'Saved',
+                icon: 'solar:bookmark-bold',
+                iconColor: colors.warning,
+                bgColor: colors.warningLight,
+                onPress: () => navigation.navigate('BookmarksSaved'),
+              },
+              {
+                id: '3',
+                label: 'Events',
+                icon: 'solar:calendar-mark-bold',
+                iconColor: colors.success,
+                bgColor: colors.successLight,
+                onPress: () => navigation.navigate('Explore' as any),
+              },
+              {
+                id: '4',
+                label: 'Nearby',
+                icon: 'solar:map-point-wave-bold',
+                iconColor: colors.danger,
+                bgColor: colors.dangerLight,
+                onPress: () => navigation.navigate('Explore' as any),
+              },
+            ]}
+          />
         </View>
 
         {/* Nearby Gems */}
@@ -242,23 +277,44 @@ const HomeScreen = () => {
         </View>
 
         {/* Ongoing Journey */}
-
-        <View style={styles.section}>
-          <SectionHeader title={t('home.ongoingJourney')} showSeeAll={false} />
-          <View style={styles.padH}>
-            <OngoingJourneyCard
-              title={homeData.ongoingJourney.title}
-              description={homeData.ongoingJourney.description}
-              remaining={homeData.ongoingJourney.remaining}
-              totalStops={homeData.ongoingJourney.totalStops}
-              duration={homeData.ongoingJourney.duration}
-              distance={homeData.ongoingJourney.distance}
-              progress={homeData.ongoingJourney.progress}
-              isActive={homeData.ongoingJourney.isActive}
-              onPress={() => navigation.navigate('RouteDetail', { name: homeData.ongoingJourney.title })}
-            />
+        {homeData.ongoingJourney.isActive ? (
+          <View style={styles.section}>
+            <SectionHeader title={t('home.ongoingJourney')} showSeeAll={false} />
+            <View style={styles.padH}>
+              <OngoingJourneyCard
+                title={homeData.ongoingJourney.title}
+                description={homeData.ongoingJourney.description}
+                remaining={homeData.ongoingJourney.remaining}
+                totalStops={homeData.ongoingJourney.totalStops}
+                duration={homeData.ongoingJourney.duration}
+                distance={homeData.ongoingJourney.distance}
+                progress={homeData.ongoingJourney.progress}
+                isActive={homeData.ongoingJourney.isActive}
+                onPress={() => navigation.navigate('RouteDetail', { name: homeData.ongoingJourney.title })}
+              />
+            </View>
           </View>
-        </View>
+        ) : (
+          <View style={styles.section}>
+            <SectionHeader title={t('home.ongoingJourney')} showSeeAll={false} />
+            <View style={styles.padH}>
+              <TouchableOpacity
+                style={styles.startJourneyCard}
+                onPress={() => navigation.navigate('CreateRoute')}
+                activeOpacity={0.85}
+              >
+                <View style={[styles.startJourneyIcon, { backgroundColor: colors.primaryLight }]}>
+                  <Iconify icon="solar:route-bold" size={wScale(26)} color={colors.primary} />
+                </View>
+                <View style={styles.startJourneyText}>
+                  <Text style={styles.startJourneyTitle}>{t('home.startJourney')}</Text>
+                  <Text style={styles.startJourneyDesc}>{t('home.startJourneyDesc')}</Text>
+                </View>
+                <Iconify icon="solar:alt-arrow-right-linear" size={wScale(18)} color={colors.textSecondary} />
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
 
         {/* Trending Today */}
         <View style={styles.section}>
@@ -492,5 +548,41 @@ const makeStyles = (colors: AppColors) => StyleSheet.create({
     paddingLeft: Layout.screenPaddingH,
     paddingRight: Layout.screenPaddingH,
     gap: wScale(12),
+  },
+  startJourneyCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: wScale(14),
+    backgroundColor: colors.white,
+    borderRadius: wScale(18),
+    padding: wScale(16),
+    borderWidth: 1,
+    borderColor: colors.stroke,
+    shadowColor: colors.black,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  startJourneyIcon: {
+    width: wScale(52),
+    height: wScale(52),
+    borderRadius: wScale(16),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  startJourneyText: {
+    flex: 1,
+    gap: hScale(3),
+  },
+  startJourneyTitle: {
+    fontSize: wScale(15),
+    fontFamily: Fonts.plusJakartaSansBold,
+    color: colors.textPrimary,
+  },
+  startJourneyDesc: {
+    fontSize: wScale(12),
+    fontFamily: Fonts.plusJakartaSansRegular,
+    color: colors.textSecondary,
   },
 });

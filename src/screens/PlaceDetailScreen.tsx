@@ -33,6 +33,24 @@ const HOURS = [
 
 const TAGS = ['Museum', 'Historic', 'Art', 'Culture'];
 
+const toMinutes = (t: string) => {
+  const [h, m] = t.split(':').map(Number);
+  return h * 60 + m;
+};
+
+const checkIsOpen = (): boolean => {
+  const now = new Date();
+  const day = now.getDay();
+  const cur = now.getHours() * 60 + now.getMinutes();
+  const range = day === 0
+    ? '10:00 – 21:00'
+    : day === 6
+    ? '10:00 – 23:00'
+    : '09:00 – 22:00';
+  const [open, close] = range.split(' – ');
+  return cur >= toMinutes(open) && cur < toMinutes(close);
+};
+
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
 const PlaceDetailScreen = () => {
@@ -44,6 +62,7 @@ const PlaceDetailScreen = () => {
   const { t } = useTranslation();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const [isSaved, setIsSaved] = useState(false);
+  const isOpen = checkIsOpen();
 
   return (
     <View style={styles.root}>
@@ -135,13 +154,21 @@ const PlaceDetailScreen = () => {
               <View style={styles.mapPin}>
                 <Iconify icon="solar:map-point-bold" size={wScale(28)} color={colors.primary} />
               </View>
-              <Text style={styles.mapAddress}>123 Example Street, Istanbul</Text>
+              <Text style={styles.mapAddress}>123 Example Street</Text>
             </View>
           </View>
 
           {/* Hours */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t('placeDetail.openingHours')}</Text>
+            <View style={styles.hoursTitleRow}>
+              <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>{t('placeDetail.openingHours')}</Text>
+              <View style={[styles.openBadge, { backgroundColor: isOpen ? colors.successLight : colors.dangerLight }]}>
+                <View style={[styles.openDot, { backgroundColor: isOpen ? colors.success : colors.danger }]} />
+                <Text style={[styles.openBadgeText, { color: isOpen ? colors.success : colors.danger }]}>
+                  {isOpen ? 'Open Now' : 'Closed'}
+                </Text>
+              </View>
+            </View>
             <View style={styles.hoursCard}>
               {HOURS.map((h, i) => (
                 <View key={h.day} style={[styles.hourRow, i < HOURS.length - 1 && styles.hourBorder]}>
@@ -317,6 +344,29 @@ const makeStyles = (colors: AppColors) =>
       color: colors.textSecondary,
     },
 
+    hoursTitleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: hScale(10),
+    },
+    openBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: wScale(5),
+      paddingHorizontal: wScale(10),
+      paddingVertical: hScale(4),
+      borderRadius: wScale(20),
+    },
+    openDot: {
+      width: wScale(6),
+      height: wScale(6),
+      borderRadius: wScale(3),
+    },
+    openBadgeText: {
+      fontSize: wScale(11),
+      fontFamily: Fonts.plusJakartaSansBold,
+    },
     hoursCard: {
       backgroundColor: colors.white,
       borderRadius: wScale(14),

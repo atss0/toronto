@@ -281,7 +281,7 @@ const ProfileScreen = () => {
           </View>
 
           <Text style={styles.displayName}>{displayName}</Text>
-          <Text style={styles.displayRole}>{t('profile.traveler')}</Text>
+          <Text style={styles.displayRole}>{t('profile.placesVisited', { count: 45 })}</Text>
 
           <TouchableOpacity style={styles.editProfileBtn} onPress={() => navigation.navigate('EditProfile')}>
             <Text style={styles.editProfileText}>{t('profile.editProfile')}</Text>
@@ -364,6 +364,14 @@ const ProfileScreen = () => {
             iconColor="#EF4444"
             label={t('profile.locationAccess')}
             onPress={() => navigation.navigate('LocationSettings')}
+            colors={colors}
+          />
+          <SettingRow
+            icon="solar:history-bold"
+            iconBg={colors.primaryLight}
+            iconColor={colors.primary}
+            label={t('profile.tripHistory')}
+            onPress={() => navigation.navigate('TripHistory')}
             colors={colors}
             isLast
           />
