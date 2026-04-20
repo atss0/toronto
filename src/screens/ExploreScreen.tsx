@@ -640,11 +640,22 @@ const ExploreScreen = () => {
           /* ── Map View ──────────────────────────────────────────────────────── */
           <View style={styles.mapViewContainer}>
             <ExploreMapView colors={colors} />
-            <View style={styles.mapResultCount}>
-              <Iconify icon="solar:map-point-bold" size={wScale(13)} color={colors.primary} />
-              <Text style={styles.mapResultCountText}>
-                {t('explore.placesOnMap', { count: filteredResults.length })}
-              </Text>
+            <View style={styles.mapBottomRow}>
+              <View style={styles.mapResultCount}>
+                <Iconify icon="solar:map-point-bold" size={wScale(13)} color={colors.primary} />
+                <Text style={styles.mapResultCountText}>
+                  {t('explore.placesOnMap', { count: filteredResults.length })}
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={styles.expandMapBtn}
+                onPress={() => navigation.navigate('MapFull', { title: t('explore.title') })}
+                accessibilityLabel={t('explore.expandMap')}
+                accessibilityRole="button"
+              >
+                <Iconify icon="solar:maximize-square-bold" size={wScale(13)} color={colors.primary} />
+                <Text style={styles.expandMapText}>{t('explore.expandMap')}</Text>
+              </TouchableOpacity>
             </View>
           </View>
         ) : (
@@ -949,11 +960,15 @@ const makeStyles = (colors: AppColors) =>
       paddingBottom: hScale(16),
       gap: hScale(12),
     },
+    mapBottomRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
     mapResultCount: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: wScale(6),
-      alignSelf: 'center',
       backgroundColor: colors.white,
       paddingHorizontal: wScale(14),
       paddingVertical: hScale(8),
@@ -970,5 +985,26 @@ const makeStyles = (colors: AppColors) =>
       fontSize: wScale(12),
       fontFamily: Fonts.plusJakartaSansSemiBold,
       color: colors.textPrimary,
+    },
+    expandMapBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: wScale(5),
+      backgroundColor: colors.white,
+      paddingHorizontal: wScale(14),
+      paddingVertical: hScale(8),
+      borderRadius: wScale(20),
+      borderWidth: 1,
+      borderColor: colors.stroke,
+      shadowColor: colors.black,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.08,
+      shadowRadius: 6,
+      elevation: 3,
+    },
+    expandMapText: {
+      fontSize: wScale(12),
+      fontFamily: Fonts.plusJakartaSansSemiBold,
+      color: colors.primary,
     },
   });

@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   StatusBar,
+  Share,
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -145,6 +146,16 @@ const RouteDetailScreen = () => {
       {/* Footer */}
       <View style={styles.footer}>
         <TouchableOpacity
+          style={styles.companionBtn}
+          activeOpacity={0.85}
+          onPress={() => Share.share({ message: `Join me on "${name}" — check it out on Toronto Travel App!`, title: name })}
+          accessibilityLabel={t('routeDetail.shareWithCompanion')}
+          accessibilityRole="button"
+        >
+          <Iconify icon="solar:users-group-rounded-bold" size={wScale(18)} color={colors.primary} />
+          <Text style={styles.companionBtnText}>{t('routeDetail.shareWithCompanion')}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
           style={styles.navBtn}
           activeOpacity={0.85}
           onPress={() => navigation.navigate('Navigation', { routeName: name })}
@@ -281,7 +292,20 @@ const makeStyles = (colors: AppColors) =>
       backgroundColor: colors.white,
       borderTopWidth: 1,
       borderTopColor: colors.stroke,
+      gap: hScale(10),
     },
+    companionBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: wScale(8),
+      backgroundColor: colors.white,
+      borderRadius: wScale(16),
+      paddingVertical: hScale(12),
+      borderWidth: 1.5,
+      borderColor: colors.primary,
+    },
+    companionBtnText: { fontSize: wScale(14), fontFamily: Fonts.plusJakartaSansBold, color: colors.primary },
     navBtn: {
       flexDirection: 'row',
       alignItems: 'center',

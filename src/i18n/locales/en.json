@@ -30,7 +30,8 @@
     "listView": "List View",
     "mapView": "Map View",
     "noResults": "No results found",
-    "noResultsSub": "Try a different filter or search term"
+    "noResultsSub": "Try a different filter or search term",
+    "expandMap": "Full Map"
   },
   "routes": {
     "title": "My Routes",
@@ -133,7 +134,8 @@
     "duration": "Duration",
     "distance": "Distance",
     "completed": "completed",
-    "upcoming": "upcoming"
+    "upcoming": "upcoming",
+    "shareWithCompanion": "Share with Companion"
   },
   "navigation": {
     "endNavigation": "End Navigation",
@@ -240,6 +242,10 @@
     "searchPlaceholder": "Search cities...",
     "popularCities": "Popular Cities",
     "allCities": "All Cities"
+  },
+  "currency": {
+    "comingSoonTitle": "Price data coming soon",
+    "comingSoonDesc": "Your currency preference will apply once real venue prices are integrated."
   },
   "offlineRoutes": {
     "title": "Offline Routes",

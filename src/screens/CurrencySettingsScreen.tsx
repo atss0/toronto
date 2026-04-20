@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Status
 import { useNavigation } from '@react-navigation/native';
 import { Iconify } from 'react-native-iconify';
 import { useSelector } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 
 import { useColors } from '../context/ThemeContext';
 import { AppColors } from '../styles/theme';
@@ -28,6 +29,7 @@ const CurrencySettingsScreen = () => {
   const navigation = useNavigation();
   const colors = useColors();
   const currentTheme = useSelector((s: RootState) => s.Theme.theme);
+  const { t } = useTranslation();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const [selected, setSelected] = useState('USD');
   const [search, setSearch] = useState('');
@@ -48,6 +50,15 @@ const CurrencySettingsScreen = () => {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Text style={styles.saveText}>Save</Text>
         </TouchableOpacity>
+      </View>
+
+      {/* Coming Soon Banner */}
+      <View style={styles.comingSoonBanner}>
+        <Iconify icon="solar:clock-circle-bold" size={wScale(18)} color="#B45309" />
+        <View style={{ flex: 1 }}>
+          <Text style={styles.comingSoonTitle}>{t('currency.comingSoonTitle')}</Text>
+          <Text style={styles.comingSoonDesc}>{t('currency.comingSoonDesc')}</Text>
+        </View>
       </View>
 
       <View style={styles.searchWrap}>
@@ -98,6 +109,31 @@ const makeStyles = (colors: AppColors) => StyleSheet.create({
   backBtn: { width: wScale(36), height: wScale(36), alignItems: 'center', justifyContent: 'center' },
   headerTitle: { fontSize: wScale(17), fontFamily: Fonts.plusJakartaSansBold, color: colors.textPrimary },
   saveText: { fontSize: wScale(14), fontFamily: Fonts.plusJakartaSansBold, color: colors.primary },
+  comingSoonBanner: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: wScale(10),
+    margin: Layout.screenPaddingH,
+    marginBottom: 0,
+    backgroundColor: '#FEF3C7',
+    borderRadius: wScale(12),
+    borderWidth: 1,
+    borderColor: '#FDE68A',
+    paddingHorizontal: wScale(14),
+    paddingVertical: hScale(12),
+  },
+  comingSoonTitle: {
+    fontSize: wScale(13),
+    fontFamily: Fonts.plusJakartaSansBold,
+    color: '#92400E',
+    marginBottom: hScale(2),
+  },
+  comingSoonDesc: {
+    fontSize: wScale(11),
+    fontFamily: Fonts.plusJakartaSansRegular,
+    color: '#B45309',
+    lineHeight: hScale(16),
+  },
   searchWrap: {
     flexDirection: 'row', alignItems: 'center', gap: wScale(10),
     margin: Layout.screenPaddingH, backgroundColor: colors.white,

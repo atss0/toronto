@@ -30,7 +30,8 @@
     "listView": "Liste Görünümü",
     "mapView": "Harita Görünümü",
     "noResults": "Sonuç bulunamadı",
-    "noResultsSub": "Farklı bir filtre veya arama terimi deneyin"
+    "noResultsSub": "Farklı bir filtre veya arama terimi deneyin",
+    "expandMap": "Tam Harita"
   },
   "routes": {
     "title": "Rotalarım",
@@ -133,7 +134,8 @@
     "duration": "Süre",
     "distance": "Mesafe",
     "completed": "tamamlandı",
-    "upcoming": "yaklaşan"
+    "upcoming": "yaklaşan",
+    "shareWithCompanion": "Arkadaşınla Paylaş"
   },
   "navigation": {
     "endNavigation": "Navigasyonu Bitir",
@@ -240,6 +242,10 @@
     "searchPlaceholder": "Şehir ara...",
     "popularCities": "Popüler Şehirler",
     "allCities": "Tüm Şehirler"
+  },
+  "currency": {
+    "comingSoonTitle": "Fiyat verisi yakında",
+    "comingSoonDesc": "Para birimi tercihiniz, gerçek mekan fiyatları entegre edildiğinde geçerli olacak."
   },
   "offlineRoutes": {
     "title": "Çevrimdışı Rotalar",

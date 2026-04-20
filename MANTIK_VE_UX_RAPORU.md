@@ -298,7 +298,9 @@ Rotayı offline kaydedebiliyorsun ama harita karesini indiremiyorsun. İnternets
 
 ---
 
-### 4.6 — Para Birimi Ayarı: Tamamen Boşta
+### ✅ 4.6 — Para Birimi Ayarı: Tamamen Boşta
+
+> **Kısmen Düzeltildi:** `CurrencySettingsScreen.tsx`'e sarı "coming soon" banner eklendi: kullanıcıya para birimi tercihinin gerçek fiyat verisi entegre edildiğinde geçerli olacağı açıkça belirtiliyor. Gerçek fiyat verisi + döviz kuru entegrasyonu API'ye bağlı — roadmap'te kalıyor.
 
 **Dosya:** `src/screens/CurrencySettingsScreen.tsx`
 
@@ -309,7 +311,9 @@ Kullanıcı para birimi seçiyor (EUR, TRY, USD vb.) ama uygulama içinde hiçbi
 
 ---
 
-### 4.7 — Sosyal/Grup Seyahat: Tek Kişilik Deneyim
+### ✅ 4.7 — Sosyal/Grup Seyahat: Tek Kişilik Deneyim
+
+> **Kısmen Düzeltildi:** `RouteDetailScreen.tsx` footer'ına "Share with Companion" butonu eklendi. Tıklandığında React Native `Share.share` API ile sistemin native paylaşım paneli açılıyor (WhatsApp, iMessage, vb. dahil). Grup modu ve family-friendly filtre otomatik tetikleme API'ye bağlı — roadmap'te kalıyor.
 
 **Neden Eksik?**  
 "Travel Style: Group/Family" ayarı var ama grup içi bir özellik yok. Gerçek turizm senaryosunda: arkadaşınla geliyorsun, rotayı paylaşıyorsun, kim nerede buluşacak? Konum paylaşımı? "Meet here at 3pm" pin'i? Bunların hiçbiri yok. ShareRoute ekranı var ama static link paylaşımı.
@@ -336,7 +340,7 @@ PlaceDetail ekranında çalışma saatleri gösteriliyor ama "şu an açık mı?
 | 5.1 | ~~Kod adının versiyon etiketi olarak gösterilmesi~~ **✅ Düzeltildi** | Profile altı | `profile.version` → "Version 1.0.0" / "Sürüm 1.0.0" olarak güncellendi |
 | 5.2 | ~~`"Traveler"` profil alt başlığı~~ **✅ Düzeltildi** | ProfileScreen | `profile.placesVisited` key'i eklendi; "45 places visited" / "45 yer ziyaret edildi" gösteriliyor |
 | 5.3 | ~~SeeAll ekranı her data tipi için kullanılıyor~~ **✅ Düzeltildi** | SeeAllScreen | `type === 'trending'` → büyük hero image card; diğer tipler → compact horizontal card |
-| 5.4 | MapFull vs NavigationScreen: ikisi ne zaman açılıyor? | Navigator | MapFull = statik harita görünümü, NavigationScreen = aktif navigasyon olarak netleştirilmeli; geçiş kriterleri belirsiz |
+| ~~5.4~~ ✅ | ~~MapFull vs NavigationScreen: ikisi ne zaman açılıyor?~~ **✅ Düzeltildi** | ExploreScreen | `ExploreScreen` harita görünümüne "Full Map" / "Tam Harita" expand butonu eklendi → `MapFull`'a yönlendiriyor. MapFull = statik browse haritası, NavigationScreen = aktif adım adım navigasyon ayrımı netleştirildi |
 | 5.5 | ~~Onboarding'de şehir seçimi yok~~ **✅ Düzeltildi** | OnboardingScreen | 4. slayt sonrasına şehir seçim adımı eklendi; seçilen şehir `setLocationName` ile Redux'a kaydediliyor |
 | 5.6 | ~~Reviews ayrı ekran ama PlaceDetail'den erişim nasıl?~~ **✅ Zaten Vardı** | PlaceDetailScreen | `PlaceDetailScreen.tsx` footer'ında "Reviews" butonu zaten mevcut — `navigation.navigate('Reviews')` bağlı |
 | 5.7 | ~~`"Ask me anything..."` Belen placeholder'ı~~ **✅ Düzeltildi** | BelenScreen | Placeholder → "What would you like to explore?" / "Ne keşfetmek istersiniz?" |
@@ -355,7 +359,7 @@ PlaceDetail ekranında çalışma saatleri gösteriliyor ama "şu an açık mı?
 4. **Budget/Interest/TravelStyle tercihlerini Explore ve Belen'e bağla** — toplanan veriyi kullan
 5. ✅ ~~**Belen rotasından "Save to Routes" akışı kur**~~ — Save Route butonu eklendi; gerçek Routes state entegrasyonu API'ye bağlı
 6. ✅ ~~**TripHistory ve WeatherDetail için giriş noktası ekle**~~ — TripHistory Profile'a eklendi; WeatherDetail zaten bağlıydı
-7. **CurrencySettings'i kaldır ya da gerçek fiyat verisiyle besle**
+7. ✅ ~~**CurrencySettings'i kaldır ya da gerçek fiyat verisiyle besle**~~ — "Coming soon" banner eklendi; gerçek fiyat entegrasyonu API'ye bağlı
 
 ### Yeşil (Stratejik — Roadmap'e Al)
 8. ✅ ~~**Acil durum bilgileri bölümü ekle**~~ — HelpCenter'a Emergency accordion + 5 bölge acil numarası + güvenlik ipuçları eklendi
@@ -370,8 +374,8 @@ PlaceDetail ekranında çalışma saatleri gösteriliyor ama "şu an açık mı?
 - ~~**3.3**~~ ✅ — Explore inline arama tamamlandı
 - **4.2** — Toplu taşıma / Transit API entegrasyonu
 - **4.4** — Çok günlü gezi planlama (gün bazlı rota atama)
-- **4.6** — CurrencySettings gerçek fiyat verisi + döviz kuru
-- **4.7** — Sosyal/grup özellikler (companion sharing, WhatsApp deep link)
+- ~~**4.6**~~ ✅ — CurrencySettings "coming soon" banner eklendi; gerçek fiyat verisi + döviz kuru entegrasyonu kaldı
+- ~~**4.7**~~ ✅ — "Share with Companion" butonu eklendi; grup modu filtresi API'ye bağlı
 
 ---
 
