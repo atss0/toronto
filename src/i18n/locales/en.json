@@ -114,7 +114,13 @@
     "forgotPasswordTitle": "Forgot Password?",
     "forgotPasswordSubtitle": "No worries! Enter your email to receive a secure reset link for your account.",
     "emailPlaceholderFP": "e.g. wanderlust@travel.com",
-    "sendResetLink": "Send Reset Link"
+    "sendResetLink": "Send Reset Link",
+    "usernameLabel": "Username",
+    "usernamePlaceholder": "e.g. john_doe",
+    "passwordMismatch": "Passwords do not match"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again."
   },
   "placeDetail": {
     "about": "About",
@@ -260,7 +266,8 @@
     "distance": "Distance",
     "avgRating": "Avg Rating",
     "noTrips": "No trips yet",
-    "noTripsSub": "Start a route to see your history"
+    "noTripsSub": "Start a route to see your history",
+    "rateTrip": "Rate This Trip"
   },
   "units": {
     "min": "min",
@@ -323,7 +330,8 @@
     "goBack": "Go back",
     "addedToRoute": "Added to route!",
     "bookmarkAdded": "Place saved!",
-    "bookmarkRemoved": "Removed from saved"
+    "bookmarkRemoved": "Removed from saved",
+    "loadMore": "Load More"
   },
   "time": {
     "just_now": "Just now",

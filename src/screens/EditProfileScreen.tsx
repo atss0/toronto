@@ -22,13 +22,13 @@ import { wScale, hScale } from '../styles/Scaler';
 import Layout from '../styles/Layout';
 import { RootState } from '../redux/store';
 import { setUser } from '../redux/UserSlice';
+import userService from '../services/user';
 
 const EditProfileScreen = () => {
   const navigation = useNavigation();
   const colors = useColors();
   const currentTheme = useSelector((s: RootState) => s.Theme.theme);
   const user = useSelector((s: RootState) => s.User.user);
-  const token = useSelector((s: RootState) => s.User.token);
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const styles = useMemo(() => makeStyles(colors), [colors]);
@@ -42,20 +42,26 @@ const EditProfileScreen = () => {
     ? `${name[0]}${surname?.[0] ?? ''}`.toUpperCase()
     : 'U';
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!name.trim()) {
       Alert.alert('Validation', 'Name cannot be empty.');
       return;
     }
     setIsLoading(true);
-    setTimeout(() => {
-      dispatch(setUser({
-        user: { ...user, name: name.trim(), surname: surname.trim(), email: email.trim() },
-        token,
-      }));
-      setIsLoading(false);
+    try {
+      const res = await userService.updateMe({
+        name: name.trim(),
+        surname: surname.trim(),
+        email: email.trim(),
+      });
+      const updated = res.data.data.user;
+      dispatch(setUser({ user: { ...user, ...updated } }));
       navigation.goBack();
-    }, 800);
+    } catch (err: any) {
+      Alert.alert('Error', err?.response?.data?.error?.message ?? 'Something went wrong.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

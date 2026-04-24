@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Image,
   StatusBar,
+  ActivityIndicator,
 } from 'react-native';
 import { Iconify } from 'react-native-iconify';
 import { useSelector } from 'react-redux';
@@ -21,8 +22,7 @@ import Fonts from '../styles/Fonts';
 import { wScale, hScale } from '../styles/Scaler';
 import Layout from '../styles/Layout';
 import { RootState } from '../redux/store';
-
-import routesData from '../data/routes.json';
+import routesService from '../services/routes';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -162,6 +162,14 @@ interface SavedRoute {
   placeholderColor: string;
 }
 
+interface TodayPlan {
+  id: string;
+  name: string;
+  stopsLeft: number;
+  totalStops: number;
+  duration: string;
+}
+
 const SavedRouteRow: React.FC<{ item: SavedRoute; colors: AppColors; onPress: () => void }> = ({ item, colors, onPress }) => {
   const { t } = useTranslation();
   const styles = useMemo(() => makeSavedRowStyles(colors), [colors]);
@@ -263,8 +271,39 @@ const RoutesScreen = () => {
   const weekDays = useMemo(() => buildWeekDays(today), [today]);
   const [selectedIso, setSelectedIso] = useState(today.toISOString().split('T')[0]);
 
-  const plan = routesData.todaysPlan;
-  const saved = routesData.savedRoutes as SavedRoute[];
+  const [todayPlan, setTodayPlan] = useState<TodayPlan | null>(null);
+  const [savedRoutes, setSavedRoutes] = useState<SavedRoute[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  const fetchRoutes = useCallback(async () => {
+    try {
+      const res = await routesService.getAll();
+      const d = res.data.data;
+      setTodayPlan(d.today_plan ? {
+        id: d.today_plan.id,
+        name: d.today_plan.name,
+        stopsLeft: d.today_plan.stops_left,
+        totalStops: d.today_plan.total_stops,
+        duration: d.today_plan.duration,
+      } : null);
+      setSavedRoutes((d.saved_routes ?? []).map((r: any) => ({
+        id: r.id,
+        name: r.name,
+        date: r.date ?? '',
+        stops: r.stop_count,
+        duration: r.duration,
+        isCompleted: r.is_completed,
+        imageUrl: r.image_url ?? '',
+        placeholderColor: r.placeholder_color ?? colors.cardDark,
+      })));
+    } catch {
+      // keep existing state on error
+    } finally {
+      setIsLoading(false);
+    }
+  }, [colors.cardDark]);
+
+  useEffect(() => { fetchRoutes(); }, [fetchRoutes]);
 
   return (
     <View style={styles.root}>
@@ -321,43 +360,52 @@ const RoutesScreen = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('routes.todaysPlan')}</Text>
 
-          <View style={styles.planCard}>
-            {/* Map */}
-            <View style={styles.mapWrapper}>
-              <MapPlaceholder colors={colors} />
-              <View style={styles.activeBadge}>
-                <View style={styles.activeDot} />
-                <Text style={styles.activeBadgeText}>ACTIVE</Text>
-              </View>
-            </View>
-
-            {/* Route Info */}
-            <View style={styles.routeInfoRow}>
-              <View style={styles.routeDetails}>
-                <Text style={styles.routeName}>{plan.name}</Text>
-                <View style={styles.routeMeta}>
-                  <Iconify icon="solar:map-point-linear" size={wScale(13)} color={colors.textSecondary} />
-                  <Text style={styles.routeMetaText}>{plan.stopsLeft} {t('routes.stopsLeft')}</Text>
-                  <View style={styles.metaDot} />
-                  <Iconify icon="solar:clock-circle-linear" size={wScale(13)} color={colors.textSecondary} />
-                  <Text style={styles.routeMetaText}>{plan.duration}</Text>
+          {isLoading ? (
+            <ActivityIndicator color={colors.primary} style={{ paddingVertical: hScale(40) }} />
+          ) : todayPlan ? (
+            <View style={styles.planCard}>
+              {/* Map */}
+              <View style={styles.mapWrapper}>
+                <MapPlaceholder colors={colors} />
+                <View style={styles.activeBadge}>
+                  <View style={styles.activeDot} />
+                  <Text style={styles.activeBadgeText}>ACTIVE</Text>
                 </View>
               </View>
-              <View style={styles.walkIconBtn}>
-                <Iconify icon="solar:walking-bold" size={wScale(18)} color={colors.primary} />
+
+              {/* Route Info */}
+              <View style={styles.routeInfoRow}>
+                <View style={styles.routeDetails}>
+                  <Text style={styles.routeName}>{todayPlan.name}</Text>
+                  <View style={styles.routeMeta}>
+                    <Iconify icon="solar:map-point-linear" size={wScale(13)} color={colors.textSecondary} />
+                    <Text style={styles.routeMetaText}>{todayPlan.stopsLeft} {t('routes.stopsLeft')}</Text>
+                    <View style={styles.metaDot} />
+                    <Iconify icon="solar:clock-circle-linear" size={wScale(13)} color={colors.textSecondary} />
+                    <Text style={styles.routeMetaText}>{todayPlan.duration}</Text>
+                  </View>
+                </View>
+                <View style={styles.walkIconBtn}>
+                  <Iconify icon="solar:walking-bold" size={wScale(18)} color={colors.primary} />
+                </View>
+              </View>
+
+              {/* Action Buttons */}
+              <View style={styles.actionRow}>
+                <TouchableOpacity style={styles.continueBtn} activeOpacity={0.85} onPress={() => navigation.navigate('RouteDetail', { routeId: todayPlan.id, name: todayPlan.name })}>
+                  <Text style={styles.continueBtnText}>{t('routes.continue')}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.detailsBtn} activeOpacity={0.85} onPress={() => navigation.navigate('RouteDetail', { routeId: todayPlan.id, name: todayPlan.name })}>
+                  <Text style={styles.detailsBtnText}>{t('routes.details')}</Text>
+                </TouchableOpacity>
               </View>
             </View>
-
-            {/* Action Buttons */}
-            <View style={styles.actionRow}>
-              <TouchableOpacity style={styles.continueBtn} activeOpacity={0.85} onPress={() => navigation.navigate('RouteDetail', { name: plan.name })}>
-                <Text style={styles.continueBtnText}>{t('routes.continue')}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.detailsBtn} activeOpacity={0.85} onPress={() => navigation.navigate('RouteDetail', { name: plan.name })}>
-                <Text style={styles.detailsBtnText}>{t('routes.details')}</Text>
-              </TouchableOpacity>
+          ) : (
+            <View style={styles.emptyPlan}>
+              <Iconify icon="solar:route-linear" size={wScale(40)} color={colors.textSecondary} />
+              <Text style={styles.emptyPlanText}>{t('routes.startJourneyDesc')}</Text>
             </View>
-          </View>
+          )}
         </View>
 
         {/* ── Saved Routes ────────────────────────────────────────────────── */}
@@ -370,7 +418,7 @@ const RoutesScreen = () => {
           </View>
 
           <View style={styles.savedList}>
-            {saved.map(item => (
+            {savedRoutes.map(item => (
               <SavedRouteRow
                 key={item.id}
                 item={item}
@@ -608,6 +656,17 @@ const makeStyles = (colors: AppColors) =>
       fontSize: wScale(14),
       fontFamily: Fonts.plusJakartaSansBold,
       color: colors.textPrimary,
+    },
+
+    // Empty plan
+    emptyPlan: {
+      alignItems: 'center', paddingVertical: hScale(32), gap: hScale(10),
+      backgroundColor: colors.white, borderRadius: wScale(20), borderWidth: 1,
+      borderColor: colors.stroke, borderStyle: 'dashed',
+    },
+    emptyPlanText: {
+      fontSize: wScale(13), fontFamily: Fonts.plusJakartaSansRegular,
+      color: colors.textSecondary, textAlign: 'center', paddingHorizontal: wScale(20),
     },
 
     // Saved list

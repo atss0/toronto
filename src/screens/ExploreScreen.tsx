@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef } from 'react';
+import React, { useMemo, useState, useRef, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -26,6 +26,7 @@ import { RootState } from '../redux/store';
 
 import discoverData from '../data/discover.json';
 import SkeletonCard from '../components/SkeletonCard/SkeletonCard';
+import placesService from '../services/places';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -497,31 +498,98 @@ const ExploreScreen = () => {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [activeFilter, setActiveFilter] = useState('all');
   const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
-  const [results, setResults] = useState<PlaceResult[]>(discoverData.allResults as PlaceResult[]);
-  const [isLoading, setIsLoading] = useState(false); // TODO: true when API is wired
+  const [trendingItems, setTrendingItems] = useState<TrendingItem[]>([]);
+  const [searchResults, setSearchResults] = useState<PlaceResult[]>([]);
+  const [isLoadingTrending, setIsLoadingTrending] = useState(true);
+  const [isSearchLoading, setIsSearchLoading] = useState(false);
   const searchRef = useRef<TextInput>(null);
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const isSearchMode = isSearchFocused || searchText.trim().length > 0;
 
-  const handleToggleLike = (id: string) => {
-    setResults(prev =>
+  useEffect(() => {
+    placesService.getTrending({ limit: 20 })
+      .then(res => {
+        setTrendingItems(res.data.data.map((t: any) => ({
+          id: t.id,
+          name: t.name,
+          category: t.category,
+          rating: t.rating,
+          reviewCount: t.review_count,
+          badge: t.badge ?? '',
+          imageUrl: t.image_url,
+          placeholderColor: '#1A1A2E',
+        })));
+      })
+      .catch(() => {})
+      .finally(() => setIsLoadingTrending(false));
+  }, []);
+
+  useEffect(() => {
+    if (searchTimer.current) clearTimeout(searchTimer.current);
+    const q = searchText.trim();
+    if (q.length >= 2) {
+      setIsSearchLoading(true);
+      searchTimer.current = setTimeout(() => {
+        const params: any = { query: q, limit: 20 };
+        if (activeFilter !== 'all') params.category = activeFilter;
+        placesService.search(params)
+          .then(res => {
+            setSearchResults(res.data.data.map((p: any) => ({
+              id: p.id,
+              name: p.name,
+              category: p.category,
+              location: p.location ?? '',
+              rating: p.rating,
+              reviewCount: p.review_count,
+              price: p.price_display ?? p.price_level ?? '',
+              isLiked: p.is_liked ?? false,
+              imageUrl: p.image_url,
+              placeholderColor: p.placeholder_color ?? '#1A1A2E',
+            })));
+          })
+          .catch(() => setSearchResults([]))
+          .finally(() => setIsSearchLoading(false));
+      }, 500);
+    } else {
+      setSearchResults([]);
+      setIsSearchLoading(false);
+    }
+    return () => { if (searchTimer.current) clearTimeout(searchTimer.current); };
+  }, [searchText, activeFilter]);
+
+  const handleToggleLike = useCallback((id: string) => {
+    setSearchResults(prev =>
       prev.map(r => (r.id === id ? { ...r, isLiked: !r.isLiked } : r)),
     );
-  };
+    placesService.toggleBookmark(id).catch(() => {
+      setSearchResults(prev =>
+        prev.map(r => (r.id === id ? { ...r, isLiked: !r.isLiked } : r)),
+      );
+    });
+  }, []);
+
+  const trendingAsResults: PlaceResult[] = useMemo(() =>
+    trendingItems.map(t => ({
+      id: t.id,
+      name: t.name,
+      category: t.category,
+      location: '',
+      rating: t.rating,
+      reviewCount: t.reviewCount,
+      price: '',
+      isLiked: false,
+      imageUrl: t.imageUrl,
+      placeholderColor: t.placeholderColor,
+    })), [trendingItems]);
 
   const filteredResults = useMemo(() => {
-    let base = activeFilter === 'all'
-      ? results
-      : results.filter(r => r.category.toLowerCase() === activeFilter.toLowerCase());
-
-    if (searchText.trim()) {
-      const q = searchText.trim().toLowerCase();
-      base = base.filter(
-        r => r.name.toLowerCase().includes(q) || r.category.toLowerCase().includes(q),
-      );
-    }
+    if (isSearchMode && searchText.trim().length >= 2) return searchResults;
+    const base = activeFilter === 'all'
+      ? trendingAsResults
+      : trendingAsResults.filter(r => r.category.toLowerCase() === activeFilter.toLowerCase());
     return base;
-  }, [results, activeFilter, searchText]);
+  }, [isSearchMode, searchText, searchResults, trendingAsResults, activeFilter]);
 
   return (
     <View style={styles.root}>
@@ -674,12 +742,12 @@ const ExploreScreen = () => {
                   showsHorizontalScrollIndicator={false}
                   contentContainerStyle={styles.hList}
                 >
-                  {isLoading
+                  {isLoadingTrending
                     ? [1, 2, 3].map(i => <SkeletonCard key={i} width={wScale(160)} height={hScale(170)} style={{ marginRight: wScale(12) }} />)
-                    : discoverData.trending.map(item => (
+                    : (trendingItems.length > 0 ? trendingItems : discoverData.trending as TrendingItem[]).map(item => (
                     <TrendingNearCard
                       key={item.id}
-                      item={item as TrendingItem}
+                      item={item}
                       colors={colors}
                     />
                   ))}
@@ -702,7 +770,11 @@ const ExploreScreen = () => {
                 </Text>
               </View>
 
-              {filteredResults.length === 0 ? (
+              {isSearchLoading ? (
+                <View style={{ paddingHorizontal: Layout.screenPaddingH, gap: hScale(10) }}>
+                  {[1, 2, 3].map(i => <SkeletonCard key={i} width="100%" height={hScale(72)} style={{ borderRadius: wScale(12) }} />)}
+                </View>
+              ) : filteredResults.length === 0 ? (
                 <View style={styles.emptyState}>
                   <Iconify icon="solar:compass-bold" size={wScale(40)} color={colors.textSecondary} />
                   <Text style={styles.emptyTitle}>{t('explore.noResults')}</Text>

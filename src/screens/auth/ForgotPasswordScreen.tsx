@@ -4,8 +4,10 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 import { Iconify } from 'react-native-iconify';
 
@@ -15,16 +17,29 @@ import ScreenWrapper from '../../components/ScreenWrapper';
 import Input from '../../components/Input';
 import Button from '../../components/Button';
 import { useColors } from '../../context/ThemeContext';
+import authService from '../../services/auth';
+import { RootStackParamList } from '../../types/navigation';
+
+type NavProp = NativeStackNavigationProp<RootStackParamList, 'ForgotPassword'>;
 
 export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState('');
-  const navigation = useNavigation();
+  const [isLoading, setIsLoading] = useState(false);
+  const navigation = useNavigation<NavProp>();
   const { t } = useTranslation();
   const colors = useColors();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
-  const handleSendReset = () => {
-    // TODO: call authService.forgotPassword(email) when backend is ready
+  const handleSendReset = async () => {
+    setIsLoading(true);
+    try {
+      await authService.forgotPassword(email);
+      navigation.navigate('ResetPassword', { email });
+    } catch (err: any) {
+      Alert.alert('Error', err?.response?.data?.error?.message ?? t('errors.generic'));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -83,6 +98,8 @@ export default function ForgotPasswordScreen() {
           onPress={handleSendReset}
           size="large"
           style={styles.button}
+          isLoading={isLoading}
+          isDisabled={!email}
           rightIcon={
             <Iconify
               icon="solar:arrow-right-linear"

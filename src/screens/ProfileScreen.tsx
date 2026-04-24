@@ -19,6 +19,8 @@ import { RootStackParamList } from '../types/navigation';
 import { RootState } from '../redux/store';
 import { clearUser } from '../redux/UserSlice';
 import { setLanguage } from '../redux/LanguageSlice';
+import { tokenStorage } from '../storage/tokenStorage';
+import authService from '../services/auth';
 import { setTheme } from '../redux/ThemeSlice';
 import { useColors } from '../context/ThemeContext';
 import { AppColors } from '../styles/theme';
@@ -468,7 +470,14 @@ const ProfileScreen = () => {
         {/* ── Logout ────────────────────────────────────────────────────────── */}
         <TouchableOpacity
           style={styles.logoutBtn}
-          onPress={() => dispatch(clearUser())}
+          onPress={async () => {
+            const refreshToken = tokenStorage.getRefreshToken();
+            await tokenStorage.clear();
+            dispatch(clearUser());
+            if (refreshToken) {
+              authService.logout(refreshToken).catch(() => {});
+            }
+          }}
           activeOpacity={0.8}
         >
           <Iconify icon="solar:logout-2-bold" size={wScale(18)} color={colors.danger} />

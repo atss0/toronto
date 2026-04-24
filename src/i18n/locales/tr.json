@@ -114,7 +114,13 @@
     "forgotPasswordTitle": "Şifremi Unuttum?",
     "forgotPasswordSubtitle": "Endişelenme! E-postanı girerek şifre sıfırlama bağlantısı alabilirsin.",
     "emailPlaceholderFP": "örn. wanderlust@travel.com",
-    "sendResetLink": "Sıfırlama Bağlantısı Gönder"
+    "sendResetLink": "Sıfırlama Bağlantısı Gönder",
+    "usernameLabel": "Kullanıcı Adı",
+    "usernamePlaceholder": "örn. ahmet_yilmaz",
+    "passwordMismatch": "Şifreler eşleşmiyor"
+  },
+  "errors": {
+    "generic": "Bir şeyler yanlış gitti. Lütfen tekrar deneyin."
   },
   "placeDetail": {
     "about": "Hakkında",
@@ -260,7 +266,8 @@
     "distance": "Mesafe",
     "avgRating": "Ort. Puan",
     "noTrips": "Henüz seyahat yok",
-    "noTripsSub": "Geçmişinizi görmek için bir rota başlatın"
+    "noTripsSub": "Geçmişinizi görmek için bir rota başlatın",
+    "rateTrip": "Bu Seyahati Puanla"
   },
   "units": {
     "min": "dk",
@@ -323,7 +330,8 @@
     "goBack": "Geri dön",
     "addedToRoute": "Rotaya eklendi!",
     "bookmarkAdded": "Yer kaydedildi!",
-    "bookmarkRemoved": "Kaydedilenlerden çıkarıldı"
+    "bookmarkRemoved": "Kaydedilenlerden çıkarıldı",
+    "loadMore": "Daha Fazla Yükle"
   },
   "time": {
     "just_now": "Az önce",

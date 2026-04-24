@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useRef } from 'react';
+import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, StatusBar,
   Dimensions, Animated, Alert,
@@ -13,15 +13,15 @@ import { AppColors } from '../styles/theme';
 import Fonts from '../styles/Fonts';
 import { wScale, hScale } from '../styles/Scaler';
 import Layout from '../styles/Layout';
+import routesService from '../services/routes';
 
 type RouteT = RouteProp<RootStackParamList, 'Navigation'>;
 const { width: W, height: H } = Dimensions.get('window');
 
-const MOCK_STEPS = [
-  { instruction: 'Head northwest on Main Street', distance: '120 m', icon: 'solar:arrow-up-bold' },
-  { instruction: 'Turn right onto Central Avenue', distance: '350 m', icon: 'solar:arrow-right-bold' },
-  { instruction: 'Turn left towards the old town square', distance: '80 m', icon: 'solar:arrow-left-bold' },
-  { instruction: 'Arrive at your destination on the left', distance: '', icon: 'solar:map-point-bold' },
+const FALLBACK_STEPS = [
+  { id: '1', name: 'Starting Point', description: 'Begin your journey here', duration: '5 min', status: 'active' as const, order_index: 0 },
+  { id: '2', name: 'First Stop', description: 'Head towards your first destination', duration: '15 min', status: 'upcoming' as const, order_index: 1 },
+  { id: '3', name: 'Final Destination', description: 'Arrive at your destination', duration: '10 min', status: 'upcoming' as const, order_index: 2 },
 ];
 
 const NavigationScreen = () => {
@@ -30,11 +30,15 @@ const NavigationScreen = () => {
   const colors = useColors();
   const { t } = useTranslation();
   const styles = useMemo(() => makeStyles(colors), [colors]);
+
+  const { routeId, stops: paramStops } = route.params;
+  const steps = (paramStops && paramStops.length > 0) ? paramStops : FALLBACK_STEPS;
+
   const [currentStep, setCurrentStep] = useState(0);
   const [isActive, setIsActive] = useState(true);
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
-  const step = MOCK_STEPS[currentStep];
+  const step = steps[currentStep];
 
   const gridBlocks = useMemo(() => Array.from({ length: 24 }, (_, i) => ({
     top: (Math.floor(i / 4) * 0.15 + 0.05),
@@ -91,12 +95,12 @@ const NavigationScreen = () => {
         {/* Current instruction */}
         <View style={styles.instructionCard}>
           <View style={styles.instructionIcon}>
-            <Iconify icon={step.icon} size={wScale(22)} color="#FFFFFF" />
+            <Iconify icon="solar:map-point-bold" size={wScale(22)} color="#FFFFFF" />
           </View>
           <View style={styles.instructionInfo}>
-            <Text style={styles.instructionText}>{step.instruction}</Text>
-            {step.distance ? (
-              <Text style={styles.distanceText}>In {step.distance}</Text>
+            <Text style={styles.instructionText}>{step.name}</Text>
+            {step.description ? (
+              <Text style={styles.distanceText}>{step.description}</Text>
             ) : null}
           </View>
         </View>
@@ -104,9 +108,9 @@ const NavigationScreen = () => {
         {/* Stats row */}
         <View style={styles.statsRow}>
           {[
-            { icon: 'solar:clock-circle-linear', label: t('navigation.eta'), value: '18 min' },
-            { icon: 'solar:walking-bold', label: t('navigation.remaining'), value: '1.2 km' },
-            { icon: 'solar:map-point-linear', label: t('navigation.nextStop'), value: MOCK_STEPS[Math.min(currentStep + 1, MOCK_STEPS.length - 1)].instruction.split(' ').slice(0, 3).join(' ') + '...' },
+            { icon: 'solar:clock-circle-linear', label: t('navigation.eta'), value: step.duration },
+            { icon: 'solar:walking-bold', label: t('navigation.remaining'), value: `${steps.length - currentStep - 1} stops` },
+            { icon: 'solar:map-point-linear', label: t('navigation.nextStop'), value: steps[Math.min(currentStep + 1, steps.length - 1)].name },
           ].map(stat => (
             <View key={stat.label} style={styles.statItem}>
               <Iconify icon={stat.icon} size={wScale(14)} color={colors.textSecondary} />
@@ -136,7 +140,16 @@ const NavigationScreen = () => {
               t('navigation.endConfirmMessage'),
               [
                 { text: t('navigation.endConfirmNo'), style: 'cancel' },
-                { text: t('navigation.endConfirmYes'), style: 'destructive', onPress: () => navigation.goBack() },
+                {
+                  text: t('navigation.endConfirmYes'),
+                  style: 'destructive',
+                  onPress: async () => {
+                    if (routeId) {
+                      try { await routesService.update(routeId, { status: 'completed' }); } catch {}
+                    }
+                    navigation.goBack();
+                  },
+                },
               ],
             )}
             activeOpacity={0.8}
@@ -147,14 +160,19 @@ const NavigationScreen = () => {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.stepBtn, currentStep === MOCK_STEPS.length - 1 && styles.stepBtnDisabled]}
-            onPress={() => setCurrentStep(i => Math.min(MOCK_STEPS.length - 1, i + 1))}
-            disabled={currentStep === MOCK_STEPS.length - 1}
+            style={[styles.stepBtn, currentStep === steps.length - 1 && styles.stepBtnDisabled]}
+            onPress={async () => {
+              if (routeId && step.id) {
+                try { await routesService.updateStop(routeId, step.id, 'completed'); } catch {}
+              }
+              setCurrentStep(i => Math.min(steps.length - 1, i + 1));
+            }}
+            disabled={currentStep === steps.length - 1}
             accessibilityLabel={t('navigation.next')}
             accessibilityRole="button"
           >
-            <Text style={[styles.stepBtnText, currentStep === MOCK_STEPS.length - 1 && { color: colors.textSecondary }]}>{t('navigation.next')}</Text>
-            <Iconify icon="solar:alt-arrow-right-linear" size={wScale(18)} color={currentStep === MOCK_STEPS.length - 1 ? colors.textSecondary : colors.primary} />
+            <Text style={[styles.stepBtnText, currentStep === steps.length - 1 && { color: colors.textSecondary }]}>{t('navigation.next')}</Text>
+            <Iconify icon="solar:alt-arrow-right-linear" size={wScale(18)} color={currentStep === steps.length - 1 ? colors.textSecondary : colors.primary} />
           </TouchableOpacity>
         </View>
       </View>

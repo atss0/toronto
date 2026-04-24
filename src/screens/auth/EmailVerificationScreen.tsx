@@ -1,7 +1,8 @@
 import React, { useMemo, useState, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useDispatch } from 'react-redux';
 import { Iconify } from 'react-native-iconify';
 
 import Fonts from '../../styles/Fonts';
@@ -9,6 +10,9 @@ import { wScale, hScale } from '../../styles/Scaler';
 import ScreenWrapper from '../../components/ScreenWrapper';
 import Button from '../../components/Button';
 import { useColors } from '../../context/ThemeContext';
+import authService from '../../services/auth';
+import { tokenStorage } from '../../storage/tokenStorage';
+import { setUser } from '../../redux/UserSlice';
 import { RootStackParamList } from '../../types/navigation';
 
 type RouteT = RouteProp<RootStackParamList, 'EmailVerification'>;
@@ -18,9 +22,12 @@ export default function EmailVerificationScreen() {
   const navigation = useNavigation<NavProp>();
   const route = useRoute<RouteT>();
   const colors = useColors();
+  const dispatch = useDispatch();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const [code, setCode] = useState(['', '', '', '', '', '']);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isResending, setIsResending] = useState(false);
   const inputs = useRef<(TextInput | null)[]>([]);
 
   const updateCode = (val: string, idx: number) => {
@@ -38,9 +45,33 @@ export default function EmailVerificationScreen() {
 
   const isComplete = code.every(c => c !== '');
 
-  const handleVerify = () => {
+  const handleVerify = async () => {
     if (!isComplete) return;
-    navigation.navigate('Main');
+    setIsLoading(true);
+    try {
+      const response = await authService.verifyEmail(route.params.email, code.join(''));
+      const { user, accessToken, refreshToken } = response.data.data;
+      const rt = refreshToken ?? tokenStorage.getRefreshToken() ?? '';
+      await tokenStorage.save(accessToken, rt);
+      dispatch(setUser({ user, token: accessToken, refreshToken: rt || null }));
+      // App.tsx navigates to Main automatically when token is set
+    } catch (err: any) {
+      Alert.alert('Error', err?.response?.data?.error?.message ?? 'Verification failed. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    setIsResending(true);
+    try {
+      await authService.resendCode(route.params.email);
+      Alert.alert('Sent', 'A new code has been sent to your email.');
+    } catch (err: any) {
+      Alert.alert('Error', err?.response?.data?.error?.message ?? 'Could not resend code. Please try again.');
+    } finally {
+      setIsResending(false);
+    }
   };
 
   return (
@@ -91,12 +122,16 @@ export default function EmailVerificationScreen() {
         onPress={handleVerify}
         size="large"
         style={styles.button}
+        isLoading={isLoading}
+        isDisabled={!isComplete}
         rightIcon={<Iconify icon="solar:arrow-right-linear" size={wScale(18)} color={colors.white} />}
       />
 
-      <TouchableOpacity style={styles.resendRow} hitSlop={8}>
+      <TouchableOpacity style={styles.resendRow} onPress={handleResend} disabled={isResending} hitSlop={8}>
         <Text style={styles.resendText}>Didn't receive the code? </Text>
-        <Text style={[styles.resendText, { color: colors.primary, fontFamily: Fonts.plusJakartaSansSemiBold }]}>Resend</Text>
+        <Text style={[styles.resendText, { color: colors.primary, fontFamily: Fonts.plusJakartaSansSemiBold }]}>
+          {isResending ? 'Sending...' : 'Resend'}
+        </Text>
       </TouchableOpacity>
     </ScreenWrapper>
   );

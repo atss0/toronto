@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
   Image, RefreshControl,
@@ -17,11 +17,26 @@ import Fonts from '../styles/Fonts';
 import { wScale, hScale } from '../styles/Scaler';
 import Layout from '../styles/Layout';
 import { RootState } from '../redux/store';
-import mockData from '../data/mock.json';
+import placesService from '../services/places';
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
-const BOOKMARKS = mockData.bookmarks;
+interface BookmarkItem {
+  id: string;
+  name: string;
+  category: string;
+  rating: number;
+  location: string;
+  imageUrl: string;
+  savedAt: string;
+}
+
+const CATEGORY_MAP: Record<string, string> = {
+  Museums: 'museum',
+  Historic: 'historic',
+  Shopping: 'shopping',
+  Dining: 'dining',
+};
 
 const FILTER_TABS = ['All', 'Museums', 'Historic', 'Shopping', 'Dining'];
 
@@ -32,22 +47,49 @@ const BookmarksSavedScreen = () => {
   const { t } = useTranslation();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const [activeTab, setActiveTab] = useState('All');
-  const [bookmarks, setBookmarks] = useState(BOOKMARKS);
+  const [bookmarks, setBookmarks] = useState<BookmarkItem[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const removeBookmark = useCallback((id: string) =>
-    setBookmarks(prev => prev.filter(b => b.id !== id)), []);
+  const fetchBookmarks = useCallback(async () => {
+    try {
+      const res = await placesService.getBookmarks({ limit: 50 });
+      setBookmarks(res.data.data.map((b: any) => ({
+        id: b.id,
+        name: b.name,
+        category: b.category,
+        rating: b.rating,
+        location: b.location ?? '',
+        imageUrl: b.image_url,
+        savedAt: b.saved_at_display ?? '',
+      })));
+    } catch {
+      // keep existing list on error
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchBookmarks();
+  }, [fetchBookmarks]);
+
+  const removeBookmark = useCallback((id: string) => {
+    setBookmarks(prev => prev.filter(b => b.id !== id));
+    placesService.toggleBookmark(id).catch(() => fetchBookmarks());
+  }, [fetchBookmarks]);
 
   const filtered = activeTab === 'All'
     ? bookmarks
-    : bookmarks.filter(b => b.category === activeTab);
+    : bookmarks.filter(b => {
+        const apiCat = CATEGORY_MAP[activeTab] ?? activeTab.toLowerCase();
+        return b.category.toLowerCase() === apiCat;
+      });
 
-  const onRefresh = useCallback(() => {
+  const onRefresh = useCallback(async () => {
     setIsRefreshing(true);
-    setTimeout(() => setIsRefreshing(false), 1000);
-  }, []);
+    await fetchBookmarks();
+    setIsRefreshing(false);
+  }, [fetchBookmarks]);
 
-  const renderItem = useCallback(({ item }: { item: typeof BOOKMARKS[0] }) => (
+  const renderItem = useCallback(({ item }: { item: BookmarkItem }) => (
     <TouchableOpacity
       style={styles.card}
       activeOpacity={0.85}

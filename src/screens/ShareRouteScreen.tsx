@@ -1,6 +1,6 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, Share, Alert,
+  View, Text, StyleSheet, TouchableOpacity, Share, Alert, ActivityIndicator,
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { Iconify } from 'react-native-iconify';
@@ -10,6 +10,7 @@ import { useTranslation } from 'react-i18next';
 import { RootStackParamList } from '../types/navigation';
 import StackHeader from '../components/StackHeader/StackHeader';
 import { useColors } from '../context/ThemeContext';
+import routesService from '../services/routes';
 import { AppColors } from '../styles/theme';
 import Fonts from '../styles/Fonts';
 import { wScale, hScale } from '../styles/Scaler';
@@ -24,19 +25,29 @@ const ShareRouteScreen = () => {
   const { t } = useTranslation();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
-  const { routeName } = route.params;
-  const shareUrl = 'toronto-app.com/routes/share/abc123';
+  const { routeId, routeName } = route.params;
+  const [shareUrl, setShareUrl] = useState('');
+  const [isLoadingUrl, setIsLoadingUrl] = useState(true);
+
+  useEffect(() => {
+    if (!routeId) { setIsLoadingUrl(false); return; }
+    routesService.share(routeId)
+      .then(res => setShareUrl(res.data.data.share_url ?? ''))
+      .catch(() => {})
+      .finally(() => setIsLoadingUrl(false));
+  }, [routeId]);
 
   const handleShare = async () => {
     try {
       await Share.share({
-        message: `Check out "${routeName}" on Toronto Travel App! ${shareUrl}`,
+        message: `Check out "${routeName}" on Toronto Travel App!${shareUrl ? ` ${shareUrl}` : ''}`,
         title: routeName,
       });
     } catch {}
   };
 
   const handleCopyLink = () => {
+    if (!shareUrl) return;
     try {
       Clipboard.setString(shareUrl);
     } catch {
@@ -69,15 +80,18 @@ const ShareRouteScreen = () => {
         </View>
 
         <View style={styles.linkCard}>
-          <Text style={styles.linkText} numberOfLines={1}>{shareUrl}</Text>
+          {isLoadingUrl
+            ? <ActivityIndicator color={colors.primary} size="small" style={{ flex: 1 }} />
+            : <Text style={styles.linkText} numberOfLines={1}>{shareUrl || '—'}</Text>}
           <TouchableOpacity
             style={styles.copyBtn}
             onPress={handleCopyLink}
+            disabled={!shareUrl}
             accessibilityLabel={t('share.copyLink')}
             accessibilityRole="button"
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <Iconify icon="solar:copy-linear" size={wScale(14)} color={colors.primary} />
+            <Iconify icon="solar:copy-linear" size={wScale(14)} color={shareUrl ? colors.primary : colors.textSecondary} />
           </TouchableOpacity>
         </View>
 

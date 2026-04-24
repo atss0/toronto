@@ -32,6 +32,29 @@ import QuickActions from '../components/QuickActions';
 import SkeletonCard from '../components/SkeletonCard/SkeletonCard';
 
 import homeData from '../data/home.json';
+import placesService from '../services/places';
+
+interface NearbyItem {
+  id: string;
+  name: string;
+  category: string;
+  distance: string;
+  rating: number;
+  imageUrl: string;
+  placeholderColor: string;
+}
+
+interface TrendingItem {
+  id: string;
+  name: string;
+  category: string;
+  rating: number;
+  reviewCount: number;
+  price: string;
+  badge?: string;
+  imageUrl: string;
+  placeholderColor: string;
+}
 
 // ─── Yardımcı ─────────────────────────────────────────────────────────────────
 
@@ -56,11 +79,53 @@ const HomeScreen = () => {
   const navigation = useNavigation<Nav>();
   const user = useSelector((s: RootState) => s.User.user);
   const locationName = useSelector((s: RootState) => s.User.locationName);
+  const location = useSelector((s: RootState) => s.User.location);
   const currentTheme = useSelector((s: RootState) => s.Theme.theme);
   const colors = useColors();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
-  const [isLoading, setIsLoading] = useState(false); // TODO: true when API is wired
+  const [nearbyItems, setNearbyItems] = useState<NearbyItem[]>([]);
+  const [trendingItems, setTrendingItems] = useState<TrendingItem[]>([]);
+  const [isLoadingNearby, setIsLoadingNearby] = useState(false);
+  const [isLoadingTrending, setIsLoadingTrending] = useState(true);
+
+  useEffect(() => {
+    placesService.getTrending({ city: locationName || undefined, limit: 10 })
+      .then(res => {
+        setTrendingItems(res.data.data.map((t: any) => ({
+          id: t.id,
+          name: t.name,
+          category: t.category,
+          rating: t.rating,
+          reviewCount: t.review_count,
+          price: t.price_display ?? t.price_level ?? '',
+          badge: t.badge ?? undefined,
+          imageUrl: t.image_url,
+          placeholderColor: '#1A1A2E',
+        })));
+      })
+      .catch(() => {})
+      .finally(() => setIsLoadingTrending(false));
+  }, [locationName]);
+
+  useEffect(() => {
+    if (location.latitude === null || location.longitude === null) return;
+    setIsLoadingNearby(true);
+    placesService.getNearby({ latitude: location.latitude, longitude: location.longitude, limit: 10 })
+      .then(res => {
+        setNearbyItems(res.data.data.map((p: any) => ({
+          id: p.id,
+          name: p.name,
+          category: p.category,
+          distance: p.distance,
+          rating: p.rating,
+          imageUrl: p.image_url,
+          placeholderColor: '#1A1A2E',
+        })));
+      })
+      .catch(() => {})
+      .finally(() => setIsLoadingNearby(false));
+  }, [location.latitude, location.longitude]);
 
   const firstName = user?.name ?? 'Traveler';
   const city = locationName || '';
@@ -252,23 +317,23 @@ const HomeScreen = () => {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.hList}
           >
-            {isLoading
+            {isLoadingNearby
               ? [1, 2, 3].map(i => <SkeletonCard key={i} width={wScale(160)} height={hScale(200)} style={{ marginRight: wScale(12) }} />)
-              : homeData.nearbyGems.map(gem => (
+              : (nearbyItems.length > 0 ? nearbyItems : homeData.nearbyGems).map(gem => (
               <GemCard
                 key={gem.id}
                 name={gem.name}
                 category={gem.category}
                 distance={gem.distance}
                 rating={gem.rating}
-                imageSource={{ uri: gem.imageUrl }}
-                placeholderColor={gem.placeholderColor}
+                imageSource={{ uri: (gem as any).imageUrl }}
+                placeholderColor={(gem as any).placeholderColor}
                 onPress={() => navigation.navigate('PlaceDetail', {
                   placeId: gem.id,
                   name: gem.name,
                   category: gem.category,
                   rating: gem.rating,
-                  imageUrl: gem.imageUrl,
+                  imageUrl: (gem as any).imageUrl,
                   distance: gem.distance,
                 })}
               />
@@ -324,24 +389,27 @@ const HomeScreen = () => {
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.hList}
           >
-            {homeData.trending.map(item => (
+            {isLoadingTrending
+              ? [1, 2, 3].map(i => <SkeletonCard key={i} width={wScale(160)} height={hScale(200)} style={{ marginRight: wScale(12) }} />)
+              : (trendingItems.length > 0 ? trendingItems : homeData.trending).map(item => (
               <TrendingCard
                 key={item.id}
                 name={item.name}
                 category={item.category}
                 rating={item.rating}
-                reviewCount={item.reviewCount}
-                price={item.price}
-                imageSource={{ uri: item.imageUrl }}
-                placeholderColor={item.placeholderColor}
+                reviewCount={(item as any).reviewCount}
+                price={(item as any).price}
+                badge={(item as any).badge}
+                imageSource={{ uri: (item as any).imageUrl }}
+                placeholderColor={(item as any).placeholderColor}
                 onPress={() => navigation.navigate('PlaceDetail', {
                   placeId: item.id,
                   name: item.name,
                   category: item.category,
                   rating: item.rating,
-                  imageUrl: item.imageUrl,
-                  price: item.price,
-                  reviewCount: item.reviewCount,
+                  imageUrl: (item as any).imageUrl,
+                  price: (item as any).price,
+                  reviewCount: (item as any).reviewCount,
                 })}
               />
             ))}

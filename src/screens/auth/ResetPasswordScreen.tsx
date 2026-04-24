@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
@@ -11,25 +11,39 @@ import ScreenWrapper from '../../components/ScreenWrapper';
 import Input from '../../components/Input';
 import Button from '../../components/Button';
 import { useColors } from '../../context/ThemeContext';
+import authService from '../../services/auth';
 import { RootStackParamList } from '../../types/navigation';
 
 type RouteT = RouteProp<RootStackParamList, 'ResetPassword'>;
 type NavProp = NativeStackNavigationProp<RootStackParamList, 'ResetPassword'>;
 
 export default function ResetPasswordScreen() {
+  const [code, setCode] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const navigation = useNavigation<NavProp>();
   const route = useRoute<RouteT>();
   const { t } = useTranslation();
   const colors = useColors();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
-  const isValid = newPassword.length >= 8 && newPassword === confirmPassword;
+  const passwordsMatch = newPassword === confirmPassword;
+  const isValid = code.length === 6 && newPassword.length >= 8 && passwordsMatch;
 
-  const handleReset = () => {
+  const handleReset = async () => {
     if (!isValid) return;
-    navigation.navigate('Login');
+    setIsLoading(true);
+    try {
+      await authService.resetPassword(route.params.email, code, newPassword);
+      Alert.alert('Success', 'Password updated successfully.', [
+        { text: 'OK', onPress: () => navigation.navigate('Login') },
+      ]);
+    } catch (err: any) {
+      Alert.alert('Error', err?.response?.data?.error?.message ?? t('errors.generic'));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -52,10 +66,22 @@ export default function ResetPasswordScreen() {
 
       <Text style={styles.title}>Set New Password</Text>
       <Text style={styles.subtitle}>
-        Create a strong new password for{'\n'}{route.params.email}
+        Enter the 6-digit code sent to{'\n'}
+        <Text style={{ color: colors.primary, fontFamily: Fonts.plusJakartaSansSemiBold }}>
+          {route.params.email}
+        </Text>
       </Text>
 
       <View style={styles.formArea}>
+        <Input
+          label="Verification Code"
+          placeholder="6-digit code"
+          keyboardType="number-pad"
+          maxLength={6}
+          value={code}
+          onChangeText={setCode}
+          leftIcon={<Iconify icon="solar:letter-bold" size={wScale(18)} color={colors.textSecondary} />}
+        />
         <Input
           label="New Password"
           placeholder="Enter new password"
@@ -73,7 +99,7 @@ export default function ResetPasswordScreen() {
           leftIcon={<Iconify icon="solar:lock-bold" size={wScale(18)} color={colors.textSecondary} />}
         />
 
-        {newPassword.length > 0 && confirmPassword.length > 0 && !isValid && (
+        {newPassword.length > 0 && confirmPassword.length > 0 && !passwordsMatch && (
           <View style={styles.errorRow}>
             <Iconify icon="solar:close-circle-bold" size={wScale(14)} color="#EF4444" />
             <Text style={styles.errorText}>
@@ -87,6 +113,8 @@ export default function ResetPasswordScreen() {
           onPress={handleReset}
           size="large"
           style={styles.button}
+          isLoading={isLoading}
+          isDisabled={!isValid}
           rightIcon={<Iconify icon="solar:arrow-right-linear" size={wScale(18)} color={colors.white} />}
         />
       </View>

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   Image,
   StatusBar,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -22,6 +23,7 @@ import Fonts from '../styles/Fonts';
 import { wScale, hScale } from '../styles/Scaler';
 import Layout from '../styles/Layout';
 import { RootState } from '../redux/store';
+import placesService from '../services/places';
 
 type RouteT = RouteProp<RootStackParamList, 'PlaceDetail'>;
 
@@ -56,13 +58,54 @@ type Nav = NativeStackNavigationProp<RootStackParamList>;
 const PlaceDetailScreen = () => {
   const navigation = useNavigation<Nav>();
   const route = useRoute<RouteT>();
-  const { name, category, rating, imageUrl, distance, price, reviewCount } = route.params;
+  const { placeId, name, category, rating, imageUrl, distance, price, reviewCount } = route.params;
   const colors = useColors();
   const currentTheme = useSelector((s: RootState) => s.Theme.theme);
   const { t } = useTranslation();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const [isSaved, setIsSaved] = useState(false);
-  const isOpen = checkIsOpen();
+  const [isTogglingBookmark, setIsTogglingBookmark] = useState(false);
+  const [detail, setDetail] = useState<any>(null);
+  const [isLoadingDetail, setIsLoadingDetail] = useState(true);
+
+  useEffect(() => {
+    placesService.getDetail(placeId)
+      .then(res => {
+        const d = res.data.data;
+        setDetail(d);
+        setIsSaved(d.is_bookmarked ?? false);
+      })
+      .catch(() => {})
+      .finally(() => setIsLoadingDetail(false));
+  }, [placeId]);
+
+  const handleToggleBookmark = async () => {
+    if (isTogglingBookmark) return;
+    setIsTogglingBookmark(true);
+    const prev = isSaved;
+    setIsSaved(!prev);
+    Alert.alert('✓', !prev ? t('common.bookmarkAdded') : t('common.bookmarkRemoved'));
+    try {
+      const res = await placesService.toggleBookmark(placeId);
+      setIsSaved(res.data.data.bookmarked);
+    } catch {
+      setIsSaved(prev);
+    } finally {
+      setIsTogglingBookmark(false);
+    }
+  };
+
+  const displayRating = detail?.rating ?? rating;
+  const displayReviewCount = detail?.review_count ?? reviewCount;
+  const displayIsOpen = detail ? detail.is_open : checkIsOpen();
+  const displayTags: string[] = detail?.tags ?? TAGS;
+  const displayDescription: string = detail?.description ?? 'A remarkable destination offering an unforgettable experience. Visitors can enjoy stunning views, rich history, and a vibrant atmosphere that captures the essence of the city.';
+  const displayAddress: string = detail?.address ?? '123 Example Street';
+  const displayHours = detail?.hours ? [
+    { day: 'Monday – Friday', hours: (detail.hours.mon_fri ?? '09:00-17:00').replace('-', ' – ') },
+    { day: 'Saturday', hours: (detail.hours.saturday ?? '09:00-19:00').replace('-', ' – ') },
+    { day: 'Sunday', hours: (detail.hours.sunday ?? '09:00-19:00').replace('-', ' – ') },
+  ] : HOURS;
 
   return (
     <View style={styles.root}>
@@ -85,10 +128,7 @@ const PlaceDetailScreen = () => {
 
           <TouchableOpacity
             style={styles.saveBtn}
-            onPress={() => {
-              setIsSaved(!isSaved);
-              Alert.alert('✓', isSaved ? t('common.bookmarkRemoved') : t('common.bookmarkAdded'));
-            }}
+            onPress={handleToggleBookmark}
             accessibilityLabel={isSaved ? t('placeDetail.saved') : t('placeDetail.save')}
             accessibilityRole="button"
           >
@@ -96,8 +136,8 @@ const PlaceDetailScreen = () => {
           </TouchableOpacity>
 
           <View style={styles.heroInfo}>
-            <Text style={styles.heroName}>{name}</Text>
-            <Text style={styles.heroCategory}>{category}</Text>
+            <Text style={styles.heroName}>{detail?.name ?? name}</Text>
+            <Text style={styles.heroCategory}>{detail?.category ?? category}</Text>
           </View>
         </View>
 
@@ -107,77 +147,96 @@ const PlaceDetailScreen = () => {
           <View style={styles.metaRow}>
             <View style={styles.ratingPill}>
               <Iconify icon="solar:star-bold" size={wScale(13)} color={colors.warning} />
-              <Text style={styles.ratingText}>{rating.toFixed(1)}</Text>
-              {reviewCount != null && (
-                <Text style={styles.reviewCount}>({reviewCount} reviews)</Text>
+              <Text style={styles.ratingText}>{displayRating.toFixed(1)}</Text>
+              {displayReviewCount != null && (
+                <Text style={styles.reviewCount}>({displayReviewCount} reviews)</Text>
               )}
             </View>
-            {distance && (
+            {(detail?.address || distance) && (
               <View style={styles.metaPill}>
                 <Iconify icon="solar:map-point-linear" size={wScale(13)} color={colors.textSecondary} />
                 <Text style={styles.metaPillText}>{distance}</Text>
               </View>
             )}
-            {price && (
+            {(detail?.price_display || price) && (
               <View style={styles.metaPill}>
                 <Iconify icon="solar:dollar-minimalistic-linear" size={wScale(13)} color={colors.textSecondary} />
-                <Text style={styles.metaPillText}>{price}</Text>
+                <Text style={styles.metaPillText}>{detail?.price_display ?? price}</Text>
               </View>
             )}
           </View>
 
-          {/* Tags */}
-          <View style={styles.tagsRow}>
-            {TAGS.map(tag => (
-              <View key={tag} style={styles.tag}>
-                <Text style={styles.tagText}>{tag}</Text>
+          {isLoadingDetail ? (
+            <ActivityIndicator color={colors.primary} style={{ marginVertical: hScale(16) }} />
+          ) : (
+            <>
+              {/* Tags */}
+              <View style={styles.tagsRow}>
+                {displayTags.map(tag => (
+                  <View key={tag} style={styles.tag}>
+                    <Text style={styles.tagText}>{tag}</Text>
+                  </View>
+                ))}
               </View>
-            ))}
-          </View>
 
-          {/* Description */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t('placeDetail.about')}</Text>
-            <Text style={styles.description}>
-              A remarkable destination offering an unforgettable experience. Visitors can enjoy
-              stunning views, rich history, and a vibrant atmosphere that captures the essence of
-              the city. Whether you're a history buff, art lover, or simply looking for a beautiful
-              place to explore, this spot has something for everyone.
-            </Text>
-          </View>
-
-          {/* Location */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>{t('placeDetail.location')}</Text>
-            <View style={styles.mapPlaceholder}>
-              <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.mapBackground, borderRadius: wScale(14) }]} />
-              <View style={styles.mapPin}>
-                <Iconify icon="solar:map-point-bold" size={wScale(28)} color={colors.primary} />
+              {/* Description */}
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>{t('placeDetail.about')}</Text>
+                <Text style={styles.description}>{displayDescription}</Text>
               </View>
-              <Text style={styles.mapAddress}>123 Example Street</Text>
-            </View>
-          </View>
 
-          {/* Hours */}
-          <View style={styles.section}>
-            <View style={styles.hoursTitleRow}>
-              <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>{t('placeDetail.openingHours')}</Text>
-              <View style={[styles.openBadge, { backgroundColor: isOpen ? colors.successLight : colors.dangerLight }]}>
-                <View style={[styles.openDot, { backgroundColor: isOpen ? colors.success : colors.danger }]} />
-                <Text style={[styles.openBadgeText, { color: isOpen ? colors.success : colors.danger }]}>
-                  {isOpen ? 'Open Now' : 'Closed'}
-                </Text>
-              </View>
-            </View>
-            <View style={styles.hoursCard}>
-              {HOURS.map((h, i) => (
-                <View key={h.day} style={[styles.hourRow, i < HOURS.length - 1 && styles.hourBorder]}>
-                  <Text style={styles.hourDay}>{h.day}</Text>
-                  <Text style={styles.hourTime}>{h.hours}</Text>
+              {/* Location */}
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>{t('placeDetail.location')}</Text>
+                <View style={styles.mapPlaceholder}>
+                  <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.mapBackground, borderRadius: wScale(14) }]} />
+                  <View style={styles.mapPin}>
+                    <Iconify icon="solar:map-point-bold" size={wScale(28)} color={colors.primary} />
+                  </View>
+                  <Text style={styles.mapAddress}>{displayAddress}</Text>
                 </View>
-              ))}
-            </View>
-          </View>
+              </View>
+
+              {/* Hours */}
+              <View style={styles.section}>
+                <View style={styles.hoursTitleRow}>
+                  <Text style={[styles.sectionTitle, { marginBottom: 0 }]}>{t('placeDetail.openingHours')}</Text>
+                  <View style={[styles.openBadge, { backgroundColor: displayIsOpen ? colors.successLight : colors.dangerLight }]}>
+                    <View style={[styles.openDot, { backgroundColor: displayIsOpen ? colors.success : colors.danger }]} />
+                    <Text style={[styles.openBadgeText, { color: displayIsOpen ? colors.success : colors.danger }]}>
+                      {displayIsOpen ? 'Open Now' : 'Closed'}
+                    </Text>
+                  </View>
+                </View>
+                <View style={styles.hoursCard}>
+                  {displayHours.map((h, i) => (
+                    <View key={h.day} style={[styles.hourRow, i < displayHours.length - 1 && styles.hourBorder]}>
+                      <Text style={styles.hourDay}>{h.day}</Text>
+                      <Text style={styles.hourTime}>{h.hours}</Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+
+              {/* Contact */}
+              {(detail?.phone || detail?.website) && (
+                <View style={styles.section}>
+                  {detail.phone && (
+                    <View style={styles.contactRow}>
+                      <Iconify icon="solar:phone-linear" size={wScale(14)} color={colors.textSecondary} />
+                      <Text style={styles.contactText}>{detail.phone}</Text>
+                    </View>
+                  )}
+                  {detail.website && (
+                    <View style={styles.contactRow}>
+                      <Iconify icon="solar:global-linear" size={wScale(14)} color={colors.textSecondary} />
+                      <Text style={styles.contactText} numberOfLines={1}>{detail.website}</Text>
+                    </View>
+                  )}
+                </View>
+              )}
+            </>
+          )}
         </View>
       </ScrollView>
 
@@ -381,6 +440,18 @@ const makeStyles = (colors: AppColors) =>
       paddingVertical: hScale(12),
     },
     hourBorder: { borderBottomWidth: 1, borderBottomColor: colors.stroke },
+    contactRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: wScale(8),
+      paddingVertical: hScale(4),
+    },
+    contactText: {
+      fontSize: wScale(13),
+      fontFamily: Fonts.plusJakartaSansRegular,
+      color: colors.textSecondary,
+      flex: 1,
+    },
     hourDay: {
       fontSize: wScale(13),
       fontFamily: Fonts.plusJakartaSansMedium,

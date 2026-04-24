@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(npx tsc *)",
-      "Bash(grep -E \"\\\\.tsx$\")"
+      "Bash(grep -E \"\\\\.tsx$\")",
+      "Bash(npm install *)",
+      "Bash(npm list *)",
+      "Bash(ipconfig)",
+      "Bash(netstat -ano)"
     ]
   }
 }

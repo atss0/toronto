@@ -15,8 +15,9 @@ import { AppColors } from '../styles/theme';
 import Fonts from '../styles/Fonts';
 import { wScale, hScale } from '../styles/Scaler';
 import storage from '../storage';
+import { tokenStorage } from '../storage/tokenStorage';
 import { RootState } from '../redux/store';
-import { setLocationName } from '../redux/UserSlice';
+import { setLocationName, setUser } from '../redux/UserSlice';
 
 const { width: SCREEN_W } = Dimensions.get('window');
 
@@ -55,17 +56,25 @@ const OnboardingScreen = () => {
     }
   };
 
-  const finishOnboarding = () => {
-    dispatch(setLocationName(selectedCity || 'Paris'));
+  const completeOnboarding = (city: string) => {
+    dispatch(setLocationName(city || 'Paris'));
     storage.set('onboardingComplete', 'true');
-    navigation.navigate('Login');
+
+    const pendingRaw = storage.contains('pendingUser') ? storage.getString('pendingUser') : null;
+    if (pendingRaw) {
+      const user = JSON.parse(pendingRaw);
+      const accessToken = tokenStorage.getAccessToken();
+      const refreshToken = tokenStorage.getRefreshToken();
+      storage.remove('pendingUser');
+      dispatch(setUser({ user, token: accessToken, refreshToken }));
+      // App.tsx navigates to Main automatically
+    } else {
+      navigation.navigate('Login');
+    }
   };
 
-  const skipOnboarding = () => {
-    dispatch(setLocationName('Paris'));
-    storage.set('onboardingComplete', 'true');
-    navigation.navigate('Login');
-  };
+  const finishOnboarding = () => completeOnboarding(selectedCity);
+  const skipOnboarding = () => completeOnboarding('');
 
   return (
     <View style={styles.root}>

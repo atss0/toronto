@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   StatusBar,
   Share,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -21,14 +22,24 @@ import Fonts from '../styles/Fonts';
 import { wScale, hScale } from '../styles/Scaler';
 import Layout from '../styles/Layout';
 import { RootState } from '../redux/store';
+import routesService from '../services/routes';
 
 type RouteT = RouteProp<RootStackParamList, 'RouteDetail'>;
 
-const MOCK_STOPS = [
-  { name: 'Hagia Sophia', description: 'Iconic Byzantine monument', duration: '45 min', status: 'completed' },
-  { name: 'Blue Mosque', description: 'Majestic 17th-century landmark', duration: '40 min', status: 'active' },
-  { name: 'Basilica Cistern', description: 'Subterranean Roman reservoir', duration: '30 min', status: 'upcoming' },
-  { name: 'Topkapi Palace', description: 'Ottoman imperial palace', duration: '60 min', status: 'upcoming' },
+interface StopItem {
+  id: string;
+  name: string;
+  description: string;
+  duration: string;
+  status: 'upcoming' | 'active' | 'completed';
+  order_index: number;
+}
+
+const FALLBACK_STOPS: StopItem[] = [
+  { id: '1', name: 'Hagia Sophia', description: 'Iconic Byzantine monument', duration: '45 min', status: 'completed', order_index: 0 },
+  { id: '2', name: 'Blue Mosque', description: 'Majestic 17th-century landmark', duration: '40 min', status: 'active', order_index: 1 },
+  { id: '3', name: 'Basilica Cistern', description: 'Subterranean Roman reservoir', duration: '30 min', status: 'upcoming', order_index: 2 },
+  { id: '4', name: 'Topkapi Palace', description: 'Ottoman imperial palace', duration: '60 min', status: 'upcoming', order_index: 3 },
 ];
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
@@ -36,14 +47,42 @@ type Nav = NativeStackNavigationProp<RootStackParamList>;
 const RouteDetailScreen = () => {
   const navigation = useNavigation<Nav>();
   const route = useRoute<RouteT>();
-  const { name } = route.params;
+  const { name, routeId } = route.params;
   const colors = useColors();
   const currentTheme = useSelector((s: RootState) => s.Theme.theme);
   const { t } = useTranslation();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
-  const completed = MOCK_STOPS.filter(s => s.status === 'completed').length;
-  const progress = completed / MOCK_STOPS.length;
+  const [stops, setStops] = useState<StopItem[]>([]);
+  const [routeDetail, setRouteDetail] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(!!routeId);
+
+  useEffect(() => {
+    if (!routeId) return;
+    setIsLoading(true);
+    routesService.getDetail(routeId)
+      .then(res => {
+        const d = res.data.data;
+        setRouteDetail(d);
+        setStops(d.stops ?? []);
+      })
+      .catch(() => {})
+      .finally(() => setIsLoading(false));
+  }, [routeId]);
+
+  const handleToggleStop = useCallback(async (stop: StopItem) => {
+    if (!routeId || stop.status === 'completed') return;
+    setStops(prev => prev.map(s => s.id === stop.id ? { ...s, status: 'completed' } : s));
+    try {
+      await routesService.updateStop(routeId, stop.id, 'completed');
+    } catch {
+      setStops(prev => prev.map(s => s.id === stop.id ? { ...s, status: stop.status } : s));
+    }
+  }, [routeId]);
+
+  const displayStops = stops.length > 0 ? stops : FALLBACK_STOPS;
+  const completed = displayStops.filter(s => s.status === 'completed').length;
+  const progress = routeDetail?.progress ?? (displayStops.length > 0 ? completed / displayStops.length : 0);
 
   return (
     <View style={styles.root}>
@@ -57,10 +96,10 @@ const RouteDetailScreen = () => {
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
           <Iconify icon="solar:alt-arrow-left-linear" size={wScale(22)} color={colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle} numberOfLines={1}>{name}</Text>
+        <Text style={styles.headerTitle} numberOfLines={1}>{routeDetail?.name ?? name}</Text>
         <TouchableOpacity
           style={styles.shareBtn}
-          onPress={() => navigation.navigate('ShareRoute', { routeName: name })}
+          onPress={() => navigation.navigate('ShareRoute', { routeId: routeId ?? '', routeName: routeDetail?.name ?? name })}
           accessibilityLabel={t('share.title')}
           accessibilityRole="button"
         >
@@ -68,87 +107,100 @@ const RouteDetailScreen = () => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-        {/* Map Placeholder */}
-        <View style={styles.mapCard}>
-          <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.mapBackground }]} />
-          <View style={styles.activeBadge}>
-            <View style={styles.activeDot} />
-            <Text style={styles.activeBadgeText}>{t('routeDetail.activeRoute')}</Text>
-          </View>
-          <View style={styles.mapCenter}>
-            <Iconify icon="solar:route-bold" size={wScale(36)} color={colors.primary} />
-          </View>
+      {isLoading ? (
+        <View style={styles.loadingWrap}>
+          <ActivityIndicator color={colors.primary} size="large" />
         </View>
-
-        {/* Stats */}
-        <View style={styles.statsRow}>
-          {[
-            { icon: 'solar:map-point-linear', value: `${MOCK_STOPS.length} ${t('routeDetail.stops').toLowerCase()}`, label: t('routeDetail.totalStops') },
-            { icon: 'solar:clock-circle-linear', value: '3.5 h', label: t('routeDetail.duration') },
-            { icon: 'solar:walking-bold', value: '2.4 km', label: t('routeDetail.distance') },
-          ].map(stat => (
-            <View key={stat.label} style={styles.statItem}>
-              <Iconify icon={stat.icon} size={wScale(18)} color={colors.primary} />
-              <Text style={styles.statValue}>{stat.value}</Text>
-              <Text style={styles.statLabel}>{stat.label}</Text>
+      ) : (
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+          {/* Map Placeholder */}
+          <View style={styles.mapCard}>
+            <View style={[StyleSheet.absoluteFill, { backgroundColor: colors.mapBackground }]} />
+            <View style={styles.activeBadge}>
+              <View style={styles.activeDot} />
+              <Text style={styles.activeBadgeText}>{t('routeDetail.activeRoute')}</Text>
             </View>
-          ))}
-        </View>
-
-        {/* Progress */}
-        <View style={styles.section}>
-          <View style={styles.progressHeader}>
-            <Text style={styles.sectionTitle}>{t('routeDetail.progress')}</Text>
-            <Text style={styles.progressLabel}>{completed}/{MOCK_STOPS.length} stops</Text>
+            <View style={styles.mapCenter}>
+              <Iconify icon="solar:route-bold" size={wScale(36)} color={colors.primary} />
+            </View>
           </View>
-          <View style={styles.progressTrack}>
-            <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
-          </View>
-        </View>
 
-        {/* Stops */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('routeDetail.stops')}</Text>
-          {MOCK_STOPS.map((stop, i) => (
-            <View key={stop.name} style={styles.stopRow}>
-              <View style={styles.stopDotCol}>
-                <View style={[
-                  styles.stopDot,
-                  stop.status === 'completed' && styles.stopDotCompleted,
-                  stop.status === 'active' && styles.stopDotActive,
-                ]} />
-                {i < MOCK_STOPS.length - 1 && <View style={styles.stopLine} />}
+          {/* Stats */}
+          <View style={styles.statsRow}>
+            {[
+              { icon: 'solar:map-point-linear', value: `${routeDetail?.total_stops ?? displayStops.length} ${t('routeDetail.stops').toLowerCase()}`, label: t('routeDetail.totalStops') },
+              { icon: 'solar:clock-circle-linear', value: routeDetail?.total_duration ?? '—', label: t('routeDetail.duration') },
+              { icon: 'solar:walking-bold', value: routeDetail?.total_distance ?? '—', label: t('routeDetail.distance') },
+            ].map(stat => (
+              <View key={stat.label} style={styles.statItem}>
+                <Iconify icon={stat.icon} size={wScale(18)} color={colors.primary} />
+                <Text style={styles.statValue}>{stat.value}</Text>
+                <Text style={styles.statLabel}>{stat.label}</Text>
               </View>
-              <View style={[styles.stopCard, stop.status === 'active' && styles.stopCardActive]}>
-                <View style={styles.stopInfo}>
-                  <Text style={styles.stopName}>{stop.name}</Text>
-                  <Text style={styles.stopDesc}>{stop.description}</Text>
-                  <View style={styles.stopMeta}>
-                    <Iconify icon="solar:clock-circle-linear" size={wScale(11)} color={colors.textSecondary} />
-                    <Text style={styles.stopDuration}>{stop.duration}</Text>
-                  </View>
+            ))}
+          </View>
+
+          {/* Progress */}
+          <View style={styles.section}>
+            <View style={styles.progressHeader}>
+              <Text style={styles.sectionTitle}>{t('routeDetail.progress')}</Text>
+              <Text style={styles.progressLabel}>{completed}/{displayStops.length} stops</Text>
+            </View>
+            <View style={styles.progressTrack}>
+              <View style={[styles.progressFill, { width: `${Math.round(progress * 100)}%` as any }]} />
+            </View>
+          </View>
+
+          {/* Stops */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{t('routeDetail.stops')}</Text>
+            {displayStops.map((stop, i) => (
+              <TouchableOpacity
+                key={stop.id}
+                style={styles.stopRow}
+                onPress={() => handleToggleStop(stop)}
+                activeOpacity={stop.status === 'completed' ? 1 : 0.8}
+                accessibilityLabel={`${stop.name} — ${stop.status}`}
+                accessibilityRole="button"
+              >
+                <View style={styles.stopDotCol}>
+                  <View style={[
+                    styles.stopDot,
+                    stop.status === 'completed' && styles.stopDotCompleted,
+                    stop.status === 'active' && styles.stopDotActive,
+                  ]} />
+                  {i < displayStops.length - 1 && <View style={styles.stopLine} />}
                 </View>
-                {stop.status === 'completed' && (
-                  <Iconify icon="solar:check-circle-bold" size={wScale(22)} color={colors.success} />
-                )}
-                {stop.status === 'active' && (
-                  <View style={styles.activeTag}>
-                    <Text style={styles.activeTagText}>NOW</Text>
+                <View style={[styles.stopCard, stop.status === 'active' && styles.stopCardActive]}>
+                  <View style={styles.stopInfo}>
+                    <Text style={styles.stopName}>{stop.name}</Text>
+                    <Text style={styles.stopDesc}>{stop.description}</Text>
+                    <View style={styles.stopMeta}>
+                      <Iconify icon="solar:clock-circle-linear" size={wScale(11)} color={colors.textSecondary} />
+                      <Text style={styles.stopDuration}>{stop.duration}</Text>
+                    </View>
                   </View>
-                )}
-              </View>
-            </View>
-          ))}
-        </View>
-      </ScrollView>
+                  {stop.status === 'completed' && (
+                    <Iconify icon="solar:check-circle-bold" size={wScale(22)} color={colors.success} />
+                  )}
+                  {stop.status === 'active' && (
+                    <View style={styles.activeTag}>
+                      <Text style={styles.activeTagText}>NOW</Text>
+                    </View>
+                  )}
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
+      )}
 
       {/* Footer */}
       <View style={styles.footer}>
         <TouchableOpacity
           style={styles.companionBtn}
           activeOpacity={0.85}
-          onPress={() => Share.share({ message: `Join me on "${name}" — check it out on Toronto Travel App!`, title: name })}
+          onPress={() => Share.share({ message: `Join me on "${routeDetail?.name ?? name}" — check it out on Toronto Travel App!`, title: routeDetail?.name ?? name })}
           accessibilityLabel={t('routeDetail.shareWithCompanion')}
           accessibilityRole="button"
         >
@@ -158,7 +210,7 @@ const RouteDetailScreen = () => {
         <TouchableOpacity
           style={styles.navBtn}
           activeOpacity={0.85}
-          onPress={() => navigation.navigate('Navigation', { routeName: name })}
+          onPress={() => navigation.navigate('Navigation', { routeId: routeId ?? '', routeName: routeDetail?.name ?? name, stops: displayStops })}
           accessibilityLabel={t('routeDetail.startNavigation')}
           accessibilityRole="button"
         >
@@ -175,6 +227,7 @@ export default RouteDetailScreen;
 const makeStyles = (colors: AppColors) =>
   StyleSheet.create({
     root: { flex: 1, backgroundColor: colors.background },
+    loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 
     header: {
       flexDirection: 'row',

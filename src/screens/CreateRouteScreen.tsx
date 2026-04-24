@@ -1,24 +1,31 @@
 import React, { useMemo, useState } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
-  TextInput, StatusBar, Alert,
+  TextInput, StatusBar, Alert, ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Iconify } from 'react-native-iconify';
 import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 
+import { RootStackParamList } from '../types/navigation';
 import { useColors } from '../context/ThemeContext';
 import { AppColors } from '../styles/theme';
 import Fonts from '../styles/Fonts';
 import { wScale, hScale } from '../styles/Scaler';
 import Layout from '../styles/Layout';
 import { RootState } from '../redux/store';
+import routesService from '../services/routes';
+
+type Nav = NativeStackNavigationProp<RootStackParamList>;
 
 interface Stop { id: string; name: string }
 
+const DURATION_MINUTES: Record<string, number> = { quick: 90, 'half-day': 240, 'full-day': 480 };
+
 const CreateRouteScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<Nav>();
   const colors = useColors();
   const currentTheme = useSelector((s: RootState) => s.Theme.theme);
   const { t } = useTranslation();
@@ -28,22 +35,36 @@ const CreateRouteScreen = () => {
   const [startPoint, setStartPoint] = useState('');
   const [stops, setStops] = useState<Stop[]>([{ id: '1', name: '' }]);
   const [selectedDuration, setSelectedDuration] = useState('half-day');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const addStop = () => setStops(prev => [...prev, { id: String(Date.now()), name: '' }]);
   const removeStop = (id: string) => setStops(prev => prev.filter(s => s.id !== id));
   const updateStop = (id: string, name: string) =>
     setStops(prev => prev.map(s => s.id === id ? { ...s, name } : s));
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     if (!routeName.trim()) {
       Alert.alert('Validation', 'Please enter a route name.');
       return;
     }
-    if (!startPoint.trim()) {
-      Alert.alert('Validation', 'Please enter a starting point.');
-      return;
+    const allStops = [
+      ...(startPoint.trim() ? [{ name: startPoint.trim() }] : []),
+      ...stops.filter(s => s.name.trim()).map(s => ({ name: s.name.trim() })),
+    ];
+    setIsSubmitting(true);
+    try {
+      const res = await routesService.create({
+        name: routeName.trim(),
+        stops: allStops,
+        notes: '',
+      });
+      const created = res.data.data;
+      navigation.replace('RouteDetail', { routeId: created.id, name: created.name });
+    } catch {
+      Alert.alert('Error', 'Could not create route. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
-    navigation.goBack();
   };
 
   return (
@@ -54,8 +75,10 @@ const CreateRouteScreen = () => {
           <Iconify icon="solar:close-circle-linear" size={wScale(22)} color={colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Create Route</Text>
-        <TouchableOpacity onPress={handleCreate}>
-          <Text style={styles.createText}>Create</Text>
+        <TouchableOpacity onPress={handleCreate} disabled={isSubmitting}>
+          {isSubmitting
+            ? <ActivityIndicator color={colors.primary} size="small" />
+            : <Text style={styles.createText}>Create</Text>}
         </TouchableOpacity>
       </View>
 

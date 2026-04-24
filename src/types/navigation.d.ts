@@ -52,7 +52,7 @@ export type RootStackParamList = {
         };
     };
     MapFull: { title?: string };
-    Navigation: { routeName: string; stops?: string[] };
+    Navigation: { routeId: string; routeName: string; stops?: Array<{ id: string; name: string; description: string; duration: string; status: string }> };
     BookmarksSaved: undefined;
     Reviews: { placeId: string; placeName: string; rating: number };
     Filter: undefined;
@@ -60,7 +60,7 @@ export type RootStackParamList = {
     // Optional screens
     OfflineRoutes: undefined;
     TripHistory: undefined;
-    ShareRoute: { routeName: string };
+    ShareRoute: { routeId: string; routeName: string };
     WeatherDetail: { city: string };
     CityPicker: undefined;
 };

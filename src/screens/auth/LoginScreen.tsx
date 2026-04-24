@@ -14,6 +14,8 @@ import AuthDivider from '../../components/AuthDivider';
 import SocialLogins from '../../components/SocialLogins';
 import { useColors } from '../../context/ThemeContext';
 import { setUser } from '../../redux/UserSlice';
+import { tokenStorage } from '../../storage/tokenStorage';
+import authService from '../../services/auth';
 import { RootStackParamList } from '../../types/navigation';
 
 type NavProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
@@ -21,18 +23,32 @@ type NavProp = NativeStackNavigationProp<RootStackParamList, 'Login'>;
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const navigation = useNavigation<NavProp>();
   const { t } = useTranslation();
   const colors = useColors();
   const dispatch = useDispatch();
-  const styles = useMemo(() => makeStyles(colors.primary, colors.textSecondary), [colors]);
+  const styles = useMemo(() => makeStyles(colors.primary, colors.textSecondary, colors.danger), [colors]);
 
-  const handleLogin = () => {
-    dispatch(setUser({
-      user: { id: 1, name: 'Test', surname: 'User', username: 'testuser', email, photo: '' },
-      token: 'mock-token',
-    }));
-    navigation.navigate('Main');
+  const handleLogin = async () => {
+    setError('');
+    setIsLoading(true);
+    try {
+      const response = await authService.login({ email, password });
+      const { user, accessToken, refreshToken } = response.data.data;
+      await tokenStorage.save(accessToken, refreshToken);
+      dispatch(setUser({ user, token: accessToken, refreshToken }));
+    } catch (err: any) {
+      const code = err?.response?.data?.error?.code;
+      if (code === 'EMAIL_NOT_VERIFIED') {
+        navigation.navigate('EmailVerification', { email });
+      } else {
+        setError(err?.response?.data?.error?.message ?? t('errors.generic'));
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -70,11 +86,15 @@ export default function LoginScreen() {
           </TouchableOpacity>
         </View>
 
+        {error !== '' && <Text style={styles.errorText}>{error}</Text>}
+
         <Button
           title={t('auth.loginButton')}
           onPress={handleLogin}
           size="large"
           style={styles.loginButton}
+          isLoading={isLoading}
+          isDisabled={!email || !password}
         />
       </View>
 
@@ -91,7 +111,7 @@ export default function LoginScreen() {
   );
 }
 
-const makeStyles = (primary: string, textSecondary: string) => StyleSheet.create({
+const makeStyles = (primary: string, textSecondary: string, danger: string) => StyleSheet.create({
   formContainer: {
     gap: hScale(4),
   },
@@ -106,6 +126,13 @@ const makeStyles = (primary: string, textSecondary: string) => StyleSheet.create
     color: primary,
     fontSize: wScale(13),
     fontFamily: Fonts.plusJakartaSansSemiBold,
+  },
+  errorText: {
+    fontSize: wScale(13),
+    fontFamily: Fonts.plusJakartaSansRegular,
+    color: danger,
+    textAlign: 'center',
+    marginVertical: hScale(4),
   },
   loginButton: {
     marginTop: hScale(4),

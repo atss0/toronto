@@ -13,6 +13,7 @@ import { AppColors } from '../styles/theme';
 import Fonts from '../styles/Fonts';
 import { wScale, hScale } from '../styles/Scaler';
 import Layout from '../styles/Layout';
+import authService from '../services/auth';
 
 const ChangePasswordScreen = () => {
   const navigation = useNavigation();
@@ -38,13 +39,17 @@ const ChangePasswordScreen = () => {
   const handleUpdate = async () => {
     if (!isValid) return;
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      Alert.alert('✓', t('changePassword.updatePassword'), [
+    try {
+      await authService.changePassword(current, newPass);
+      Alert.alert('✓', 'Password changed successfully.', [
         { text: 'OK', onPress: () => navigation.goBack() },
       ]);
-    }, 1200);
+    } catch (err: any) {
+      const msg = err?.response?.data?.error?.message ?? 'Something went wrong. Please try again.';
+      Alert.alert('Error', msg);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

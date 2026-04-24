@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, StatusBar, Alert, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Iconify } from 'react-native-iconify';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { useColors } from '../context/ThemeContext';
 import { AppColors } from '../styles/theme';
@@ -10,6 +10,8 @@ import Fonts from '../styles/Fonts';
 import { wScale, hScale } from '../styles/Scaler';
 import Layout from '../styles/Layout';
 import { RootState } from '../redux/store';
+import { setPreferences } from '../redux/UserSlice';
+import userService from '../services/user';
 
 const OPTIONS = [
   { id: 'solo', label: 'Solo', desc: 'Travelling alone, self-paced adventures', icon: 'solar:user-bold', color: '#3182ED', bg: '#EBF3FE' },
@@ -22,8 +24,24 @@ const TravelStyleScreen = () => {
   const navigation = useNavigation();
   const colors = useColors();
   const currentTheme = useSelector((s: RootState) => s.Theme.theme);
+  const user = useSelector((s: RootState) => s.User.user);
+  const dispatch = useDispatch();
   const styles = useMemo(() => makeStyles(colors), [colors]);
-  const [selected, setSelected] = useState('solo');
+  const [selected, setSelected] = useState(user?.travel_style ?? 'solo');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSave = async () => {
+    setIsLoading(true);
+    try {
+      await userService.updatePreferences({ travel_style: selected });
+      dispatch(setPreferences({ travel_style: selected }));
+      navigation.goBack();
+    } catch (err: any) {
+      Alert.alert('Error', err?.response?.data?.error?.message ?? 'Something went wrong.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <View style={styles.root}>
@@ -33,8 +51,10 @@ const TravelStyleScreen = () => {
           <Iconify icon="solar:alt-arrow-left-linear" size={wScale(22)} color={colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Travel Style</Text>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.saveText}>Save</Text>
+        <TouchableOpacity onPress={handleSave} disabled={isLoading}>
+          {isLoading
+            ? <ActivityIndicator size="small" color={colors.primary} />
+            : <Text style={styles.saveText}>Save</Text>}
         </TouchableOpacity>
       </View>
 

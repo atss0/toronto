@@ -6,10 +6,15 @@ import AuthStackNavigator from './src/navigators/AuthStackNavigator';
 import SplashScreen from './src/screens/SplashScreen';
 import { RootState } from './src/redux/store';
 import { setUser } from './src/redux/UserSlice';
+import userService from './src/services/user';
 import { setTheme } from './src/redux/ThemeSlice';
 import { setLanguage } from './src/redux/LanguageSlice';
 import storage from './src/storage';
+import { tokenStorage } from './src/storage/tokenStorage';
+import { configureGoogleSignin } from './src/config/google';
 import { RootStackParamList } from './src/types/navigation';
+
+configureGoogleSignin();
 
 const linking: LinkingOptions<RootStackParamList> = {
   prefixes: ['toronto://', 'https://toronto-app.com'],
@@ -38,23 +43,33 @@ const App = () => {
   const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
-    if (storage.contains('user') && storage.contains('token')) {
-      const raw = storage.getString('user');
-      if (raw) {
-        dispatch(setUser({ user: JSON.parse(raw), token: storage.getString('token') }));
+    const init = async () => {
+      const { accessToken, refreshToken } = await tokenStorage.init();
+
+      if (accessToken && storage.contains('user')) {
+        const raw = storage.getString('user');
+        if (raw) {
+          dispatch(setUser({ user: JSON.parse(raw), token: accessToken, refreshToken }));
+        }
+        // Refresh full profile (with preferences & stats) in background
+        userService.getMe().then(res => {
+          dispatch(setUser({ user: res.data.data }));
+        }).catch(() => {});
       }
-    }
-    if (storage.contains('lang')) {
-      const lang = storage.getString('lang') as 'en' | 'tr';
-      dispatch(setLanguage(lang));
-    }
-    if (storage.contains('theme')) {
-      const theme = storage.getString('theme') as 'light' | 'dark';
-      dispatch(setTheme(theme));
-    }
-    const hasSeenOnboarding = storage.contains('onboardingComplete');
-    setShowOnboarding(!hasSeenOnboarding);
-    setIsLoading(false);
+
+      if (storage.contains('lang')) {
+        dispatch(setLanguage(storage.getString('lang') as 'en' | 'tr'));
+      }
+      if (storage.contains('theme')) {
+        dispatch(setTheme(storage.getString('theme') as 'light' | 'dark'));
+      }
+
+      const hasSeenOnboarding = storage.contains('onboardingComplete');
+      setShowOnboarding(!hasSeenOnboarding);
+      setIsLoading(false);
+    };
+
+    init();
   }, [dispatch]);
 
   if (isLoading) return <SplashScreen />;

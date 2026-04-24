@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, StatusBar, Alert, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Iconify } from 'react-native-iconify';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { useColors } from '../context/ThemeContext';
 import { AppColors } from '../styles/theme';
@@ -10,10 +10,12 @@ import Fonts from '../styles/Fonts';
 import { wScale, hScale } from '../styles/Scaler';
 import Layout from '../styles/Layout';
 import { RootState } from '../redux/store';
+import { setPreferences } from '../redux/UserSlice';
+import userService from '../services/user';
 
 const OPTIONS = [
   { id: 'budget', label: 'Budget', desc: 'Economical choices, hostels, street food', icon: 'solar:wallet-linear', price: '$', color: '#10B981', bg: '#D1FAE5' },
-  { id: 'midrange', label: 'Mid-range', desc: 'Comfortable stays, casual dining', icon: 'solar:wallet-bold', price: '$$', color: '#3182ED', bg: '#EBF3FE' },
+  { id: 'mid', label: 'Mid-range', desc: 'Comfortable stays, casual dining', icon: 'solar:wallet-bold', price: '$$', color: '#3182ED', bg: '#EBF3FE' },
   { id: 'luxury', label: 'Luxury', desc: 'Premium hotels, fine dining experiences', icon: 'solar:crown-bold', price: '$$$', color: '#F59E0B', bg: '#FEF3C7' },
 ];
 
@@ -21,8 +23,24 @@ const BudgetSettingsScreen = () => {
   const navigation = useNavigation();
   const colors = useColors();
   const currentTheme = useSelector((s: RootState) => s.Theme.theme);
+  const user = useSelector((s: RootState) => s.User.user);
+  const dispatch = useDispatch();
   const styles = useMemo(() => makeStyles(colors), [colors]);
-  const [selected, setSelected] = useState('midrange');
+  const [selected, setSelected] = useState(user?.budget_level ?? 'mid');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSave = async () => {
+    setIsLoading(true);
+    try {
+      await userService.updatePreferences({ budget_level: selected });
+      dispatch(setPreferences({ budget_level: selected }));
+      navigation.goBack();
+    } catch (err: any) {
+      Alert.alert('Error', err?.response?.data?.error?.message ?? 'Something went wrong.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <View style={styles.root}>
@@ -32,8 +50,10 @@ const BudgetSettingsScreen = () => {
           <Iconify icon="solar:alt-arrow-left-linear" size={wScale(22)} color={colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Budget Level</Text>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text style={styles.saveText}>Save</Text>
+        <TouchableOpacity onPress={handleSave} disabled={isLoading}>
+          {isLoading
+            ? <ActivityIndicator size="small" color={colors.primary} />
+            : <Text style={styles.saveText}>Save</Text>}
         </TouchableOpacity>
       </View>
 
