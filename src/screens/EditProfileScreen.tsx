@@ -8,11 +8,13 @@ import {
   TextInput,
   Alert,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Iconify } from 'react-native-iconify';
 import { useDispatch, useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
+import { launchImageLibrary } from 'react-native-image-picker';
 
 import StackHeader from '../components/StackHeader/StackHeader';
 import { useColors } from '../context/ThemeContext';
@@ -33,6 +35,8 @@ const EditProfileScreen = () => {
   const { t } = useTranslation();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [localPhotoUri, setLocalPhotoUri] = useState<string | null>(null);
 
   const [name, setName] = useState(user?.name ?? '');
   const [surname, setSurname] = useState(user?.surname ?? '');
@@ -41,6 +45,34 @@ const EditProfileScreen = () => {
   const initials = name
     ? `${name[0]}${surname?.[0] ?? ''}`.toUpperCase()
     : 'U';
+
+  const handlePickPhoto = () => {
+    launchImageLibrary(
+      { mediaType: 'photo', quality: 0.8, selectionLimit: 1 },
+      async response => {
+        if (response.didCancel || response.errorCode) return;
+        const asset = response.assets?.[0];
+        if (!asset?.uri) return;
+
+        const uri = asset.uri;
+        const type = asset.type ?? 'image/jpeg';
+        const fileName = asset.fileName ?? `photo_${Date.now()}.jpg`;
+
+        setLocalPhotoUri(uri);
+        setIsUploadingPhoto(true);
+        try {
+          const res = await userService.uploadPhoto(uri, type, fileName);
+          const photoUrl: string = res.data.data.photo_url;
+          dispatch(setUser({ user: { ...user, photo: photoUrl } }));
+        } catch {
+          setLocalPhotoUri(null);
+          Alert.alert(t('editProfile.photoError', 'Error'), t('editProfile.photoErrorMsg', 'Photo could not be uploaded. Please try again.'));
+        } finally {
+          setIsUploadingPhoto(false);
+        }
+      },
+    );
+  };
 
   const handleSave = async () => {
     if (!name.trim()) {
@@ -83,15 +115,26 @@ const EditProfileScreen = () => {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         {/* Avatar */}
         <View style={styles.avatarSection}>
-          <View style={styles.avatarWrap}>
-            <View style={styles.avatarCircle}>
-              <Text style={styles.avatarInitials}>{initials}</Text>
+          <TouchableOpacity style={styles.avatarWrap} onPress={handlePickPhoto} activeOpacity={0.85} disabled={isUploadingPhoto}>
+            {localPhotoUri || user?.photo ? (
+              <Image
+                source={{ uri: localPhotoUri ?? user!.photo }}
+                style={styles.avatarImage}
+              />
+            ) : (
+              <View style={styles.avatarCircle}>
+                <Text style={styles.avatarInitials}>{initials}</Text>
+              </View>
+            )}
+            <View style={styles.cameraBtn}>
+              {isUploadingPhoto ? (
+                <ActivityIndicator size="small" color="#FFFFFF" />
+              ) : (
+                <Iconify icon="solar:camera-bold" size={wScale(13)} color="#FFFFFF" />
+              )}
             </View>
-            <TouchableOpacity style={styles.cameraBtn}>
-              <Iconify icon="solar:camera-bold" size={wScale(13)} color="#FFFFFF" />
-            </TouchableOpacity>
-          </View>
-          <Text style={styles.changePhotoText}>Change Photo</Text>
+          </TouchableOpacity>
+          <Text style={styles.changePhotoText}>{t('editProfile.changePhoto', 'Change Photo')}</Text>
         </View>
 
         {/* Fields */}
@@ -157,6 +200,13 @@ const makeStyles = (colors: AppColors) =>
       backgroundColor: colors.primaryLight,
       alignItems: 'center',
       justifyContent: 'center',
+      borderWidth: 3,
+      borderColor: colors.primary,
+    },
+    avatarImage: {
+      width: wScale(90),
+      height: wScale(90),
+      borderRadius: wScale(45),
       borderWidth: 3,
       borderColor: colors.primary,
     },

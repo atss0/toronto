@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,8 @@ import {
   ScrollView,
   TouchableOpacity,
   StatusBar,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Iconify } from 'react-native-iconify';
@@ -17,29 +19,30 @@ import Fonts from '../styles/Fonts';
 import { wScale, hScale } from '../styles/Scaler';
 import Layout from '../styles/Layout';
 import { RootState } from '../redux/store';
-import mockData from '../data/mock.json';
+import notificationsService from '../services/notifications';
 
-interface Notification {
+interface ApiNotification {
   id: string;
-  type: 'route' | 'suggestion' | 'reminder';
+  type: string;
   title: string;
   body: string;
+  is_read: boolean;
   time: string;
-  isRead: boolean;
+  created_at: string;
+  action_type?: string;
+  action_payload?: Record<string, any>;
 }
 
-const INITIAL_NOTIFICATIONS: Notification[] = mockData.notifications as Notification[];
-
-const typeIcon: Record<Notification['type'], string> = {
-  route: 'solar:route-bold',
-  suggestion: 'solar:star-bold',
-  reminder: 'solar:bell-bold',
+const getTypeIcon = (type: string): string => {
+  if (type.includes('route') || type.includes('trip')) return 'solar:route-bold';
+  if (type.includes('suggest') || type.includes('gem') || type.includes('place')) return 'solar:star-bold';
+  return 'solar:bell-bold';
 };
 
-const typeColor: Record<Notification['type'], string> = {
-  route: '#3182ED',
-  suggestion: '#F59E0B',
-  reminder: '#10B981',
+const getTypeColor = (type: string): string => {
+  if (type.includes('route') || type.includes('trip')) return '#3182ED';
+  if (type.includes('suggest') || type.includes('gem') || type.includes('place')) return '#F59E0B';
+  return '#10B981';
 };
 
 const NotificationsScreen = () => {
@@ -47,15 +50,77 @@ const NotificationsScreen = () => {
   const colors = useColors();
   const currentTheme = useSelector((s: RootState) => s.Theme.theme);
   const styles = useMemo(() => makeStyles(colors), [colors]);
-  const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
 
-  const markAllRead = () =>
-    setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+  const [notifications, setNotifications] = useState<ApiNotification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasNext, setHasNext] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
-  const markRead = (id: string) =>
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+  const fetchNotifications = useCallback(async (pageNum = 1, append = false) => {
+    try {
+      const res = await notificationsService.getAll({ page: pageNum, limit: 20 });
+      const { data } = res.data;
+      const fetched: ApiNotification[] = data.notifications;
+      setUnreadCount(data.unread_count);
+      setNotifications(prev => (append ? [...prev, ...fetched] : fetched));
+      setHasNext(res.data.pagination?.hasNext ?? false);
+      setPage(pageNum);
+    } catch (_) {
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+      setLoadingMore(false);
+    }
+  }, []);
 
-  const unreadCount = notifications.filter(n => !n.isRead).length;
+  useEffect(() => {
+    fetchNotifications(1);
+  }, [fetchNotifications]);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchNotifications(1);
+  };
+
+  const loadMore = () => {
+    if (!hasNext || loadingMore) return;
+    setLoadingMore(true);
+    fetchNotifications(page + 1, true);
+  };
+
+  const markRead = async (id: string) => {
+    const target = notifications.find(n => n.id === id);
+    if (!target || target.is_read) return;
+    setNotifications(prev => prev.map(n => (n.id === id ? { ...n, is_read: true } : n)));
+    setUnreadCount(prev => Math.max(0, prev - 1));
+    try {
+      await notificationsService.markRead(id);
+    } catch (_) {
+      setNotifications(prev => prev.map(n => (n.id === id ? { ...n, is_read: false } : n)));
+      setUnreadCount(prev => prev + 1);
+    }
+  };
+
+  const markAllRead = async () => {
+    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+    setUnreadCount(0);
+    try {
+      await notificationsService.markAllRead();
+    } catch (_) {
+      fetchNotifications(1);
+    }
+  };
+
+  if (loading) {
+    return (
+      <View style={[styles.root, styles.centered]}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.root}>
@@ -78,34 +143,54 @@ const NotificationsScreen = () => {
         )}
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scroll}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
+        onScrollEndDrag={({ nativeEvent }) => {
+          const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+          if (layoutMeasurement.height + contentOffset.y >= contentSize.height - hScale(40)) {
+            loadMore();
+          }
+        }}
+      >
         {unreadCount > 0 && (
           <View style={styles.unreadBanner}>
             <Iconify icon="solar:bell-bold" size={wScale(14)} color={colors.primary} />
-            <Text style={styles.unreadText}>{unreadCount} unread notification{unreadCount > 1 ? 's' : ''}</Text>
+            <Text style={styles.unreadText}>
+              {unreadCount} unread notification{unreadCount > 1 ? 's' : ''}
+            </Text>
           </View>
         )}
 
-        {notifications.map(notif => (
-          <TouchableOpacity
-            key={notif.id}
-            style={[styles.notifCard, !notif.isRead && styles.notifCardUnread]}
-            onPress={() => markRead(notif.id)}
-            activeOpacity={0.8}
-          >
-            <View style={[styles.iconWrap, { backgroundColor: `${typeColor[notif.type]}20` }]}>
-              <Iconify icon={typeIcon[notif.type]} size={wScale(18)} color={typeColor[notif.type]} />
-            </View>
-            <View style={styles.notifContent}>
-              <View style={styles.notifTopRow}>
-                <Text style={styles.notifTitle}>{notif.title}</Text>
-                {!notif.isRead && <View style={styles.unreadDot} />}
+        {notifications.map(notif => {
+          const icon = getTypeIcon(notif.type);
+          const iconColor = getTypeColor(notif.type);
+          return (
+            <TouchableOpacity
+              key={notif.id}
+              style={[styles.notifCard, !notif.is_read && styles.notifCardUnread]}
+              onPress={() => markRead(notif.id)}
+              activeOpacity={0.8}
+            >
+              <View style={[styles.iconWrap, { backgroundColor: `${iconColor}20` }]}>
+                <Iconify icon={icon} size={wScale(18)} color={iconColor} />
               </View>
-              <Text style={styles.notifBody} numberOfLines={2}>{notif.body}</Text>
-              <Text style={styles.notifTime}>{notif.time}</Text>
-            </View>
-          </TouchableOpacity>
-        ))}
+              <View style={styles.notifContent}>
+                <View style={styles.notifTopRow}>
+                  <Text style={styles.notifTitle}>{notif.title}</Text>
+                  {!notif.is_read && <View style={styles.unreadDot} />}
+                </View>
+                <Text style={styles.notifBody} numberOfLines={2}>{notif.body}</Text>
+                <Text style={styles.notifTime}>{notif.time}</Text>
+              </View>
+            </TouchableOpacity>
+          );
+        })}
+
+        {loadingMore && (
+          <ActivityIndicator size="small" color={colors.primary} style={{ marginVertical: hScale(16) }} />
+        )}
 
         {notifications.length === 0 && (
           <View style={styles.emptyState}>
@@ -124,6 +209,7 @@ export default NotificationsScreen;
 const makeStyles = (colors: AppColors) =>
   StyleSheet.create({
     root: { flex: 1, backgroundColor: colors.background },
+    centered: { alignItems: 'center', justifyContent: 'center' },
 
     header: {
       flexDirection: 'row',

@@ -44,6 +44,7 @@ export default function LoginScreen() {
       if (code === 'EMAIL_NOT_VERIFIED') {
         navigation.navigate('EmailVerification', { email });
       } else {
+        console.log(err)
         setError(err?.response?.data?.error?.message ?? t('errors.generic'));
       }
     } finally {

@@ -3,7 +3,7 @@ import { tokenStorage } from '../storage/tokenStorage';
 import store from '../redux/store';
 import { clearUser } from '../redux/UserSlice';
 
-const BASE_URL = 'http://10.220.230.134:8000/api/v1';
+const BASE_URL = 'http://10.209.57.7:8000/api/v1';
 
 const api = axios.create({
   baseURL: BASE_URL,

@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, StatusBar, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Switch, StatusBar, Alert, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { Iconify } from 'react-native-iconify';
 import { useSelector } from 'react-redux';
@@ -11,6 +11,7 @@ import Fonts from '../styles/Fonts';
 import { wScale, hScale } from '../styles/Scaler';
 import Layout from '../styles/Layout';
 import { RootState } from '../redux/store';
+import assistantService from '../services/assistant';
 
 const ChatSettingsScreen = () => {
   const navigation = useNavigation();
@@ -23,11 +24,32 @@ const ChatSettingsScreen = () => {
   const [voiceInput, setVoiceInput] = useState(false);
   const [autoSuggest, setAutoSuggest] = useState(true);
   const [personalizeAI, setPersonalizeAI] = useState(true);
+  const [clearing, setClearing] = useState(false);
 
   const clearHistory = () =>
     Alert.alert(t('chatSettings.clearHistoryTitle'), t('chatSettings.clearHistoryMsg'), [
       { text: t('common.cancel'), style: 'cancel' },
-      { text: t('common.delete'), style: 'destructive', onPress: () => {} },
+      {
+        text: t('common.delete'),
+        style: 'destructive',
+        onPress: async () => {
+          setClearing(true);
+          try {
+            await assistantService.clearConversations();
+            Alert.alert(
+              t('chatSettings.clearedTitle', 'Cleared'),
+              t('chatSettings.clearedMsg', 'Conversation history has been deleted.'),
+            );
+          } catch {
+            Alert.alert(
+              t('common.error', 'Error'),
+              t('chatSettings.clearError', 'Could not clear history. Please try again.'),
+            );
+          } finally {
+            setClearing(false);
+          }
+        },
+      },
     ]);
 
   const settings = [
@@ -66,8 +88,17 @@ const ChatSettingsScreen = () => {
           ))}
         </View>
 
-        <TouchableOpacity style={styles.dangerBtn} onPress={clearHistory} activeOpacity={0.8}>
-          <Iconify icon="solar:trash-bin-trash-bold" size={wScale(18)} color={colors.danger} />
+        <TouchableOpacity
+          style={[styles.dangerBtn, clearing && { opacity: 0.6 }]}
+          onPress={clearHistory}
+          activeOpacity={0.8}
+          disabled={clearing}
+        >
+          {clearing ? (
+            <ActivityIndicator size="small" color={colors.danger} />
+          ) : (
+            <Iconify icon="solar:trash-bin-trash-bold" size={wScale(18)} color={colors.danger} />
+          )}
           <Text style={styles.dangerText}>{t('chatSettings.clearHistory')}</Text>
         </TouchableOpacity>
       </ScrollView>

@@ -313,7 +313,14 @@ const ProfileScreen = () => {
             <View style={styles.premiumIconWrap}>
               <Iconify icon="solar:crown-bold" size={wScale(20)} color={colors.warning} />
             </View>
-            <Text style={styles.premiumTitle}>Premium Member</Text>
+            <Text style={styles.premiumTitle}>
+              {user?.is_premium ? 'Premium Member' : 'Go Premium'}
+            </Text>
+            {user?.is_premium && (
+              <View style={styles.premiumActiveBadge}>
+                <Text style={styles.premiumActiveBadgeText}>ACTIVE</Text>
+              </View>
+            )}
           </View>
 
           {[
@@ -322,14 +329,20 @@ const ProfileScreen = () => {
             'Smart recommendations',
           ].map(item => (
             <View key={item} style={styles.premiumFeatureRow}>
-              <Iconify icon="solar:check-circle-bold" size={wScale(15)} color="rgba(255,255,255,0.85)" />
+              <Iconify
+                icon={user?.is_premium ? 'solar:check-circle-bold' : 'solar:lock-bold'}
+                size={wScale(15)}
+                color="rgba(255,255,255,0.85)"
+              />
               <Text style={styles.premiumFeatureText}>{item}</Text>
             </View>
           ))}
 
-          <TouchableOpacity style={styles.upgradeBtn} activeOpacity={0.85} onPress={() => navigation.navigate('PremiumUpgrade')}>
-            <Text style={styles.upgradeBtnText}>Upgrade to Premium</Text>
-          </TouchableOpacity>
+          {!user?.is_premium && (
+            <TouchableOpacity style={styles.upgradeBtn} activeOpacity={0.85} onPress={() => navigation.navigate('PremiumUpgrade')}>
+              <Text style={styles.upgradeBtnText}>Upgrade to Premium</Text>
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* ── Account Settings ──────────────────────────────────────────────── */}
@@ -676,6 +689,19 @@ const makeStyles = (colors: AppColors) =>
       alignItems: 'center',
       gap: wScale(10),
       marginBottom: hScale(2),
+      flexWrap: 'wrap',
+    },
+    premiumActiveBadge: {
+      backgroundColor: 'rgba(255,255,255,0.22)',
+      paddingHorizontal: wScale(8),
+      paddingVertical: hScale(2),
+      borderRadius: wScale(6),
+    },
+    premiumActiveBadgeText: {
+      fontSize: wScale(9),
+      fontFamily: Fonts.plusJakartaSansBold,
+      color: '#FFFFFF',
+      letterSpacing: 0.8,
     },
     premiumIconWrap: {
       width: wScale(34),

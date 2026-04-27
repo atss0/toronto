@@ -6,7 +6,11 @@
       "Bash(npm install *)",
       "Bash(npm list *)",
       "Bash(ipconfig)",
-      "Bash(netstat -ano)"
+      "Bash(netstat -ano)",
+      "Bash(npx jest *)",
+      "Bash(node -e \"console.log\\(require\\('./node_modules/axios/package.json'\\).version\\)\")",
+      "Bash(node -e \"const a = require\\('axios'\\); const instance = a.create\\(\\); console.log\\(Object.keys\\(instance.interceptors.request\\)\\)\")",
+      "Bash(node -e ' *)"
     ]
   }
 }

@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef } from 'react';
+import React, { useMemo, useState, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,11 +6,11 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
-  Image,
   KeyboardAvoidingView,
   Platform,
   StatusBar,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { Iconify } from 'react-native-iconify';
 import { useSelector } from 'react-redux';
@@ -23,141 +23,64 @@ import Fonts from '../styles/Fonts';
 import { wScale, hScale } from '../styles/Scaler';
 import Layout from '../styles/Layout';
 import { RootState } from '../redux/store';
+import assistantService, { ApiRouteCard } from '../services/assistant';
+import routesService from '../services/routes';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-interface RouteStop {
-  name: string;
-  description: string;
-}
-
-interface RouteCard {
-  title: string;
-  distance: string;
-  duration: string;
-  imageUrl: string;
-  stops: RouteStop[];
-}
-
 type Message =
   | { id: string; role: 'user'; text: string }
-  | { id: string; role: 'assistant'; text: string; card?: RouteCard };
+  | { id: string; role: 'assistant'; text: string; routeCard?: ApiRouteCard }
+  | { id: string; role: 'typing' };
 
-// ─── Initial conversation ─────────────────────────────────────────────────────
+// ─── Typing Indicator ─────────────────────────────────────────────────────────
 
-const INITIAL_MESSAGES: Message[] = [
-  {
-    id: 'm1',
-    role: 'user',
-    text: 'Plan a morning walk for me. I have about 3 hours to explore.',
-  },
-  {
-    id: 'm2',
-    role: 'assistant',
-    text: "Certainly! I've put together a great route to discover the highlights of your area.",
-    card: {
-      title: 'Morning Discovery Walk',
-      distance: '2.4 km',
-      duration: '3 Hours',
-      imageUrl:
-        'https://images.unsplash.com/photo-1467269204594-9661b134dd2b?w=600&q=80&fit=crop',
-      stops: [
-        {
-          name: 'Old Town Square',
-          description: 'Historic heart of the city',
-        },
-        {
-          name: 'Local Art Museum',
-          description: 'Regional art and cultural heritage',
-        },
-        {
-          name: 'Riverside Promenade',
-          description: 'Scenic waterfront walking path',
-        },
-      ],
-    },
-  },
-];
-
-// Mock replies for demo purposes
-const MOCK_REPLIES: { text: string; card?: RouteCard }[] = [
-  {
-    text: "Great choice! Here's a popular local food and market tour you might enjoy.",
-    card: {
-      title: 'Local Food & Market Tour',
-      distance: '1.8 km',
-      duration: '2.5 Hours',
-      imageUrl:
-        'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=600&q=80&fit=crop',
-      stops: [
-        { name: 'Central Market', description: 'Bustling local produce and craft market' },
-        { name: 'Street Food Alley', description: 'Best local bites and flavors' },
-        { name: 'Artisan Bakery District', description: 'Freshly baked goods and cafés' },
-      ],
-    },
-  },
-  {
-    text: "I'd recommend the waterfront for a relaxing afternoon walk. Here's what I suggest.",
-    card: {
-      title: 'Waterfront Stroll',
-      distance: '3.2 km',
-      duration: '2 Hours',
-      imageUrl:
-        'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&q=80&fit=crop',
-      stops: [
-        { name: 'Harbor Promenade', description: 'Scenic walk along the waterfront' },
-        { name: 'Old Port Area', description: 'Historic docks and maritime heritage' },
-        { name: 'Sunset Viewpoint', description: 'Best spot for golden hour views' },
-      ],
-    },
-  },
-  {
-    text: 'Sure! Here is a concise route tailored to your preferences.',
-  },
-];
+const TypingBubble: React.FC<{ colors: AppColors }> = ({ colors }) => {
+  const s = useMemo(() => makeBubbleStyles(colors), [colors]);
+  return (
+    <View style={s.assistantRow}>
+      <View style={s.assistantAvatar}>
+        <Iconify icon="solar:map-point-wave-bold" size={wScale(16)} color="#FFFFFF" />
+      </View>
+      <View style={[s.assistantBubble, { paddingHorizontal: wScale(18), paddingVertical: hScale(14) }]}>
+        <ActivityIndicator size="small" color={colors.primary} />
+      </View>
+    </View>
+  );
+};
 
 // ─── Route Card Component ─────────────────────────────────────────────────────
 
-const RouteCardView: React.FC<{ card: RouteCard; colors: AppColors; onSave?: () => void }> = ({ card, colors, onSave }) => {
+const RouteCardView: React.FC<{
+  card: ApiRouteCard;
+  colors: AppColors;
+  onSave?: () => void;
+  saving?: boolean;
+}> = ({ card, colors, onSave, saving }) => {
   const s = useMemo(() => makeCardStyles(colors), [colors]);
   const { t } = useTranslation();
   return (
     <View style={s.card}>
-      {/* Image */}
-      <View style={s.imageWrap}>
-        <Image source={{ uri: card.imageUrl }} style={s.image} resizeMode="cover" />
-        <View style={s.distanceBadge}>
-          <Iconify icon="solar:map-point-bold" size={wScale(11)} color="#FFFFFF" />
-          <Text style={s.distanceText}>{card.distance}</Text>
+      <View style={s.headerRow}>
+        <View style={s.headerIcon}>
+          <Iconify icon="solar:route-bold" size={wScale(18)} color={colors.primary} />
+        </View>
+        <View style={{ flex: 1 }}>
+          <Text style={s.title} numberOfLines={2}>{card.title}</Text>
+          <View style={s.metaRow}>
+            <Iconify icon="solar:clock-circle-linear" size={wScale(12)} color={colors.textSecondary} />
+            <Text style={s.metaText}>{card.duration}</Text>
+            <View style={s.metaDot} />
+            <Iconify icon="solar:map-point-linear" size={wScale(12)} color={colors.textSecondary} />
+            <Text style={s.metaText}>{card.distance}</Text>
+            <View style={s.metaDot} />
+            <Text style={s.metaText}>{card.stops.length} {t('assistant.stops', 'stops')}</Text>
+          </View>
         </View>
       </View>
 
-      {/* Title row */}
-      <View style={s.titleRow}>
-        <Text style={s.title} numberOfLines={2}>{card.title}</Text>
-        <View style={s.titleActions}>
-          <TouchableOpacity hitSlop={8}>
-            <Iconify icon="solar:share-linear" size={wScale(17)} color={colors.textSecondary} />
-          </TouchableOpacity>
-          <TouchableOpacity hitSlop={8}>
-            <Iconify icon="solar:cloud-download-linear" size={wScale(17)} color={colors.textSecondary} />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Duration */}
-      <View style={s.durationRow}>
-        <Iconify icon="solar:clock-circle-linear" size={wScale(13)} color={colors.textSecondary} />
-        <Text style={s.durationText}>{card.duration}</Text>
-        <View style={s.metaDot} />
-        <Iconify icon="solar:map-point-linear" size={wScale(13)} color={colors.textSecondary} />
-        <Text style={s.durationText}>{card.stops.length} stops</Text>
-      </View>
-
-      {/* Divider */}
       <View style={s.divider} />
 
-      {/* Stops */}
       {card.stops.map((stop, i) => (
         <View key={i} style={s.stopRow}>
           <View style={s.stopDotWrap}>
@@ -171,17 +94,21 @@ const RouteCardView: React.FC<{ card: RouteCard; colors: AppColors; onSave?: () 
         </View>
       ))}
 
-      {/* Buttons */}
-      <View style={s.btnRow}>
-        <TouchableOpacity style={s.saveBtn} activeOpacity={0.85} onPress={onSave}>
-          <Iconify icon="solar:bookmark-linear" size={wScale(15)} color={colors.primary} />
-          <Text style={s.saveBtnText}>{t('assistant.saveRoute')}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={s.navBtn} activeOpacity={0.85}>
-          <Iconify icon="solar:map-arrow-right-bold" size={wScale(15)} color="#FFFFFF" />
-          <Text style={s.navBtnText}>Start Navigation</Text>
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity
+        style={[s.saveBtn, saving && s.saveBtnDisabled]}
+        activeOpacity={0.85}
+        onPress={onSave}
+        disabled={saving}
+      >
+        {saving ? (
+          <ActivityIndicator size="small" color="#FFFFFF" />
+        ) : (
+          <>
+            <Iconify icon="solar:bookmark-bold" size={wScale(15)} color="#FFFFFF" />
+            <Text style={s.saveBtnText}>{t('assistant.saveRoute', 'Save Route')}</Text>
+          </>
+        )}
+      </TouchableOpacity>
     </View>
   );
 };
@@ -191,72 +118,46 @@ const makeCardStyles = (colors: AppColors) =>
     card: {
       backgroundColor: colors.white,
       borderRadius: wScale(16),
-      overflow: 'hidden',
       borderWidth: 1,
       borderColor: colors.stroke,
       marginTop: hScale(10),
+      overflow: 'hidden',
       shadowColor: colors.black,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.07,
       shadowRadius: 8,
       elevation: 3,
     },
-    imageWrap: {
-      position: 'relative',
-      width: '100%',
-      height: hScale(140),
+    headerRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: wScale(12),
+      padding: wScale(14),
     },
-    image: {
-      width: '100%',
-      height: '100%',
+    headerIcon: {
+      width: wScale(40),
+      height: wScale(40),
+      borderRadius: wScale(12),
+      backgroundColor: colors.primaryLight,
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexShrink: 0,
     },
-    distanceBadge: {
-      position: 'absolute',
-      bottom: hScale(10),
-      left: wScale(10),
+    title: {
+      fontSize: wScale(14),
+      fontFamily: Fonts.plusJakartaSansBold,
+      color: colors.textPrimary,
+      marginBottom: hScale(5),
+      lineHeight: hScale(20),
+    },
+    metaRow: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: wScale(4),
-      backgroundColor: 'rgba(0,0,0,0.55)',
-      paddingHorizontal: wScale(9),
-      paddingVertical: hScale(4),
-      borderRadius: wScale(10),
+      flexWrap: 'wrap',
     },
-    distanceText: {
+    metaText: {
       fontSize: wScale(11),
-      fontFamily: Fonts.plusJakartaSansBold,
-      color: '#FFFFFF',
-    },
-    titleRow: {
-      flexDirection: 'row',
-      alignItems: 'flex-start',
-      justifyContent: 'space-between',
-      gap: wScale(8),
-      paddingHorizontal: wScale(14),
-      paddingTop: hScale(12),
-      paddingBottom: hScale(6),
-    },
-    title: {
-      flex: 1,
-      fontSize: wScale(15),
-      fontFamily: Fonts.plusJakartaSansBold,
-      color: colors.textPrimary,
-      lineHeight: hScale(21),
-    },
-    titleActions: {
-      flexDirection: 'row',
-      gap: wScale(10),
-      paddingTop: hScale(2),
-    },
-    durationRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: wScale(5),
-      paddingHorizontal: wScale(14),
-      paddingBottom: hScale(12),
-    },
-    durationText: {
-      fontSize: wScale(12),
       fontFamily: Fonts.plusJakartaSansRegular,
       color: colors.textSecondary,
     },
@@ -270,12 +171,11 @@ const makeCardStyles = (colors: AppColors) =>
       height: 1,
       backgroundColor: colors.stroke,
       marginHorizontal: wScale(14),
-      marginBottom: hScale(12),
     },
     stopRow: {
       flexDirection: 'row',
       paddingHorizontal: wScale(14),
-      marginBottom: hScale(4),
+      paddingTop: hScale(12),
     },
     stopDotWrap: {
       alignItems: 'center',
@@ -298,7 +198,7 @@ const makeCardStyles = (colors: AppColors) =>
     },
     stopInfo: {
       flex: 1,
-      paddingBottom: hScale(14),
+      paddingBottom: hScale(12),
     },
     stopName: {
       fontSize: wScale(13),
@@ -312,44 +212,25 @@ const makeCardStyles = (colors: AppColors) =>
       color: colors.textSecondary,
       lineHeight: hScale(16),
     },
-    btnRow: {
-      flexDirection: 'row',
-      gap: wScale(8),
-      margin: wScale(14),
-      marginTop: hScale(4),
-    },
     saveBtn: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      gap: wScale(6),
-      borderWidth: 1.5,
-      borderColor: colors.primary,
-      borderRadius: wScale(14),
-      paddingVertical: hScale(12),
-      paddingHorizontal: wScale(14),
-    },
-    saveBtnText: {
-      fontSize: wScale(13),
-      fontFamily: Fonts.plusJakartaSansBold,
-      color: colors.primary,
-    },
-    navBtn: {
-      flex: 1,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: wScale(8),
+      gap: wScale(7),
       backgroundColor: colors.primary,
+      margin: wScale(14),
+      marginTop: hScale(8),
       borderRadius: wScale(14),
       paddingVertical: hScale(12),
+      minHeight: hScale(44),
       shadowColor: colors.primary,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.3,
-      shadowRadius: 8,
-      elevation: 4,
+      shadowOffset: { width: 0, height: 3 },
+      shadowOpacity: 0.25,
+      shadowRadius: 6,
+      elevation: 3,
     },
-    navBtnText: {
+    saveBtnDisabled: { opacity: 0.6, shadowOpacity: 0 },
+    saveBtnText: {
       fontSize: wScale(13),
       fontFamily: Fonts.plusJakartaSansBold,
       color: '#FFFFFF',
@@ -358,12 +239,18 @@ const makeCardStyles = (colors: AppColors) =>
 
 // ─── Message Bubble ────────────────────────────────────────────────────────────
 
-const MessageBubble: React.FC<{ msg: Message; colors: AppColors; userInitials: string }> = ({
-  msg,
-  colors,
-  userInitials,
-}) => {
+const MessageBubble: React.FC<{
+  msg: Message;
+  colors: AppColors;
+  userInitials: string;
+  onSaveRoute?: (card: ApiRouteCard) => void;
+  savingCardId?: string;
+}> = ({ msg, colors, userInitials, onSaveRoute, savingCardId }) => {
   const s = useMemo(() => makeBubbleStyles(colors), [colors]);
+
+  if (msg.role === 'typing') {
+    return <TypingBubble colors={colors} />;
+  }
 
   if (msg.role === 'user') {
     return (
@@ -387,11 +274,12 @@ const MessageBubble: React.FC<{ msg: Message; colors: AppColors; userInitials: s
         <View style={s.assistantBubble}>
           <Text style={s.assistantText}>{msg.text}</Text>
         </View>
-        {msg.card && (
+        {msg.routeCard && (
           <RouteCardView
-            card={msg.card}
+            card={msg.routeCard}
             colors={colors}
-            onSave={() => Alert.alert('✓', 'Route saved to My Routes!')}
+            onSave={() => onSaveRoute?.(msg.routeCard!)}
+            saving={savingCardId === msg.id}
           />
         )}
       </View>
@@ -401,7 +289,6 @@ const MessageBubble: React.FC<{ msg: Message; colors: AppColors; userInitials: s
 
 const makeBubbleStyles = (colors: AppColors) =>
   StyleSheet.create({
-    // User
     userRow: {
       flexDirection: 'row',
       justifyContent: 'flex-end',
@@ -441,8 +328,6 @@ const makeBubbleStyles = (colors: AppColors) =>
       fontFamily: Fonts.plusJakartaSansBold,
       color: '#FFFFFF',
     },
-
-    // Assistant
     assistantRow: {
       flexDirection: 'row',
       alignItems: 'flex-start',
@@ -459,9 +344,7 @@ const makeBubbleStyles = (colors: AppColors) =>
       marginTop: hScale(2),
       flexShrink: 0,
     },
-    assistantContent: {
-      flex: 1,
-    },
+    assistantContent: { flex: 1 },
     assistantBubble: {
       backgroundColor: colors.white,
       borderRadius: wScale(18),
@@ -479,7 +362,7 @@ const makeBubbleStyles = (colors: AppColors) =>
     },
   });
 
-// ─── Quick Suggestion Chips ───────────────────────────────────────────────────
+// ─── Suggestions ──────────────────────────────────────────────────────────────
 
 const SUGGESTIONS = [
   'Nearby restaurants',
@@ -488,8 +371,7 @@ const SUGGESTIONS = [
   'Night activities',
 ];
 
-// Monotonic counter to guarantee unique IDs without relying on Date.now() resolution
-let _msgCounter = INITIAL_MESSAGES.length;
+let _msgCounter = 0;
 const nextMsgId = (prefix: string) => `${prefix}${++_msgCounter}`;
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
@@ -500,39 +382,103 @@ const BelenScreen = () => {
   const colors = useColors();
   const currentTheme = useSelector((s: RootState) => s.Theme.theme);
   const user = useSelector((s: RootState) => s.User.user);
+  const locationName = useSelector((s: RootState) => s.User.locationName);
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
-  const [messages, setMessages] = useState<Message[]>(INITIAL_MESSAGES);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
-  const [replyIndex, setReplyIndex] = useState(0);
+  const [sending, setSending] = useState(false);
+  const [savingCardId, setSavingCardId] = useState<string | null>(null);
+  const conversationIdRef = useRef<string | null>(null);
   const scrollRef = useRef<ScrollView>(null);
 
   const userInitials = user?.name
     ? `${user.name[0]}${user.surname?.[0] ?? ''}`.toUpperCase()
     : 'A';
 
-  const sendMessage = (text: string) => {
+  const sendMessage = useCallback(async (text: string) => {
     const trimmed = text.trim();
-    if (!trimmed) return;
+    if (!trimmed || sending) return;
 
-    const userMsg: Message = {
-      id: nextMsgId('u'),
-      role: 'user',
-      text: trimmed,
-    };
+    const userMsgId = nextMsgId('u');
+    const typingId = 'typing';
 
-    const reply = MOCK_REPLIES[replyIndex % MOCK_REPLIES.length];
-    const assistantMsg: Message = {
-      id: nextMsgId('a'),
-      role: 'assistant',
-      text: reply.text,
-      card: reply.card,
-    };
-
-    setMessages(prev => [...prev, userMsg, assistantMsg]);
-    setReplyIndex(i => i + 1);
+    setMessages(prev => [
+      ...prev,
+      { id: userMsgId, role: 'user', text: trimmed },
+      { id: typingId, role: 'typing' },
+    ]);
     setInputText('');
-  };
+    setSending(true);
+
+    try {
+      const context: Record<string, any> = {};
+      if (locationName) context.city = locationName;
+      if (user?.travel_style) context.travel_style = user.travel_style;
+      if (user?.budget_level) context.budget_level = user.budget_level;
+      if (user?.interests?.length) context.interests = user.interests;
+
+      const res = await assistantService.sendMessage({
+        message: trimmed,
+        conversation_id: conversationIdRef.current ?? undefined,
+        context: Object.keys(context).length ? context : undefined,
+      });
+
+      const { conversation_id, message } = res.data.data;
+      conversationIdRef.current = conversation_id;
+
+      const assistantMsgId = nextMsgId('a');
+      setMessages(prev =>
+        prev
+          .filter(m => m.id !== typingId)
+          .concat({
+            id: assistantMsgId,
+            role: 'assistant',
+            text: message.text,
+            routeCard: message.route_card ?? undefined,
+          }),
+      );
+    } catch (err: any) {
+      setMessages(prev => prev.filter(m => m.id !== typingId));
+      const code = err?.response?.data?.error?.code;
+      let errorText = t('assistant.genericError', 'Something went wrong. Please try again.');
+      if (code === 'RATE_LIMIT') {
+        errorText = t('assistant.rateLimitError', "You've reached your daily AI message limit. Upgrade to Premium for unlimited access.");
+      } else if (code === 'AI_SERVICE_ERROR') {
+        errorText = t('assistant.serviceError', 'AI service is temporarily unavailable. Please try again later.');
+      }
+      setMessages(prev => [
+        ...prev,
+        { id: nextMsgId('err'), role: 'assistant', text: errorText },
+      ]);
+    } finally {
+      setSending(false);
+    }
+  }, [sending, user, locationName, t]);
+
+  const saveRoute = useCallback(async (card: ApiRouteCard, msgId: string) => {
+    if (savingCardId) return;
+    setSavingCardId(msgId);
+    try {
+      await routesService.create({
+        name: card.title,
+        is_ai_generated: true,
+        stops: card.stops.map(s => ({ name: s.name, description: s.description })),
+      });
+      Alert.alert(
+        t('assistant.routeSaved', 'Route Saved'),
+        t('assistant.routeSavedMsg', 'The route has been added to My Routes.'),
+        [{ text: t('common.ok', 'OK') }],
+      );
+    } catch {
+      Alert.alert(
+        t('common.error', 'Error'),
+        t('assistant.routeSaveError', 'Could not save route. Please try again.'),
+      );
+    } finally {
+      setSavingCardId(null);
+    }
+  }, [savingCardId, t]);
 
   return (
     <KeyboardAvoidingView
@@ -551,7 +497,11 @@ const BelenScreen = () => {
           <Iconify icon="solar:alt-arrow-left-linear" size={wScale(22)} color={colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{t('assistant.title')}</Text>
-        <TouchableOpacity style={styles.headerIconBtn} hitSlop={8} onPress={() => (navigation as any).navigate('ChatSettings')}>
+        <TouchableOpacity
+          style={styles.headerIconBtn}
+          hitSlop={8}
+          onPress={() => (navigation as any).navigate('ChatSettings')}
+        >
           <Iconify icon="solar:settings-linear" size={wScale(20)} color={colors.textPrimary} />
         </TouchableOpacity>
       </View>
@@ -564,12 +514,29 @@ const BelenScreen = () => {
         showsVerticalScrollIndicator={false}
         onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
       >
+        {messages.length === 0 && (
+          <View style={styles.emptyState}>
+            <View style={styles.emptyIcon}>
+              <Iconify icon="solar:map-point-wave-bold" size={wScale(36)} color={colors.primary} />
+            </View>
+            <Text style={styles.emptyTitle}>{t('assistant.emptyTitle', 'Hi! I\'m Belen')}</Text>
+            <Text style={styles.emptySubtitle}>
+              {t('assistant.emptySubtitle', 'Ask me to plan a route, find places, or discover hidden gems in your city.')}
+            </Text>
+          </View>
+        )}
+
         {messages.map(msg => (
           <MessageBubble
             key={msg.id}
             msg={msg}
             colors={colors}
             userInitials={userInitials}
+            onSaveRoute={(card) => {
+              const msgId = msg.id;
+              saveRoute(card, msgId);
+            }}
+            savingCardId={savingCardId ?? undefined}
           />
         ))}
       </ScrollView>
@@ -587,6 +554,7 @@ const BelenScreen = () => {
             style={styles.chip}
             onPress={() => sendMessage(s)}
             activeOpacity={0.75}
+            disabled={sending}
           >
             <Text style={styles.chipText}>{s}</Text>
           </TouchableOpacity>
@@ -604,14 +572,19 @@ const BelenScreen = () => {
           onSubmitEditing={() => sendMessage(inputText)}
           returnKeyType="send"
           multiline
+          editable={!sending}
         />
         <TouchableOpacity
-          style={[styles.sendBtn, !inputText.trim() && styles.sendBtnDisabled]}
+          style={[styles.sendBtn, (!inputText.trim() || sending) && styles.sendBtnDisabled]}
           onPress={() => sendMessage(inputText)}
           activeOpacity={0.85}
-          disabled={!inputText.trim()}
+          disabled={!inputText.trim() || sending}
         >
-          <Iconify icon="solar:arrow-up-bold" size={wScale(18)} color="#FFFFFF" />
+          {sending ? (
+            <ActivityIndicator size="small" color="#FFFFFF" />
+          ) : (
+            <Iconify icon="solar:arrow-up-bold" size={wScale(18)} color="#FFFFFF" />
+          )}
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -624,12 +597,8 @@ export default BelenScreen;
 
 const makeStyles = (colors: AppColors) =>
   StyleSheet.create({
-    root: {
-      flex: 1,
-      backgroundColor: colors.background,
-    },
+    root: { flex: 1, backgroundColor: colors.background },
 
-    // Header
     header: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -654,17 +623,45 @@ const makeStyles = (colors: AppColors) =>
       letterSpacing: -0.2,
     },
 
-    // Messages
-    msgList: {
-      flex: 1,
-    },
+    msgList: { flex: 1 },
     msgContent: {
       paddingHorizontal: Layout.screenPaddingH,
       paddingTop: hScale(20),
       paddingBottom: hScale(8),
+      flexGrow: 1,
     },
 
-    // Chips
+    emptyState: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: wScale(24),
+      paddingVertical: hScale(60),
+      gap: hScale(12),
+    },
+    emptyIcon: {
+      width: wScale(72),
+      height: wScale(72),
+      borderRadius: wScale(22),
+      backgroundColor: colors.primaryLight,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: hScale(4),
+    },
+    emptyTitle: {
+      fontSize: wScale(20),
+      fontFamily: Fonts.plusJakartaSansExtraBold,
+      color: colors.textPrimary,
+      textAlign: 'center',
+    },
+    emptySubtitle: {
+      fontSize: wScale(13),
+      fontFamily: Fonts.plusJakartaSansRegular,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      lineHeight: hScale(20),
+    },
+
     chipsScroll: {
       flexGrow: 0,
       borderTopWidth: 1,
@@ -690,7 +687,6 @@ const makeStyles = (colors: AppColors) =>
       color: colors.textPrimary,
     },
 
-    // Input
     inputBar: {
       flexDirection: 'row',
       alignItems: 'flex-end',

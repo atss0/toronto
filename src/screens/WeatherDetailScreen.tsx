@@ -1,6 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity, StatusBar, ScrollView,
+  ActivityIndicator, RefreshControl,
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { Iconify } from 'react-native-iconify';
@@ -14,27 +15,20 @@ import Fonts from '../styles/Fonts';
 import { wScale, hScale } from '../styles/Scaler';
 import Layout from '../styles/Layout';
 import { RootState } from '../redux/store';
+import weatherService, { WeatherData } from '../services/weather';
 
 type RouteT = RouteProp<RootStackParamList, 'WeatherDetail'>;
 
-const HOURLY = [
-  { time: 'Now', icon: 'solar:sun-bold', temp: 21 },
-  { time: '14:00', icon: 'solar:sun-bold', temp: 23 },
-  { time: '15:00', icon: 'solar:cloudy-moon-bold', temp: 22 },
-  { time: '16:00', icon: 'solar:cloudy-moon-bold', temp: 20 },
-  { time: '17:00', icon: 'solar:cloud-rain-bold', temp: 18 },
-  { time: '18:00', icon: 'solar:cloud-rain-bold', temp: 17 },
-];
+const ICON_MAP: Record<string, string> = {
+  sunny: 'ph:sun-duotone',
+  partly_cloudy: 'ph:cloud-sun-duotone',
+  rain: 'ph:cloud-rain-duotone',
+  thunderstorm: 'ph:cloud-lightning-duotone',
+  snow: 'ph:cloud-snow-duotone',
+  fog: 'ph:cloud-fog-duotone',
+};
 
-const WEEKLY = [
-  { day: 'Today', icon: 'solar:sun-bold', high: 23, low: 14 },
-  { day: 'Fri', icon: 'solar:sun-bold', high: 25, low: 15 },
-  { day: 'Sat', icon: 'solar:cloudy-moon-bold', high: 20, low: 12 },
-  { day: 'Sun', icon: 'solar:cloud-rain-bold', high: 16, low: 11 },
-  { day: 'Mon', icon: 'solar:sun-bold', high: 22, low: 13 },
-  { day: 'Tue', icon: 'solar:sun-bold', high: 24, low: 14 },
-  { day: 'Wed', icon: 'solar:cloudy-moon-bold', high: 21, low: 13 },
-];
+const getWeatherIcon = (icon: string) => ICON_MAP[icon] ?? 'ph:sun-duotone';
 
 const WeatherDetailScreen = () => {
   const navigation = useNavigation();
@@ -45,6 +39,61 @@ const WeatherDetailScreen = () => {
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const { city } = route.params;
+
+  const [weather, setWeather] = useState<WeatherData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState(false);
+
+  const fetchWeather = useCallback(async () => {
+    try {
+      setError(false);
+      const res = await weatherService.get({ city });
+      setWeather(res.data.data);
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [city]);
+
+  useEffect(() => {
+    fetchWeather();
+  }, [fetchWeather]);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchWeather();
+  };
+
+  if (loading) {
+    return (
+      <View style={[styles.root, styles.centered]}>
+        <StatusBar barStyle="light-content" backgroundColor={colors.primary} />
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
+  if (error || !weather) {
+    return (
+      <View style={[styles.root, styles.centered]}>
+        <StatusBar barStyle={currentTheme === 'dark' ? 'light-content' : 'dark-content'} />
+        <TouchableOpacity style={styles.backBtnAbsolute} onPress={() => navigation.goBack()}>
+          <Iconify icon="solar:alt-arrow-left-linear" size={wScale(22)} color={colors.textPrimary} />
+        </TouchableOpacity>
+        <Iconify icon="solar:cloud-cross-bold" size={wScale(48)} color={colors.textSecondary} />
+        <Text style={styles.errorTitle}>{t('weather.unavailable', 'Weather unavailable')}</Text>
+        <TouchableOpacity onPress={fetchWeather} style={styles.retryBtn}>
+          <Text style={styles.retryText}>{t('common.retry', 'Retry')}</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  const { current, hourly, weekly } = weather;
+  const hiLowRow = weekly.length > 0 ? `H: ${weekly[0].high}°  L: ${weekly[0].low}°` : '';
 
   return (
     <View style={styles.root}>
@@ -59,46 +108,59 @@ const WeatherDetailScreen = () => {
         >
           <Iconify icon="solar:alt-arrow-left-linear" size={wScale(22)} color="#FFFFFF" />
         </TouchableOpacity>
-        <Text style={styles.cityName}>{city}</Text>
-        <Iconify icon="solar:sun-bold" size={wScale(64)} color="#FFFFFF" />
-        <Text style={styles.tempLarge}>21°C</Text>
-        <Text style={styles.condition}>{t('weather.condition')}</Text>
-        <Text style={styles.hiLow}>H: 23°  L: 14°</Text>
+        <Text style={styles.cityName}>{weather.city}</Text>
+        <Iconify icon={getWeatherIcon(current.icon)} size={wScale(64)} color="#FFFFFF" />
+        <Text style={styles.tempLarge}>{current.temp_c}°C</Text>
+        <Text style={styles.condition}>{current.condition}</Text>
+        {hiLowRow ? <Text style={styles.hiLow}>{hiLowRow}</Text> : null}
       </View>
 
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('weather.hourlyForecast')}</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.hourlyList}>
-            {HOURLY.map((h, i) => (
-              <View key={i} style={[styles.hourCard, i === 0 && styles.hourCardActive]}>
-                <Text style={[styles.hourTime, i === 0 && styles.hourTimeActive]}>{h.time}</Text>
-                <Iconify icon={h.icon} size={wScale(20)} color={i === 0 ? '#FFF' : colors.warning} />
-                <Text style={[styles.hourTemp, i === 0 && styles.hourTempActive]}>{h.temp}°</Text>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
+      >
+        {hourly.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{t('weather.hourlyForecast')}</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.hourlyList}>
+              {hourly.map((h, i) => (
+                <View key={i} style={[styles.hourCard, i === 0 && styles.hourCardActive]}>
+                  <Text style={[styles.hourTime, i === 0 && styles.hourTimeActive]}>{h.time}</Text>
+                  <Iconify icon={getWeatherIcon(h.icon)} size={wScale(20)} color={i === 0 ? '#FFF' : colors.warning} />
+                  <Text style={[styles.hourTemp, i === 0 && styles.hourTempActive]}>{h.temp_c}°</Text>
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+        )}
+
+        {weekly.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>{t('weather.weeklyForecast')}</Text>
+            {weekly.map((day, i) => (
+              <View key={i} style={styles.dayRow}>
+                <Text style={styles.dayName}>{day.day}</Text>
+                <Iconify icon={getWeatherIcon(day.icon)} size={wScale(18)} color={colors.warning} />
+                <View style={{ flex: 1 }} />
+                <Text style={styles.dayHigh}>{day.high}°</Text>
+                <Text style={styles.dayLow}>{day.low}°</Text>
               </View>
             ))}
-          </ScrollView>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>{t('weather.weeklyForecast')}</Text>
-          {WEEKLY.map((day, i) => (
-            <View key={i} style={styles.dayRow}>
-              <Text style={styles.dayName}>{day.day}</Text>
-              <Iconify icon={day.icon} size={wScale(18)} color={colors.warning} />
-              <View style={{ flex: 1 }} />
-              <Text style={styles.dayHigh}>{day.high}°</Text>
-              <Text style={styles.dayLow}>{day.low}°</Text>
-            </View>
-          ))}
-        </View>
+          </View>
+        )}
 
         <View style={styles.detailsGrid}>
           {[
-            { icon: 'solar:wind-bold', label: t('weather.wind'), value: '12 km/h' },
-            { icon: 'solar:waterdrop-bold', label: t('weather.humidity'), value: '58%' },
-            { icon: 'solar:eye-bold', label: t('weather.visibility'), value: '10 km' },
-            { icon: 'solar:sun-2-bold', label: t('weather.uvIndex'), value: '5 (Mod)' },
+            { icon: 'solar:wind-bold', label: t('weather.wind'), value: `${current.wind_kmh} km/h` },
+            { icon: 'solar:waterdrop-bold', label: t('weather.humidity'), value: `${current.humidity_percent}%` },
+            { icon: 'solar:eye-bold', label: t('weather.visibility'), value: `${current.visibility_km} km` },
+            {
+              icon: 'solar:sun-2-bold',
+              label: t('weather.uvIndex'),
+              value: current.uv_index != null ? String(current.uv_index) : '-',
+            },
           ].map(d => (
             <View key={d.label} style={styles.detailCard}>
               <Iconify icon={d.icon} size={wScale(20)} color={colors.primary} />
@@ -116,6 +178,21 @@ export default WeatherDetailScreen;
 
 const makeStyles = (colors: AppColors) => StyleSheet.create({
   root: { flex: 1, backgroundColor: colors.background },
+  centered: { alignItems: 'center', justifyContent: 'center' },
+  backBtnAbsolute: {
+    position: 'absolute', top: hScale(16), left: Layout.screenPaddingH,
+    width: Layout.hitArea.backButton, height: Layout.hitArea.backButton,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  errorTitle: {
+    fontSize: wScale(16), fontFamily: Fonts.plusJakartaSansSemiBold, color: colors.textSecondary,
+    marginTop: hScale(12),
+  },
+  retryBtn: {
+    marginTop: hScale(16), paddingHorizontal: wScale(24), paddingVertical: hScale(10),
+    backgroundColor: colors.primary, borderRadius: Layout.borderRadius.md,
+  },
+  retryText: { fontSize: wScale(14), fontFamily: Fonts.plusJakartaSansSemiBold, color: '#FFFFFF' },
   hero: {
     backgroundColor: colors.primary, alignItems: 'center', paddingBottom: hScale(28),
     paddingHorizontal: Layout.screenPaddingH, paddingTop: hScale(16), gap: hScale(4),

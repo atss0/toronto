@@ -35,12 +35,6 @@ interface StopItem {
   order_index: number;
 }
 
-const FALLBACK_STOPS: StopItem[] = [
-  { id: '1', name: 'Hagia Sophia', description: 'Iconic Byzantine monument', duration: '45 min', status: 'completed', order_index: 0 },
-  { id: '2', name: 'Blue Mosque', description: 'Majestic 17th-century landmark', duration: '40 min', status: 'active', order_index: 1 },
-  { id: '3', name: 'Basilica Cistern', description: 'Subterranean Roman reservoir', duration: '30 min', status: 'upcoming', order_index: 2 },
-  { id: '4', name: 'Topkapi Palace', description: 'Ottoman imperial palace', duration: '60 min', status: 'upcoming', order_index: 3 },
-];
 
 type Nav = NativeStackNavigationProp<RootStackParamList>;
 
@@ -70,17 +64,25 @@ const RouteDetailScreen = () => {
       .finally(() => setIsLoading(false));
   }, [routeId]);
 
+  const nextStatus = (current: StopItem['status']): StopItem['status'] | null => {
+    if (current === 'upcoming') return 'active';
+    if (current === 'active') return 'completed';
+    return null;
+  };
+
   const handleToggleStop = useCallback(async (stop: StopItem) => {
-    if (!routeId || stop.status === 'completed') return;
-    setStops(prev => prev.map(s => s.id === stop.id ? { ...s, status: 'completed' } : s));
+    if (!routeId) return;
+    const next = nextStatus(stop.status);
+    if (!next) return;
+    setStops(prev => prev.map(s => s.id === stop.id ? { ...s, status: next } : s));
     try {
-      await routesService.updateStop(routeId, stop.id, 'completed');
+      await routesService.updateStop(routeId, stop.id, next);
     } catch {
       setStops(prev => prev.map(s => s.id === stop.id ? { ...s, status: stop.status } : s));
     }
   }, [routeId]);
 
-  const displayStops = stops.length > 0 ? stops : FALLBACK_STOPS;
+  const displayStops = stops;
   const completed = displayStops.filter(s => s.status === 'completed').length;
   const progress = routeDetail?.progress ?? (displayStops.length > 0 ? completed / displayStops.length : 0);
 
